@@ -1,0 +1,23 @@
+[project]
+name = "dsp391m"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "OiHuecuata",email = "04122005truongtuan@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic-settings (>=2.15.0,<3.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = [
+    "ruff (>=0.16.8,<0.17.0)",
+    "black (>=26.5.1,<27.0.0)"
+]
