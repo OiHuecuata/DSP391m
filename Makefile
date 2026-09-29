@@ -36,3 +36,10 @@ help:
 	@echo "  make test     - Run tests"
 	@echo "  make run      - Run application"
 	@echo "  make clean    - Remove generated files"
+
+thread-crawler-test:
+	poetry run python \
+  		apps/collector/src/dsp_collector/sources/crawler/threads/crawler.py \
+  		--query "pickleball" \
+  		--limit 10 \
+  		--sort recent
