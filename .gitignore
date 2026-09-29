@@ -276,3 +276,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# Documents (will be public when done)
+docs/
