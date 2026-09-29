@@ -278,3 +278,6 @@ next-env.d.ts
 
 # Documents (will be public when done)
 docs/
+
+# Local for testing
+.local/
