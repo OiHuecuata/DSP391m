@@ -35,11 +35,28 @@ run:
 	poetry run python main.py
 
 clean:
-	rm -rf .pytest_cache
-	rm -rf .ruff_cache
-	rm -rf dist
-	rm -rf build
-	find . -type d -name "__pycache__" -exec rm -rf {} +
+	@echo "Cleaning project caches..."
+
+	@echo "Cleaning Python caches..."
+	find . -type d -name "__pycache__" -prune -exec rm -rf {} +
+	find . -type d -name ".pytest_cache" -prune -exec rm -rf {} +
+	find . -type d -name ".ruff_cache" -prune -exec rm -rf {} +
+	find . -type d -name ".mypy_cache" -prune -exec rm -rf {} +
+	find . -type f \( -name "*.pyc" -o -name "*.pyo" \) -delete
+
+	@echo "Cleaning Go caches..."
+	go clean -cache
+	go clean -testcache
+
+	@echo "Cleaning Next.js caches..."
+	find . -type d -name ".next" -prune -exec rm -rf {} +
+	find . -type d -name ".turbo" -prune -exec rm -rf {} +
+
+	@echo "Cleaning build artifacts..."
+	find . -type d -name "dist" -prune -exec rm -rf {} +
+	find . -type d -name "build" -prune -exec rm -rf {} +
+
+	@echo "Clean complete."
 
 thread-crawler-test:
 	poetry run python \
