@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 
-.PHONY: help install update format lint test run clean threads-crawler-test structure threads-crawler-status
+.PHONY: help install update format lint test run clean threads-crawler-test structure threads-crawler-status health_backend
 
 help:
 	@echo "Available commands:"
@@ -76,3 +76,6 @@ threads-crawler-status:
 
 structure:
 	tree -I "node_modules"
+
+health_backend:
+	cd apps/backend && go run ./cmd/server
