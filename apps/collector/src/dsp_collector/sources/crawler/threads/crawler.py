@@ -1,50 +1,58 @@
-"""Smoke-test crawler for public Threads keyword search results.
+"""Smoke-test crawler for Vietnam-oriented pickleball Threads posts.
 
 Phase 1 only:
-    Threads search -> up to N public posts -> local JSON file
+    Threads search -> filtered public posts -> local JSON
 
-This module intentionally does NOT call the normalizer, Kafka, Spark,
-Data Lake, or Data Warehouse. It exists only to inspect source data quality.
+Browser/search/SSR parsing lives here.
+Vietnam vocabulary and relevance rules live in ``vietnam_terms.py``.
 """
+
 from __future__ import annotations
+
 import argparse
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlencode
 
+from playwright.sync_api import Page, sync_playwright
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
-from playwright.sync_api import sync_playwright
+
+try:
+    from .vietnam_terms import build_scope_queries, evaluate_relevance
+except ImportError:
+    # Supports direct execution:
+    # python .../threads/crawler.py
+    from vietnam_terms import build_scope_queries, evaluate_relevance
 
 THREADS_SEARCH_URL = "https://www.threads.com/search/"
 DEFAULT_QUERY = "pickleball"
 DEFAULT_LIMIT = 10
 DEFAULT_SORT = "recent"
 DEFAULT_TIMEOUT_MS = 60_000
+DEFAULT_PER_QUERY_CAP = 3
 VALID_SORTS = {"top", "recent"}
 SEARCH_RESULTS_MARKER = '"searchResults":{"inform_module"'
+
 class ThreadsCrawlerError(RuntimeError):
     """Raised when Threads search data cannot be fetched or parsed."""
 
 def _collector_root() -> Path:
     """Return ``apps/collector`` from this file's repository location."""
-    # crawler.py -> threads -> crawler -> sources -> dsp_collector -> src -> collector
     return Path(__file__).resolve().parents[5]
 
 def default_output_path() -> Path:
-    """Return the local smoke-test JSON output path."""
     return _collector_root() / ".local" / "threads" / "pickleball_sample.json"
 
 def build_search_url(query: str, sort: str = DEFAULT_SORT) -> str:
     query = query.strip()
     if not query:
         raise ValueError("query must not be empty")
-
     if sort not in VALID_SORTS:
         raise ValueError(f"sort must be one of {sorted(VALID_SORTS)}")
 
-    params = {
+    params: dict[str, str] = {
         "q": query,
         "serp_type": "default",
     }
@@ -54,8 +62,8 @@ def build_search_url(query: str, sort: str = DEFAULT_SORT) -> str:
 
     return f"{THREADS_SEARCH_URL}?{urlencode(params)}"
 
-def _extract_search_results_candidates(html: str,) -> list[dict[str, Any]]:
-    """Extract every SSR searchResults object found in the page."""
+def _extract_search_results_candidates(html: str) -> list[dict[str, Any]]:
+    """Extract all SSR ``searchResults`` objects from rendered HTML."""
     key = '"searchResults":'
     decoder = json.JSONDecoder()
     results: list[dict[str, Any]] = []
@@ -66,7 +74,7 @@ def _extract_search_results_candidates(html: str,) -> list[dict[str, Any]]:
         if marker_index < 0:
             break
 
-        object_start = html.find("{",marker_index + len(key))
+        object_start = html.find("{", marker_index + len(key))
         if object_start < 0:
             break
 
@@ -87,7 +95,7 @@ def _extract_search_results_candidates(html: str,) -> list[dict[str, Any]]:
     return results
 
 def _post_from_edge(edge: dict[str, Any]) -> dict[str, Any] | None:
-    """Convert one Threads search edge into a compact raw smoke-test record."""
+    """Convert one Threads search edge into a compact raw record."""
     try:
         post = edge["node"]["thread"]["thread_items"][0]["post"]
     except (KeyError, IndexError, TypeError):
@@ -99,13 +107,16 @@ def _post_from_edge(edge: dict[str, Any]) -> dict[str, Any] | None:
     user = post.get("user") or {}
     info = post.get("text_post_app_info") or {}
     caption = post.get("caption") or {}
+
     username = user.get("username")
     code = post.get("code")
-    permalink = (
+
+    url = (
         f"https://www.threads.com/@{username}/post/{code}"
         if username and code
         else None
     )
+
     has_media = bool(
         ((post.get("image_versions2") or {}).get("candidates") or [])
         or (post.get("video_versions") or [])
@@ -115,7 +126,7 @@ def _post_from_edge(edge: dict[str, Any]) -> dict[str, Any] | None:
     return {
         "id": post.get("pk"),
         "code": code,
-        "url": permalink,
+        "url": url,
         "text": caption.get("text") if isinstance(caption, dict) else None,
         "taken_at": post.get("taken_at"),
         "like_count": post.get("like_count") or 0,
@@ -133,44 +144,38 @@ def _post_from_edge(edge: dict[str, Any]) -> dict[str, Any] | None:
         },
     }
 
-def _query_score(search_results: dict[str, Any],query: str) -> int:
-    query = query.casefold()
-    score = 0
-    for edge in search_results.get("edges") or []:
-        post = _post_from_edge(edge)
-        if not post:
-            continue
-        text = post.get("text") or ""
-        if query in text.casefold():
-            score += 1
-    return score
 
-def parse_posts(html: str,query: str,limit: int) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
-    """Parse up to ``limit`` search posts from rendered Threads HTML."""
+def _candidate_post_count(search_results: dict[str, Any]) -> int:
+    return sum(
+        1
+        for edge in search_results.get("edges") or []
+        if isinstance(edge, dict) and _post_from_edge(edge) is not None
+    )
+
+
+def parse_posts(
+    html: str, limit: int
+) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
+    """Parse posts from the most plausible SSR search result candidate."""
     if limit < 1:
         raise ValueError("limit must be >= 1")
 
     candidates = _extract_search_results_candidates(html)
-    search_results = max(
-        candidates,
-        key=lambda candidate: _query_score(candidate, query),
-    )
-    score = _query_score(search_results, query)
+    search_results = max(candidates, key=_candidate_post_count)
+
     print(
         f"[threads-crawler] SSR candidates={len(candidates)}, "
-        f"best_query_matches={score}",
+        f"selected_posts={_candidate_post_count(search_results)}",
         flush=True,
     )
-    if score == 0:
-        raise ThreadsCrawlerError(f"searchResults found, but no posts matched query {query!r}")
 
-    edges = search_results.get("edges") or []
     posts: list[dict[str, Any]] = []
     seen_ids: set[str] = set()
 
-    for edge in edges:
+    for edge in search_results.get("edges") or []:
         if not isinstance(edge, dict):
             continue
+
         post = _post_from_edge(edge)
         if post is None:
             continue
@@ -181,10 +186,69 @@ def parse_posts(html: str,query: str,limit: int) -> tuple[list[dict[str, Any]], 
                 continue
             seen_ids.add(post_id)
         posts.append(post)
+
         if len(posts) >= limit:
             break
 
     return posts, search_results.get("page_info")
+
+
+def _fetch_search_html(
+    page: Page,
+    *,
+    query: str,
+    sort: str,
+    timeout_ms: int,
+) -> tuple[str, str]:
+    """Open one Threads search URL and return HTML plus final URL."""
+    search_url = build_search_url(query, sort)
+    print(f"[threads-crawler] opening: {search_url}", flush=True)
+
+    try:
+        page.goto(search_url, wait_until="domcontentloaded", timeout=timeout_ms)
+        page.wait_for_timeout(2_000)
+        html = page.evaluate("document.documentElement.innerHTML")
+        if SEARCH_RESULTS_MARKER not in html:
+            print(
+                "[threads-crawler] searchResults not visible yet; retrying once...",
+                flush=True,
+            )
+            page.reload(
+                wait_until="domcontentloaded",
+                timeout=timeout_ms,
+            )
+            page.wait_for_timeout(3_000)
+            html = page.evaluate("document.documentElement.innerHTML")
+
+    except PlaywrightTimeoutError as exc:
+        raise ThreadsCrawlerError(
+            f"Threads page timed out after {timeout_ms} ms for query {query!r}"
+        ) from exc
+
+    return html, page.url
+
+
+def _merge_existing_post(
+    existing: dict[str, Any],
+    *,
+    search_query: str,
+    relevance: dict[str, Any],
+) -> None:
+    if search_query not in existing["matched_queries"]:
+        existing["matched_queries"].append(search_query)
+
+    for category in relevance["categories"]:
+        if category not in existing["categories"]:
+            existing["categories"].append(category)
+
+    for signal in relevance["vietnam_signals"]:
+        if signal not in existing["vietnam_relevance"]["signals"]:
+            existing["vietnam_relevance"]["signals"].append(signal)
+
+    for signal in relevance["scope_signals"]:
+        if signal not in existing["scope_signals"]:
+            existing["scope_signals"].append(signal)
+
 
 def crawl_threads_posts(
     query: str = DEFAULT_QUERY,
@@ -193,68 +257,136 @@ def crawl_threads_posts(
     *,
     headless: bool = True,
     timeout_ms: int = DEFAULT_TIMEOUT_MS,
+    per_query_cap: int = DEFAULT_PER_QUERY_CAP,
 ) -> dict[str, Any]:
-    """Fetch one public Threads search page and return parsed smoke-test data."""
+    """Collect Vietnam-oriented training/court/demand posts."""
     if limit < 1:
         raise ValueError("limit must be >= 1")
+    if per_query_cap < 1:
+        raise ValueError("per_query_cap must be >= 1")
 
-    search_url = build_search_url(query, sort)
-    print(f"[threads-crawler] opening: {search_url}", flush=True)
+    scope_queries = build_scope_queries(query)
+    collected: dict[str, dict[str, Any]] = {}
+    query_runs: list[dict[str, Any]] = []
 
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(headless=headless)
         page = browser.new_page(
             viewport={"width": 1440, "height": 1000},
-            locale="en-US",
+            locale="vi-VN",
         )
 
         try:
-            page.goto(search_url, wait_until="domcontentloaded", timeout=timeout_ms)
-            print(f"[threads-crawler] landed: {page.url}", flush=True)
-            # The search data is SSR-embedded, but Threads can take a short time
-            # to settle the rendered document. Do not wait for networkidle because
-            # social apps may keep network connections alive indefinitely.
-            page.wait_for_timeout(2_000)
-            html = page.evaluate("document.documentElement.innerHTML")
+            for query_spec in scope_queries:
+                if len(collected) >= limit:
+                    break
+                search_query = query_spec["query"]
+                intent = query_spec["intent"]
 
-            debug_dir = _collector_root() / ".local" / "threads"
-            debug_dir.mkdir(parents=True, exist_ok=True)
-            (debug_dir / "debug.html").write_text(html,encoding="utf-8")
-            page.screenshot(path=str(debug_dir / "debug.png"),full_page=True)
+                try:
+                    html, landed_url = _fetch_search_html(
+                        page, query=search_query, sort=sort, timeout_ms=timeout_ms
+                    )
+                    raw_posts, page_info = parse_posts(html=html, limit=30)
+                except ThreadsCrawlerError as exc:
+                    print(
+                        f"[threads-crawler] query failed {search_query!r}: {exc}",
+                        flush=True,
+                    )
+                    query_runs.append(
+                        {
+                            "query": search_query,
+                            "intent": intent,
+                            "status": "error",
+                            "error": str(exc),
+                        }
+                    )
+                    continue
 
-            # One bounded retry if the SSR marker is not present yet.
-            if SEARCH_RESULTS_MARKER not in html:
+                accepted_this_query = 0
+
+                for post in raw_posts:
+                    relevance = evaluate_relevance(post, matched_query=search_query)
+                    if not relevance["is_relevant"]:
+                        continue
+
+                    post_id = post.get("id")
+                    if post_id is None:
+                        continue
+                    post_id = str(post_id)
+
+                    if post_id in collected:
+                        _merge_existing_post(
+                            collected[post_id],
+                            search_query=search_query,
+                            relevance=relevance,
+                        )
+                        continue
+
+                    collected[post_id] = {
+                        **post,
+                        "matched_queries": [search_query],
+                        "categories": relevance["categories"],
+                        "vietnam_relevance": {
+                            "is_relevant": True,
+                            "language_hint": relevance["language_hint"],
+                            "signals": relevance["vietnam_signals"],
+                        },
+                        "scope_signals": relevance["scope_signals"],
+                    }
+                    accepted_this_query += 1
+                    if accepted_this_query >= per_query_cap:
+                        break
+                    if len(collected) >= limit:
+                        break
+
+                query_runs.append(
+                    {
+                        "query": search_query,
+                        "intent": intent,
+                        "status": "ok",
+                        "landed_url": landed_url,
+                        "raw_count": len(raw_posts),
+                        "accepted_count": accepted_this_query,
+                        "page_info": page_info,
+                    }
+                )
+
                 print(
-                    "[threads-crawler] searchResults not visible yet; retrying once...",
+                    f"[threads-crawler] query={search_query!r} "
+                    f"raw={len(raw_posts)} accepted={accepted_this_query} "
+                    f"total={len(collected)}/{limit}",
                     flush=True,
                 )
-                page.reload(wait_until="domcontentloaded", timeout=timeout_ms)
-                page.wait_for_timeout(3_000)
-                html = page.evaluate("document.documentElement.innerHTML")
-        except PlaywrightTimeoutError as exc:
-            raise ThreadsCrawlerError(
-                f"Threads page timed out after {timeout_ms} ms"
-            ) from exc
+
+                page.wait_for_timeout(750)
         finally:
             browser.close()
 
-    posts, page_info = parse_posts(html=html, query=query, limit=limit)
+    posts = list(collected.values())[:limit]
+
     if not posts:
-        raise ThreadsCrawlerError("Threads search loaded, but no parsable public posts were found")
+        raise ThreadsCrawlerError(
+            "No Vietnam-oriented training/court/demand posts were found"
+        )
 
     return {
         "source": "threads",
-        "query": query,
+        "seed_query": query,
+        "scope": {
+            "country": "Vietnam",
+            "topics": ["training", "court", "demand"],
+            "allow_languages": ["vi", "foreign_if_vietnam_oriented"],
+        },
         "sort": sort,
-        "search_url": search_url,
-        "collected_at": datetime.now(timezone.utc).isoformat(),
+        "collected_at": datetime.now(UTC).isoformat(),
         "count": len(posts),
-        "page_info": page_info,
+        "query_runs": query_runs,
         "posts": posts,
     }
 
+
 def save_json(payload: dict[str, Any], output_path: Path) -> Path:
-    """Write the smoke-test payload as UTF-8 pretty JSON."""
     output_path = output_path.expanduser().resolve()
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(
@@ -265,26 +397,35 @@ def save_json(payload: dict[str, Any], output_path: Path) -> Path:
 
 
 def _parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Crawl a small public Threads keyword-search sample to JSON.")
-    parser.add_argument("--query", default=DEFAULT_QUERY)
+    parser = argparse.ArgumentParser(
+        description="Crawl Vietnam-oriented Threads pickleball posts to JSON."
+    )
+    parser.add_argument(
+        "--query",
+        default=DEFAULT_QUERY,
+        help="Seed keyword; default: pickleball",
+    )
     parser.add_argument("--limit", type=int, default=DEFAULT_LIMIT)
-    parser.add_argument("--sort", choices=sorted(VALID_SORTS), default=DEFAULT_SORT)
+    parser.add_argument(
+        "--sort",
+        choices=sorted(VALID_SORTS),
+        default=DEFAULT_SORT,
+    )
+    parser.add_argument(
+        "--per-query-cap",
+        type=int,
+        default=DEFAULT_PER_QUERY_CAP,
+    )
     parser.add_argument(
         "--output",
         type=Path,
         default=default_output_path(),
-        help="JSON output path",
     )
-    parser.add_argument(
-        "--headed",
-        action="store_true",
-        help="Show Chromium window for debugging",
-    )
+    parser.add_argument("--headed", action="store_true")
     parser.add_argument(
         "--timeout-ms",
         type=int,
         default=DEFAULT_TIMEOUT_MS,
-        help="Navigation timeout in milliseconds",
     )
     return parser.parse_args()
 
@@ -292,7 +433,7 @@ def _parse_args() -> argparse.Namespace:
 def main() -> int:
     args = _parse_args()
     print(
-        f"[threads-crawler] start query={args.query!r} "
+        f"[threads-crawler] start seed={args.query!r} "
         f"sort={args.sort!r} limit={args.limit}",
         flush=True,
     )
@@ -304,6 +445,7 @@ def main() -> int:
             sort=args.sort,
             headless=not args.headed,
             timeout_ms=args.timeout_ms,
+            per_query_cap=args.per_query_cap,
         )
         output_path = save_json(payload, args.output)
     except (ThreadsCrawlerError, ValueError) as exc:
@@ -315,6 +457,7 @@ def main() -> int:
         flush=True,
     )
     return 0
+
 
 if __name__ == "__main__":
     raise SystemExit(main())
