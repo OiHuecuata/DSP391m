@@ -1,4 +1,18 @@
-.PHONY: install update format lint test run clean
+.DEFAULT_GOAL := help
+
+.PHONY: help install update format lint test run clean thread-crawler-test structure
+
+help:
+	@echo "Available commands:"
+	@echo "  make install              - Install dependencies"
+	@echo "  make update               - Update dependencies"
+	@echo "  make format               - Format code"
+	@echo "  make lint                 - Check code quality"
+	@echo "  make test                 - Run tests"
+	@echo "  make run                  - Run application"
+	@echo "  make clean                - Remove generated files"
+	@echo "  make thread-crawler-test  - Test Threads crawler"
+	@echo "  make structure            - Show project structure"
 
 install:
 	poetry install
@@ -27,19 +41,12 @@ clean:
 	rm -rf build
 	find . -type d -name "__pycache__" -exec rm -rf {} +
 
-help:
-	@echo "Available commands:"
-	@echo "  make install  - Install dependencies"
-	@echo "  make update   - Update dependencies"
-	@echo "  make format   - Format code"
-	@echo "  make lint     - Check code quality"
-	@echo "  make test     - Run tests"
-	@echo "  make run      - Run application"
-	@echo "  make clean    - Remove generated files"
-
 thread-crawler-test:
 	poetry run python \
-  		apps/collector/src/dsp_collector/sources/crawler/threads/crawler.py \
-  		--query "pickleball" \
-  		--limit 10 \
-  		--sort recent
+		apps/collector/src/dsp_collector/sources/crawler/threads/crawler.py \
+		--query "pickleball" \
+		--limit 10 \
+		--sort recent
+
+structure:
+	tree -I "node_modules"
