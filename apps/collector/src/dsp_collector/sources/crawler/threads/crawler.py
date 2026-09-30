@@ -6,9 +6,7 @@ Phase 1 only:
 This module intentionally does NOT call the normalizer, Kafka, Spark,
 Data Lake, or Data Warehouse. It exists only to inspect source data quality.
 """
-
 from __future__ import annotations
-
 import argparse
 import json
 from datetime import datetime, timezone
@@ -56,9 +54,7 @@ def build_search_url(query: str, sort: str = DEFAULT_SORT) -> str:
 
     return f"{THREADS_SEARCH_URL}?{urlencode(params)}"
 
-def _extract_search_results_candidates(
-    html: str,
-) -> list[dict[str, Any]]:
+def _extract_search_results_candidates(html: str,) -> list[dict[str, Any]]:
     """Extract every SSR searchResults object found in the page."""
     key = '"searchResults":'
     decoder = json.JSONDecoder()
@@ -103,7 +99,6 @@ def _post_from_edge(edge: dict[str, Any]) -> dict[str, Any] | None:
     user = post.get("user") or {}
     info = post.get("text_post_app_info") or {}
     caption = post.get("caption") or {}
-
     username = user.get("username")
     code = post.get("code")
     permalink = (
@@ -111,7 +106,6 @@ def _post_from_edge(edge: dict[str, Any]) -> dict[str, Any] | None:
         if username and code
         else None
     )
-
     has_media = bool(
         ((post.get("image_versions2") or {}).get("candidates") or [])
         or (post.get("video_versions") or [])
@@ -149,7 +143,6 @@ def _query_score(search_results: dict[str, Any],query: str) -> int:
         text = post.get("text") or ""
         if query in text.casefold():
             score += 1
-
     return score
 
 def parse_posts(html: str,query: str,limit: int) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
@@ -178,7 +171,6 @@ def parse_posts(html: str,query: str,limit: int) -> tuple[list[dict[str, Any]], 
     for edge in edges:
         if not isinstance(edge, dict):
             continue
-
         post = _post_from_edge(edge)
         if post is None:
             continue
@@ -188,7 +180,6 @@ def parse_posts(html: str,query: str,limit: int) -> tuple[list[dict[str, Any]], 
             if post_id in seen_ids:
                 continue
             seen_ids.add(post_id)
-
         posts.append(post)
         if len(posts) >= limit:
             break
@@ -274,9 +265,7 @@ def save_json(payload: dict[str, Any], output_path: Path) -> Path:
 
 
 def _parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Crawl a small public Threads keyword-search sample to JSON."
-    )
+    parser = argparse.ArgumentParser(description="Crawl a small public Threads keyword-search sample to JSON.")
     parser.add_argument("--query", default=DEFAULT_QUERY)
     parser.add_argument("--limit", type=int, default=DEFAULT_LIMIT)
     parser.add_argument("--sort", choices=sorted(VALID_SORTS), default=DEFAULT_SORT)
@@ -302,7 +291,6 @@ def _parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = _parse_args()
-
     print(
         f"[threads-crawler] start query={args.query!r} "
         f"sort={args.sort!r} limit={args.limit}",
