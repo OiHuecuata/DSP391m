@@ -14,14 +14,14 @@ from __future__ import annotations
 
 import argparse
 import json
-from datetime import datetime, timezone
+import sys
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlencode
 
-from playwright.sync_api import Page
+from playwright.sync_api import Page, sync_playwright
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
-from playwright.sync_api import sync_playwright
 
 try:
     from .vietnam_terms import (
@@ -39,6 +39,16 @@ except ImportError:
         build_query_plan,
         merge_adapted_post,
     )
+
+try:
+    from ....runtime.status import CrawlerStatusTracker
+except ImportError:
+    # Direct execution support:
+    # python .../threads/crawler.py
+    _SRC_ROOT = Path(__file__).resolve().parents[4]
+    if str(_SRC_ROOT) not in sys.path:
+        sys.path.insert(0, str(_SRC_ROOT))
+    from dsp_collector.runtime.status import CrawlerStatusTracker
 
 
 THREADS_SEARCH_URL = "https://www.threads.com/search/"
@@ -61,6 +71,24 @@ def _collector_root() -> Path:
 
 def default_output_path() -> Path:
     return _collector_root() / ".local" / "threads" / "pickleball_sample.json"
+
+
+def _status_update(
+    tracker: CrawlerStatusTracker | None,
+    method: str,
+    **kwargs: Any,
+) -> None:
+    """Best-effort status reporting; never change crawler behavior."""
+    if tracker is None:
+        return
+
+    try:
+        getattr(tracker, method)(**kwargs)
+    except Exception as exc:
+        print(
+            f"[threads-crawler] status update failed ({method}): {exc}",
+            flush=True,
+        )
 
 
 def build_search_url(query: str, sort: str = DEFAULT_SORT) -> str:
@@ -109,9 +137,7 @@ def _extract_search_results_candidates(html: str) -> list[dict[str, Any]]:
         cursor = object_start + consumed
 
     if not results:
-        raise ThreadsCrawlerError(
-            "No searchResults objects found in Threads page"
-        )
+        raise ThreadsCrawlerError("No searchResults objects found in Threads page")
 
     return results
 
@@ -284,6 +310,7 @@ def crawl_threads_posts(
     headless: bool = True,
     timeout_ms: int = DEFAULT_TIMEOUT_MS,
     per_query_cap: int = DEFAULT_PER_QUERY_CAP,
+    status_tracker: CrawlerStatusTracker | None = None,
 ) -> dict[str, Any]:
     """Execute the domain query plan and collect adapted posts."""
     if limit < 1:
@@ -292,6 +319,19 @@ def crawl_threads_posts(
         raise ValueError("per_query_cap must be >= 1")
 
     query_plan = build_query_plan(query)
+
+    _status_update(
+        status_tracker,
+        "start",
+        seed_query=query,
+        sort=sort,
+        target_count=limit,
+        query_plan_count=len(query_plan),
+        metadata={
+            "per_query_cap": per_query_cap,
+            "headless": headless,
+        },
+    )
 
     collected: dict[str, dict[str, Any]] = {}
     query_runs: list[dict[str, Any]] = []
@@ -307,6 +347,14 @@ def crawl_threads_posts(
             for query_spec in query_plan:
                 if len(collected) >= limit:
                     break
+
+                _status_update(
+                    status_tracker,
+                    "query_started",
+                    query=query_spec.query,
+                    kind=query_spec.kind,
+                    geo_name=query_spec.geo_name,
+                )
 
                 try:
                     raw_posts, page_info, landed_url = _collect_for_query(
@@ -330,6 +378,14 @@ def crawl_threads_posts(
                             "status": "error",
                             "error": str(exc),
                         }
+                    )
+                    _status_update(
+                        status_tracker,
+                        "query_failed",
+                        query=query_spec.query,
+                        kind=query_spec.kind,
+                        geo_name=query_spec.geo_name,
+                        error=exc,
                     )
                     continue
 
@@ -377,6 +433,18 @@ def crawl_threads_posts(
                     }
                 )
 
+                _status_update(
+                    status_tracker,
+                    "query_succeeded",
+                    query=query_spec.query,
+                    kind=query_spec.kind,
+                    geo_name=query_spec.geo_name,
+                    raw_count=len(raw_posts),
+                    accepted_count=accepted_this_query,
+                    total_collected=len(collected),
+                    landed_url=landed_url,
+                )
+
                 print(
                     f"[threads-crawler] query={query_spec.query!r} "
                     f"raw={len(raw_posts)} accepted={accepted_this_query} "
@@ -399,7 +467,7 @@ def crawl_threads_posts(
         "source": "threads",
         "seed_query": query,
         "sort": sort,
-        "collected_at": datetime.now(timezone.utc).isoformat(),
+        "collected_at": datetime.now(UTC).isoformat(),
         "count": len(posts),
         "query_runs": query_runs,
         "posts": posts,
@@ -456,6 +524,17 @@ def main() -> int:
     )
 
     try:
+        status_tracker: CrawlerStatusTracker | None = CrawlerStatusTracker(
+            source="threads"
+        )
+    except Exception as exc:
+        print(
+            f"[threads-crawler] status initialization failed: {exc}",
+            flush=True,
+        )
+        status_tracker = None
+
+    try:
         payload = crawl_threads_posts(
             query=args.query,
             limit=args.limit,
@@ -463,9 +542,21 @@ def main() -> int:
             headless=not args.headed,
             timeout_ms=args.timeout_ms,
             per_query_cap=args.per_query_cap,
+            status_tracker=status_tracker,
         )
         output_path = save_json(payload, args.output)
+        _status_update(
+            status_tracker,
+            "succeed",
+            collected_count=payload["count"],
+            output_path=output_path,
+        )
     except (ThreadsCrawlerError, ValueError) as exc:
+        _status_update(
+            status_tracker,
+            "fail",
+            error=exc,
+        )
         print(f"[threads-crawler] ERROR: {exc}", flush=True)
         return 1
 
@@ -474,7 +565,6 @@ def main() -> int:
         flush=True,
     )
     return 0
-
 
 if __name__ == "__main__":
     raise SystemExit(main())

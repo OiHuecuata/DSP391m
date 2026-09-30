@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 
-.PHONY: help install update format lint test run clean thread-crawler-test structure
+.PHONY: help install update format lint test run clean threads-crawler-test structure threads-crawler-status
 
 help:
 	@echo "Available commands:"
@@ -58,12 +58,21 @@ clean:
 
 	@echo "Clean complete."
 
-thread-crawler-test:
-	poetry run python \
-		apps/collector/src/dsp_collector/sources/crawler/threads/crawler.py \
+threads-crawler-test:
+	PYTHONPATH=apps/collector/src poetry run python \
+		-m dsp_collector.sources.crawler.threads.crawler \
 		--query "pickleball" \
 		--limit 10 \
 		--sort recent
+
+threads-crawler-status:
+	@STATUS_FILE="apps/collector/.local/threads/status.json"; \
+	if [ ! -f "$$STATUS_FILE" ]; then \
+		echo "[threads-crawler] status file not found: $$STATUS_FILE"; \
+		echo "[threads-crawler] run 'make threads-crawler-test' first"; \
+		exit 1; \
+	fi; \
+	poetry run python -m json.tool "$$STATUS_FILE"
 
 structure:
 	tree -I "node_modules"
