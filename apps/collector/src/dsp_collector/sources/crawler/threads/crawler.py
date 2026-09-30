@@ -1,30 +1,45 @@
-"""Smoke-test crawler for Vietnam-oriented pickleball Threads posts.
+"""Threads smoke-test crawler.
 
-Phase 1 only:
-    Threads search -> filtered public posts -> local JSON
+This file owns source mechanics only:
+- build/open Threads search URLs
+- parse SSR search results
+- iterate a domain-provided query plan
+- let ``vietnam_terms`` adapt/filter raw posts
+- deduplicate and write JSON
 
-Browser/search/SSR parsing lives here.
-Vietnam vocabulary and relevance rules live in ``vietnam_terms.py``.
+Vietnam/domain vocabulary and scoring do not live here.
 """
 
 from __future__ import annotations
 
 import argparse
 import json
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlencode
 
-from playwright.sync_api import Page, sync_playwright
+from playwright.sync_api import Page
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
+from playwright.sync_api import sync_playwright
 
 try:
-    from .vietnam_terms import build_scope_queries, evaluate_relevance
+    from .vietnam_terms import (
+        QuerySpec,
+        adapt_post,
+        build_query_plan,
+        merge_adapted_post,
+    )
 except ImportError:
-    # Supports direct execution:
+    # Direct execution support:
     # python .../threads/crawler.py
-    from vietnam_terms import build_scope_queries, evaluate_relevance
+    from vietnam_terms import (
+        QuerySpec,
+        adapt_post,
+        build_query_plan,
+        merge_adapted_post,
+    )
+
 
 THREADS_SEARCH_URL = "https://www.threads.com/search/"
 DEFAULT_QUERY = "pickleball"
@@ -35,18 +50,22 @@ DEFAULT_PER_QUERY_CAP = 3
 VALID_SORTS = {"top", "recent"}
 SEARCH_RESULTS_MARKER = '"searchResults":{"inform_module"'
 
+
 class ThreadsCrawlerError(RuntimeError):
     """Raised when Threads search data cannot be fetched or parsed."""
 
+
 def _collector_root() -> Path:
-    """Return ``apps/collector`` from this file's repository location."""
     return Path(__file__).resolve().parents[5]
+
 
 def default_output_path() -> Path:
     return _collector_root() / ".local" / "threads" / "pickleball_sample.json"
 
+
 def build_search_url(query: str, sort: str = DEFAULT_SORT) -> str:
     query = query.strip()
+
     if not query:
         raise ValueError("query must not be empty")
     if sort not in VALID_SORTS:
@@ -62,8 +81,8 @@ def build_search_url(query: str, sort: str = DEFAULT_SORT) -> str:
 
     return f"{THREADS_SEARCH_URL}?{urlencode(params)}"
 
+
 def _extract_search_results_candidates(html: str) -> list[dict[str, Any]]:
-    """Extract all SSR ``searchResults`` objects from rendered HTML."""
     key = '"searchResults":'
     decoder = json.JSONDecoder()
     results: list[dict[str, Any]] = []
@@ -90,12 +109,14 @@ def _extract_search_results_candidates(html: str) -> list[dict[str, Any]]:
         cursor = object_start + consumed
 
     if not results:
-        raise ThreadsCrawlerError("No searchResults objects found in Threads page")
+        raise ThreadsCrawlerError(
+            "No searchResults objects found in Threads page"
+        )
 
     return results
 
+
 def _post_from_edge(edge: dict[str, Any]) -> dict[str, Any] | None:
-    """Convert one Threads search edge into a compact raw record."""
     try:
         post = edge["node"]["thread"]["thread_items"][0]["post"]
     except (KeyError, IndexError, TypeError):
@@ -154,9 +175,9 @@ def _candidate_post_count(search_results: dict[str, Any]) -> int:
 
 
 def parse_posts(
-    html: str, limit: int
+    html: str,
+    limit: int,
 ) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
-    """Parse posts from the most plausible SSR search result candidate."""
     if limit < 1:
         raise ValueError("limit must be >= 1")
 
@@ -179,12 +200,14 @@ def parse_posts(
         post = _post_from_edge(edge)
         if post is None:
             continue
+
         post_id = post.get("id")
         if post_id is not None:
             post_id = str(post_id)
             if post_id in seen_ids:
                 continue
             seen_ids.add(post_id)
+
         posts.append(post)
 
         if len(posts) >= limit:
@@ -200,14 +223,18 @@ def _fetch_search_html(
     sort: str,
     timeout_ms: int,
 ) -> tuple[str, str]:
-    """Open one Threads search URL and return HTML plus final URL."""
     search_url = build_search_url(query, sort)
     print(f"[threads-crawler] opening: {search_url}", flush=True)
 
     try:
-        page.goto(search_url, wait_until="domcontentloaded", timeout=timeout_ms)
+        page.goto(
+            search_url,
+            wait_until="domcontentloaded",
+            timeout=timeout_ms,
+        )
         page.wait_for_timeout(2_000)
         html = page.evaluate("document.documentElement.innerHTML")
+
         if SEARCH_RESULTS_MARKER not in html:
             print(
                 "[threads-crawler] searchResults not visible yet; retrying once...",
@@ -219,7 +246,6 @@ def _fetch_search_html(
             )
             page.wait_for_timeout(3_000)
             html = page.evaluate("document.documentElement.innerHTML")
-
     except PlaywrightTimeoutError as exc:
         raise ThreadsCrawlerError(
             f"Threads page timed out after {timeout_ms} ms for query {query!r}"
@@ -228,26 +254,26 @@ def _fetch_search_html(
     return html, page.url
 
 
-def _merge_existing_post(
-    existing: dict[str, Any],
+def _collect_for_query(
+    page: Page,
     *,
-    search_query: str,
-    relevance: dict[str, Any],
-) -> None:
-    if search_query not in existing["matched_queries"]:
-        existing["matched_queries"].append(search_query)
-
-    for category in relevance["categories"]:
-        if category not in existing["categories"]:
-            existing["categories"].append(category)
-
-    for signal in relevance["vietnam_signals"]:
-        if signal not in existing["vietnam_relevance"]["signals"]:
-            existing["vietnam_relevance"]["signals"].append(signal)
-
-    for signal in relevance["scope_signals"]:
-        if signal not in existing["scope_signals"]:
-            existing["scope_signals"].append(signal)
+    query_spec: QuerySpec,
+    sort: str,
+    timeout_ms: int,
+    raw_limit: int,
+) -> tuple[list[dict[str, Any]], dict[str, Any] | None, str]:
+    """Fetch/parse one QuerySpec without applying domain rules."""
+    html, landed_url = _fetch_search_html(
+        page,
+        query=query_spec.query,
+        sort=sort,
+        timeout_ms=timeout_ms,
+    )
+    posts, page_info = parse_posts(
+        html=html,
+        limit=raw_limit,
+    )
+    return posts, page_info, landed_url
 
 
 def crawl_threads_posts(
@@ -259,13 +285,14 @@ def crawl_threads_posts(
     timeout_ms: int = DEFAULT_TIMEOUT_MS,
     per_query_cap: int = DEFAULT_PER_QUERY_CAP,
 ) -> dict[str, Any]:
-    """Collect Vietnam-oriented training/court/demand posts."""
+    """Execute the domain query plan and collect adapted posts."""
     if limit < 1:
         raise ValueError("limit must be >= 1")
     if per_query_cap < 1:
         raise ValueError("per_query_cap must be >= 1")
 
-    scope_queries = build_scope_queries(query)
+    query_plan = build_query_plan(query)
+
     collected: dict[str, dict[str, Any]] = {}
     query_runs: list[dict[str, Any]] = []
 
@@ -277,26 +304,29 @@ def crawl_threads_posts(
         )
 
         try:
-            for query_spec in scope_queries:
+            for query_spec in query_plan:
                 if len(collected) >= limit:
                     break
-                search_query = query_spec["query"]
-                intent = query_spec["intent"]
 
                 try:
-                    html, landed_url = _fetch_search_html(
-                        page, query=search_query, sort=sort, timeout_ms=timeout_ms
+                    raw_posts, page_info, landed_url = _collect_for_query(
+                        page,
+                        query_spec=query_spec,
+                        sort=sort,
+                        timeout_ms=timeout_ms,
+                        raw_limit=30,
                     )
-                    raw_posts, page_info = parse_posts(html=html, limit=30)
                 except ThreadsCrawlerError as exc:
                     print(
-                        f"[threads-crawler] query failed {search_query!r}: {exc}",
+                        f"[threads-crawler] query failed "
+                        f"{query_spec.query!r}: {exc}",
                         flush=True,
                     )
                     query_runs.append(
                         {
-                            "query": search_query,
-                            "intent": intent,
+                            "query": query_spec.query,
+                            "kind": query_spec.kind,
+                            "geo_name": query_spec.geo_name,
                             "status": "error",
                             "error": str(exc),
                         }
@@ -305,36 +335,30 @@ def crawl_threads_posts(
 
                 accepted_this_query = 0
 
-                for post in raw_posts:
-                    relevance = evaluate_relevance(post, matched_query=search_query)
-                    if not relevance["is_relevant"]:
+                for raw_post in raw_posts:
+                    adapted = adapt_post(
+                        raw_post,
+                        query_spec=query_spec,
+                    )
+                    if adapted is None:
                         continue
 
-                    post_id = post.get("id")
+                    post_id = adapted.get("id")
                     if post_id is None:
                         continue
+
                     post_id = str(post_id)
 
                     if post_id in collected:
-                        _merge_existing_post(
+                        merge_adapted_post(
                             collected[post_id],
-                            search_query=search_query,
-                            relevance=relevance,
+                            adapted,
                         )
                         continue
 
-                    collected[post_id] = {
-                        **post,
-                        "matched_queries": [search_query],
-                        "categories": relevance["categories"],
-                        "vietnam_relevance": {
-                            "is_relevant": True,
-                            "language_hint": relevance["language_hint"],
-                            "signals": relevance["vietnam_signals"],
-                        },
-                        "scope_signals": relevance["scope_signals"],
-                    }
+                    collected[post_id] = adapted
                     accepted_this_query += 1
+
                     if accepted_this_query >= per_query_cap:
                         break
                     if len(collected) >= limit:
@@ -342,8 +366,9 @@ def crawl_threads_posts(
 
                 query_runs.append(
                     {
-                        "query": search_query,
-                        "intent": intent,
+                        "query": query_spec.query,
+                        "kind": query_spec.kind,
+                        "geo_name": query_spec.geo_name,
                         "status": "ok",
                         "landed_url": landed_url,
                         "raw_count": len(raw_posts),
@@ -353,7 +378,7 @@ def crawl_threads_posts(
                 )
 
                 print(
-                    f"[threads-crawler] query={search_query!r} "
+                    f"[threads-crawler] query={query_spec.query!r} "
                     f"raw={len(raw_posts)} accepted={accepted_this_query} "
                     f"total={len(collected)}/{limit}",
                     flush=True,
@@ -367,19 +392,14 @@ def crawl_threads_posts(
 
     if not posts:
         raise ThreadsCrawlerError(
-            "No Vietnam-oriented training/court/demand posts were found"
+            "No posts matched the configured Vietnam relevance policy"
         )
 
     return {
         "source": "threads",
         "seed_query": query,
-        "scope": {
-            "country": "Vietnam",
-            "topics": ["training", "court", "demand"],
-            "allow_languages": ["vi", "foreign_if_vietnam_oriented"],
-        },
         "sort": sort,
-        "collected_at": datetime.now(UTC).isoformat(),
+        "collected_at": datetime.now(timezone.utc).isoformat(),
         "count": len(posts),
         "query_runs": query_runs,
         "posts": posts,
@@ -398,13 +418,9 @@ def save_json(payload: dict[str, Any], output_path: Path) -> Path:
 
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Crawl Vietnam-oriented Threads pickleball posts to JSON."
+        description="Crawl Vietnam-oriented Threads posts to JSON."
     )
-    parser.add_argument(
-        "--query",
-        default=DEFAULT_QUERY,
-        help="Seed keyword; default: pickleball",
-    )
+    parser.add_argument("--query", default=DEFAULT_QUERY)
     parser.add_argument("--limit", type=int, default=DEFAULT_LIMIT)
     parser.add_argument(
         "--sort",
@@ -432,6 +448,7 @@ def _parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = _parse_args()
+
     print(
         f"[threads-crawler] start seed={args.query!r} "
         f"sort={args.sort!r} limit={args.limit}",
