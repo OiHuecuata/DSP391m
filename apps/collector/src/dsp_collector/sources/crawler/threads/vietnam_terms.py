@@ -12,6 +12,7 @@ It has no Playwright, HTML, Threads SSR, or filesystem logic.
 
 from __future__ import annotations
 
+import re
 import unicodedata
 from collections.abc import Iterable
 from dataclasses import dataclass
@@ -75,6 +76,8 @@ CITY_SCOPES: tuple[GeoScope, ...] = (
             "ho chi minh",
             "tp hcm",
             "tphcm",
+            "hcm",
+            "hcmc",
             "sài gòn",
             "sai gon",
             "saigon",
@@ -141,17 +144,18 @@ LOCAL_AREA_ALIASES: dict[str, tuple[str, ...]] = {
 }
 
 TOPIC_TERMS: dict[str, tuple[str, ...]] = {
+    # Strong signals that are meaningful on their own once the post is known
+    # to be about pickleball. Ambiguous words such as plain "học", "thầy",
+    # "beginner", "looking for", and "available" are handled below with
+    # contextual co-occurrence rules instead of raw keyword matching.
     "training": (
-        "học",
         "lớp",
         "dạy",
         "huấn luyện",
         "hlv",
         "giáo viên",
-        "thầy",
+        "thầy dạy",
         "cô dạy",
-        "người mới",
-        "beginner",
         "coach",
         "coaching",
         "lesson",
@@ -159,6 +163,12 @@ TOPIC_TERMS: dict[str, tuple[str, ...]] = {
         "training",
         "practice",
         "tập luyện",
+        "tập chơi",
+        "học thầy",
+        "học đánh",
+        "bắt đầu tập",
+        "newbie",
+        "người mới",
     ),
     "court": (
         "sân",
@@ -185,16 +195,50 @@ TOPIC_TERMS: dict[str, tuple[str, ...]] = {
         "slot",
         "chơi cùng",
         "đánh cùng",
-        "looking for",
-        "need a",
-        "need an",
         "anyone know",
         "recommend",
         "recommendation",
-        "available",
-        "availability",
     ),
 }
+
+
+# Each rule is a set of phrases that must all occur in the same post. This
+# prevents generic commercial wording such as "looking for your next paddle"
+# or "available now" from being mistaken for court/training demand.
+CONTEXTUAL_TOPIC_RULES: dict[str, tuple[tuple[str, ...], ...]] = {
+    "training": (
+        ("beginner", "class"),
+        ("beginner", "lesson"),
+        ("beginner", "coach"),
+        ("beginner", "training"),
+    ),
+    "demand": (
+        ("looking for", "court"),
+        ("looking for", "courts"),
+        ("looking for", "coach"),
+        ("looking for", "class"),
+        ("looking for", "lesson"),
+        ("looking for", "players"),
+        ("looking for", "team"),
+        ("looking for", "partner"),
+        ("need a", "court"),
+        ("need a", "coach"),
+        ("need a", "class"),
+        ("need a", "team"),
+        ("available", "court"),
+        ("available", "slot"),
+        ("availability", "court"),
+        ("availability", "booking"),
+    ),
+}
+
+
+PICKLEBALL_TERMS = (
+    "pickleball",
+    "pickle ball",
+    "picketball",
+)
+
 
 VIETNAMESE_PHRASES = (
     "mọi người",
@@ -244,15 +288,51 @@ def _ascii_fold(text: str) -> str:
     return "".join(ch for ch in normalized if unicodedata.category(ch) != "Mn")
 
 
-def _term_matches(text: str, term: str) -> bool:
-    """Match both original Unicode and accent-folded forms."""
-    normalized_text = _normalize(text)
-    normalized_term = _normalize(term)
+def _tokens(text: str, *, fold_ascii: bool = False) -> tuple[str, ...]:
+    value = _ascii_fold(text) if fold_ascii else _normalize(text)
+    # ``[^\W_]`` means Unicode alphanumeric without underscore. Token-based
+    # phrase matching prevents aliases such as "can tho" from matching the
+    # beginning of "can thong tin", or "hue" from matching "thue".
+    return tuple(re.findall(r"[^\W_]+", value, flags=re.UNICODE))
 
-    if normalized_term in normalized_text:
+
+def _contains_token_phrase(
+    text_tokens: tuple[str, ...],
+    term_tokens: tuple[str, ...],
+) -> bool:
+    if not term_tokens or len(term_tokens) > len(text_tokens):
+        return False
+
+    width = len(term_tokens)
+    return any(
+        text_tokens[index : index + width] == term_tokens
+        for index in range(len(text_tokens) - width + 1)
+    )
+
+
+def _term_matches(text: str, term: str) -> bool:
+    """Match complete token phrases without collapsing Vietnamese meanings.
+
+    Accent folding is used only for terms that are already ASCII. Folding an
+    accented Vietnamese term such as ``sân`` into ``san`` would incorrectly
+    match a different word such as ``săn``. Geographic aliases that need
+    accentless support explicitly include ASCII variants (for example
+    ``hà nội`` and ``ha noi``).
+    """
+    if not text or not term:
+        return False
+
+    if _contains_token_phrase(_tokens(text), _tokens(term)):
         return True
 
-    return _ascii_fold(normalized_term) in _ascii_fold(normalized_text)
+    normalized_term = _normalize(term)
+    if normalized_term != _ascii_fold(normalized_term):
+        return False
+
+    return _contains_token_phrase(
+        _tokens(text, fold_ascii=True),
+        _tokens(term, fold_ascii=True),
+    )
 
 
 def _hits(text: str, terms: Iterable[str]) -> list[str]:
@@ -354,11 +434,21 @@ def _detect_topics(text: str) -> tuple[list[str], list[str]]:
 
     for category, terms in TOPIC_TERMS.items():
         matched = _hits(text, terms)
-        if not matched:
-            continue
+        if matched:
+            categories.append(category)
+            signals.extend(f"topic:{category}:{term}" for term in matched[:3])
 
-        categories.append(category)
-        signals.extend(f"topic:{category}:{term}" for term in matched[:3])
+    for category, rules in CONTEXTUAL_TOPIC_RULES.items():
+        for required_terms in rules:
+            if not all(_term_matches(text, term) for term in required_terms):
+                continue
+
+            if category not in categories:
+                categories.append(category)
+
+            label = "+".join(required_terms)
+            signals.append(f"topic:{category}:context:{label}")
+            break
 
     return categories, signals
 
@@ -396,6 +486,8 @@ def assess_post(
     categories, topic_signals = _detect_topics(text)
     locations = _detect_locations(text)
     vietnamese_like, language_signals = _detect_vietnamese(text)
+    subject_hits = _hits(text, PICKLEBALL_TERMS)
+    subject_present = bool(subject_hits)
 
     topic_score = 2 * len(categories)
 
@@ -414,20 +506,22 @@ def assess_post(
         vietnam_score += 1
         signals.append(f"geo:query:{query_spec.geo_name}")
 
-    if _term_matches(text, query_spec.seed):
+    if subject_present:
         topic_score += 1
-        signals.append("seed_in_text")
+        signals.extend(f"subject:{term}" for term in subject_hits[:2])
 
     # Acceptance policy:
+    # - the body itself must be about pickleball (query context cannot rescue a
+    #   tennis/other-sport result)
     # - at least one research topic must be present
-    # - strong Vietnam evidence from post text/language is enough
-    # - otherwise a geo-anchored query may be used only when topic evidence is
-    #   stronger (e.g. "looking for court", "coach", "lesson", etc.)
+    # - Vietnam evidence must come from the body/language. Query geography is
+    #   retained only as collection metadata because Threads search can be noisy.
     strong_vietnam_evidence = bool(locations) or vietnamese_like
-    query_context_fallback = query_spec.geo_key is not None and topic_score >= 3
 
-    is_relevant = bool(categories) and (
-        strong_vietnam_evidence or query_context_fallback
+    is_relevant = (
+        subject_present
+        and bool(categories)
+        and strong_vietnam_evidence
     )
 
     language_hint = "vi" if vietnamese_like else "unknown_or_non_vi"
