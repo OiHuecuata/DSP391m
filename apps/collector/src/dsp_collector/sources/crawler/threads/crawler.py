@@ -41,6 +41,13 @@ except ImportError:
     )
 
 try:
+    from .post_parser import ThreadsPostParserError, parse_post_detail
+except ImportError:
+    # Direct execution support:
+    # python .../threads/crawler.py
+    from post_parser import ThreadsPostParserError, parse_post_detail
+
+try:
     from ....runtime.status import CrawlerStatusTracker
 except ImportError:
     # Direct execution support:
@@ -302,6 +309,111 @@ def _collect_for_query(
     return posts, page_info, landed_url
 
 
+def _fetch_post_detail(
+    page: Page,
+    *,
+    post: dict[str, Any],
+    timeout_ms: int,
+) -> dict[str, Any]:
+    """Fetch one accepted Threads post and parse its full page detail."""
+    url = post.get("url")
+    if not url:
+        raise ThreadsCrawlerError(
+            f"Post {post.get('id')!r} has no canonical URL"
+        )
+
+    try:
+        page.goto(
+            url,
+            wait_until="domcontentloaded",
+            timeout=timeout_ms,
+        )
+        page.wait_for_timeout(1_500)
+        html = page.evaluate("document.documentElement.innerHTML")
+    except PlaywrightTimeoutError as exc:
+        raise ThreadsCrawlerError(
+            f"Post detail timed out after {timeout_ms} ms: {url}"
+        ) from exc
+
+    try:
+        return parse_post_detail(
+            html,
+            expected_post_id=(
+                str(post["id"])
+                if post.get("id") is not None
+                else None
+            ),
+            expected_code=post.get("code"),
+            source_url=url,
+        )
+    except ThreadsPostParserError:
+        try:
+            page.reload(
+                wait_until="domcontentloaded",
+                timeout=timeout_ms,
+            )
+            page.wait_for_timeout(2_500)
+            html = page.evaluate("document.documentElement.innerHTML")
+
+            return parse_post_detail(
+                html,
+                expected_post_id=(
+                    str(post["id"])
+                    if post.get("id") is not None
+                    else None
+                ),
+                expected_code=post.get("code"),
+                source_url=url,
+            )
+        except PlaywrightTimeoutError as exc:
+            raise ThreadsCrawlerError(
+                f"Post detail retry timed out: {url}"
+            ) from exc
+        except ThreadsPostParserError as exc:
+            raise ThreadsCrawlerError(
+                f"Failed to parse post detail: {url}: {exc}"
+            ) from exc
+
+
+def _assert_post_detail_identity(
+    post: dict[str, Any],
+    detail: dict[str, Any],
+) -> None:
+    """Reject enriched detail that does not belong to the search candidate."""
+    expected_id = str(post.get("id")) if post.get("id") is not None else None
+    actual_id = str(detail.get("id")) if detail.get("id") is not None else None
+    expected_code = post.get("code")
+    actual_code = detail.get("code")
+
+    expected_username = (post.get("user") or {}).get("username")
+    actual_username = (detail.get("author") or {}).get("username")
+
+    mismatches: list[str] = []
+
+    if expected_id is not None and actual_id != expected_id:
+        mismatches.append(f"id expected={expected_id!r} actual={actual_id!r}")
+
+    if expected_code is not None and actual_code != expected_code:
+        mismatches.append(
+            f"code expected={expected_code!r} actual={actual_code!r}"
+        )
+
+    if (
+        expected_username
+        and actual_username
+        and actual_username != expected_username
+    ):
+        mismatches.append(
+            "username "
+            f"expected={expected_username!r} actual={actual_username!r}"
+        )
+
+    if mismatches:
+        raise ThreadsCrawlerError(
+            "Post detail identity mismatch: " + "; ".join(mismatches)
+        )
+
+
 def crawl_threads_posts(
     query: str = DEFAULT_QUERY,
     limit: int = DEFAULT_LIMIT,
@@ -338,7 +450,11 @@ def crawl_threads_posts(
 
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(headless=headless)
-        page = browser.new_page(
+        search_page = browser.new_page(
+            viewport={"width": 1440, "height": 1000},
+            locale="vi-VN",
+        )
+        detail_page = browser.new_page(
             viewport={"width": 1440, "height": 1000},
             locale="vi-VN",
         )
@@ -358,7 +474,7 @@ def crawl_threads_posts(
 
                 try:
                     raw_posts, page_info, landed_url = _collect_for_query(
-                        page,
+                        search_page,
                         query_spec=query_spec,
                         sort=sort,
                         timeout_ms=timeout_ms,
@@ -390,6 +506,8 @@ def crawl_threads_posts(
                     continue
 
                 accepted_this_query = 0
+                detail_success_count = 0
+                detail_failed_count = 0
 
                 for raw_post in raw_posts:
                     adapted = adapt_post(
@@ -412,6 +530,27 @@ def crawl_threads_posts(
                         )
                         continue
 
+                    try:
+                        detail = _fetch_post_detail(
+                            detail_page,
+                            post=adapted,
+                            timeout_ms=timeout_ms,
+                        )
+                        _assert_post_detail_identity(adapted, detail)
+                        adapted["detail"] = detail
+                        adapted["detail_status"] = "ok"
+                        detail_success_count += 1
+                    except ThreadsCrawlerError as exc:
+                        adapted["detail"] = None
+                        adapted["detail_status"] = "error"
+                        adapted["detail_error"] = str(exc)
+                        detail_failed_count += 1
+                        print(
+                            f"[threads-crawler] detail failed "
+                            f"post={post_id}: {exc}",
+                            flush=True,
+                        )
+
                     collected[post_id] = adapted
                     accepted_this_query += 1
 
@@ -429,6 +568,8 @@ def crawl_threads_posts(
                         "landed_url": landed_url,
                         "raw_count": len(raw_posts),
                         "accepted_count": accepted_this_query,
+                        "detail_success_count": detail_success_count,
+                        "detail_failed_count": detail_failed_count,
                         "page_info": page_info,
                     }
                 )
@@ -448,11 +589,13 @@ def crawl_threads_posts(
                 print(
                     f"[threads-crawler] query={query_spec.query!r} "
                     f"raw={len(raw_posts)} accepted={accepted_this_query} "
+                    f"detail_ok={detail_success_count} "
+                    f"detail_failed={detail_failed_count} "
                     f"total={len(collected)}/{limit}",
                     flush=True,
                 )
 
-                page.wait_for_timeout(750)
+                search_page.wait_for_timeout(750)
         finally:
             browser.close()
 
