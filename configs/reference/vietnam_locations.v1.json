@@ -1,0 +1,107 @@
+{
+  "schema_version": "1",
+  "locations": [
+    {
+      "location_id": "vn-hanoi",
+      "canonical_name": "Hà Nội",
+      "aliases": [
+        "Hà Nội",
+        "hà nội",
+        "ha noi",
+        "hanoi",
+        "Hanoi"
+      ]
+    },
+    {
+      "location_id": "vn-ho-chi-minh-city",
+      "canonical_name": "TP. Hồ Chí Minh",
+      "aliases": [
+        "TP. Hồ Chí Minh",
+        "hồ chí minh",
+        "ho chi minh",
+        "tp hcm",
+        "tphcm",
+        "hcm",
+        "hcmc",
+        "sài gòn",
+        "sai gon",
+        "saigon",
+        "TP HCM",
+        "Sài Gòn",
+        "Ho Chi Minh"
+      ]
+    },
+    {
+      "location_id": "vn-da-nang",
+      "canonical_name": "Đà Nẵng",
+      "aliases": [
+        "Đà Nẵng",
+        "đà nẵng",
+        "da nang",
+        "Da Nang"
+      ]
+    },
+    {
+      "location_id": "vn-hai-phong",
+      "canonical_name": "Hải Phòng",
+      "aliases": [
+        "Hải Phòng",
+        "hải phòng",
+        "hai phong"
+      ]
+    },
+    {
+      "location_id": "vn-can-tho",
+      "canonical_name": "Cần Thơ",
+      "aliases": [
+        "Cần Thơ",
+        "cần thơ",
+        "can tho"
+      ]
+    },
+    {
+      "location_id": "vn-hue",
+      "canonical_name": "Huế",
+      "aliases": [
+        "Huế",
+        "huế",
+        "hue"
+      ]
+    },
+    {
+      "location_id": "vn-nha-trang",
+      "canonical_name": "Nha Trang",
+      "aliases": [
+        "Nha Trang",
+        "nha trang"
+      ]
+    },
+    {
+      "location_id": "vn-vung-tau",
+      "canonical_name": "Vũng Tàu",
+      "aliases": [
+        "Vũng Tàu",
+        "vũng tàu",
+        "vung tau"
+      ]
+    },
+    {
+      "location_id": "vn-binh-duong",
+      "canonical_name": "Bình Dương",
+      "aliases": [
+        "Bình Dương",
+        "bình dương",
+        "binh duong"
+      ]
+    },
+    {
+      "location_id": "vn-dong-nai",
+      "canonical_name": "Đồng Nai",
+      "aliases": [
+        "Đồng Nai",
+        "đồng nai",
+        "dong nai"
+      ]
+    }
+  ]
+}

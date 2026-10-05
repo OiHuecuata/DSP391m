@@ -1,0 +1,19 @@
+{
+  "run_name": "dsp391-social-activity-daily",
+  "tasks": [
+    {
+      "task_key": "build_social_activity_daily",
+      "existing_cluster_id": "${DATABRICKS_CLUSTER_ID}",
+      "python_wheel_task": {
+        "package_name": "dsp391-spark-jobs",
+        "entry_point": "social_activity_daily",
+        "parameters": [
+          "--lakehouse-base-uri", "${DSP_LAKEHOUSE_BASE_URI}",
+          "--social-posts-path", "${DSP_DELTA_SOCIAL_POSTS_PATH}",
+          "--gold-path", "${DSP_DELTA_SOCIAL_ACTIVITY_DAILY_PATH}"
+        ]
+      },
+      "libraries": [{"whl": "${DSP_DATABRICKS_WHEEL_URI}"}]
+    }
+  ]
+}

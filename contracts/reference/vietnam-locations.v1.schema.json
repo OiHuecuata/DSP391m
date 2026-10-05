@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Vietnam named-place alias catalog v1",
+  "description": "Explicit aliases from collector CITY_SCOPES. Named-place keys, not authoritative administrative codes or boundary equivalences. Global ID and normalized-alias uniqueness are checked by the loader.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "locations"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1"
+    },
+    "locations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "location_id",
+          "canonical_name",
+          "aliases"
+        ],
+        "properties": {
+          "location_id": {
+            "type": "string",
+            "pattern": "^vn-[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "canonical_name": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "aliases": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            }
+          }
+        }
+      }
+    }
+  }
+}

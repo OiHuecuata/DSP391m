@@ -7,12 +7,18 @@ PYTHON ?= python3
 BACKEND_URL ?= http://localhost:8080
 KAFKA_SOCIAL_POST_TOPIC ?= $(shell PYTHONPATH=apps/collector/src poetry run python -c 'from dsp_collector.runtime.config import KAFKA_SOCIAL_POST_TOPIC; print(KAFKA_SOCIAL_POST_TOPIC)')
 
+DSP_JAVA_HOME ?= $(if $(JAVA_HOME),$(JAVA_HOME),$(CURDIR)/.local/tools/java17)
+SPARK_PYTHON = JAVA_HOME="$(DSP_JAVA_HOME)" PYTHONPATH=pipelines/spark/src:apps/collector/src poetry run python
+SPARK_ARTIFACT ?=
+
 .PHONY: help install update format lint test run clean threads-crawler-test \
 	structure threads-crawler-status health_backend backend-run backend-test \
 	backend-build backend-vet backend-health backend-status frontend-run \
 	frontend-test frontend-lint frontend-build backend-check frontend-check check \
 	collect-threads collect-pbplus collect-threads-kafka kafka-up kafka-down \
-	kafka-status kafka-topic kafka-consume-social kafka-logs
+	kafka-status kafka-topic kafka-consume-social kafka-logs \
+	spark-test spark-bronze-threads spark-bronze-pbplus spark-pbplus-silver \
+	spark-social-stream spark-social-stream-once delta-inspect-social delta-inspect-courts spark-gold-social delta-inspect-gold-social databricks-build-wheel databricks-validate databricks-submit-social-gold
 
 help:
 	@echo "Available commands:"
@@ -48,6 +54,18 @@ help:
 	@echo "  make kafka-topic          - Create/describe the configured SocialPost topic"
 	@echo "  make kafka-status / kafka-logs - Inspect local Kafka"
 	@echo "  make kafka-consume-social - Read SocialPost events with keys"
+	@echo "  make spark-test           - Run Spark/Delta tests without Kafka or AWS"
+	@echo "  make spark-bronze-threads / spark-bronze-pbplus - Ingest SPARK_ARTIFACT"
+	@echo "  make spark-pbplus-silver   - Ingest Court observations from SPARK_ARTIFACT"
+	@echo "  make spark-social-stream / spark-social-stream-once - Stream Kafka to Delta"
+	@echo "  make delta-inspect-social / delta-inspect-courts - Inspect Delta tables"
+	@echo "  make spark-gold-court-supply / delta-inspect-gold-court-supply - Build/inspect venue supply"
+	@echo "  make location-reference-validate - Check the versioned alias catalog"
+	@echo "  make spark-gold-social     - Rebuild daily mentioned-location activity"
+	@echo "  make delta-inspect-gold-social - Inspect the Gold activity table"
+	@echo "  make databricks-build-wheel - Package existing jobs and contracts"
+	@echo "  make databricks-validate    - Validate/render configured job locally"
+	@echo "  make databricks-submit-social-gold - Submit to explicitly configured compute"
 	@echo "  make structure            - Show project structure"
 	@echo ""
 	@echo "HTTP helpers use BACKEND_URL=$(BACKEND_URL) (override with make BACKEND_URL=...)."
@@ -190,3 +208,59 @@ check: backend-check frontend-check
 
 # This legacy name has always started the server rather than checked its health.
 health_backend: backend-run
+
+# Spark jobs are independent of collector commands. Artifacts are read-only inputs.
+spark-test:
+	$(SPARK_PYTHON) -m unittest discover -s pipelines/spark/test -p 'test_*.py'
+
+spark-bronze-threads:
+	@test -n "$(SPARK_ARTIFACT)" || (echo "Set SPARK_ARTIFACT to a Threads Bronze file"; exit 2)
+	$(SPARK_PYTHON) -m dsp_spark.jobs.batch.ingest_bronze --source threads --artifact "$(SPARK_ARTIFACT)"
+
+spark-bronze-pbplus:
+	@test -n "$(SPARK_ARTIFACT)" || (echo "Set SPARK_ARTIFACT to a PBPlus Bronze file"; exit 2)
+	$(SPARK_PYTHON) -m dsp_spark.jobs.batch.ingest_bronze --source pbplus --artifact "$(SPARK_ARTIFACT)"
+
+spark-pbplus-silver:
+	@test -n "$(SPARK_ARTIFACT)" || (echo "Set SPARK_ARTIFACT to a PBPlus Silver file"; exit 2)
+	$(SPARK_PYTHON) -m dsp_spark.jobs.batch.ingest_pbplus --artifact "$(SPARK_ARTIFACT)"
+
+spark-social-stream:
+	$(SPARK_PYTHON) -m dsp_spark.jobs.streaming.social_kafka_to_delta
+
+spark-social-stream-once:
+	$(SPARK_PYTHON) -m dsp_spark.jobs.streaming.social_kafka_to_delta --available-now
+
+delta-inspect-social:
+	$(SPARK_PYTHON) -m dsp_spark.jobs.batch.inspect_delta --table social_posts
+
+delta-inspect-courts:
+	$(SPARK_PYTHON) -m dsp_spark.jobs.batch.inspect_delta --table courts
+
+spark-gold-social:
+	$(SPARK_PYTHON) -m dsp_spark.jobs.batch.build_social_activity_daily
+
+delta-inspect-gold-social:
+	$(SPARK_PYTHON) -m dsp_spark.jobs.batch.inspect_delta --table social_activity_daily
+
+databricks-build-wheel:
+	poetry run python infra/databricks/build_wheel.py
+
+databricks-validate:
+	sh scripts/submit_databricks_job.sh --dry-run
+
+databricks-submit-social-gold:
+	sh scripts/submit_databricks_job.sh
+
+.PHONY: spark-gold-court-supply delta-inspect-gold-court-supply location-reference-validate databricks-validate-court-supply
+spark-gold-court-supply:
+	$(SPARK_PYTHON) -m dsp_spark.jobs.batch.build_court_supply_by_location
+
+delta-inspect-gold-court-supply:
+	$(SPARK_PYTHON) -m dsp_spark.jobs.batch.inspect_delta --table court_supply_by_location
+
+location-reference-validate:
+	$(SPARK_PYTHON) -m dsp_spark.processing.transform.location
+
+databricks-validate-court-supply:
+	sh scripts/submit_databricks_job.sh --job court_supply_by_location --dry-run
