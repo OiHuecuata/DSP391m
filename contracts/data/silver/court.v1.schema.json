@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Normalized court v1",
+  "description": "One court listing entity observed in a collection run. PBPlus is the first adapter. All properties are required; unavailable optional scalars are null. Geography may be optional enrichment and does not establish an authoritative venue location. Raw HTML, source payloads and administrative geography are excluded.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "record_id", "source", "source_record_id", "source_url",
+    "source_code", "court_name", "number_of_courts", "has_media", "address",
+    "latitude", "longitude", "address_source", "geo_status", "run_id",
+    "collected_at", "geocoded_at", "normalized_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1",
+      "description": "Contract version, following the existing string version convention."
+    },
+    "record_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Deterministic entity identity: source + ':' + source_record_id. PBPlus emits pbplus:<full source URL>, without hashing or random UUIDs. Independent of run_id and timestamps."
+    },
+    "source": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$",
+      "description": "Source namespace; the PBPlus adapter emits pbplus."
+    },
+    "source_record_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Current source identity as a string. PBPlus uses a usable crawler id URL, falling back to url. No native PBPlus court ID is verified. URL identity can change with source URLs; components are not removed or rewritten."
+    },
+    "source_url": {
+      "type": ["string", "null"],
+      "format": "uri",
+      "pattern": "^https?://",
+      "description": "Usable crawler-provided URL preserved separately from identity; null if unavailable."
+    },
+    "source_code": {
+      "$ref": "#/$defs/nullable_string",
+      "description": "Crawler-provided listing code, currently derived from the URL path slug; not a verified native ID."
+    },
+    "court_name": {
+      "$ref": "#/$defs/nullable_string",
+      "description": "Crawler-provided court listing name; null when unavailable."
+    },
+    "number_of_courts": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "description": "Crawler-provided count, normalized from a nonnegative integer, integral float, or decimal string. Missing/unusable values remain null; zero is emitted only when explicitly supplied."
+    },
+    "has_media": {
+      "type": ["boolean", "null"],
+      "description": "Crawler-provided media flag. True and false are preserved; unavailable or nonboolean values are null."
+    },
+    "address": {
+      "$ref": "#/$defs/nullable_string",
+      "description": "Supplied address text, which may come from the venue page or a court-name fallback used for geocoding. Enriched/inferred text is not a guaranteed authoritative venue address. No address inference occurs in normalization."
+    },
+    "latitude": {
+      "type": ["number", "null"],
+      "minimum": -90,
+      "maximum": 90,
+      "description": "Optional supplied geocoding enrichment. Finite numeric values/strings within bounds become numbers; malformed or out-of-range values become null. Does not assert a verified venue location."
+    },
+    "longitude": {
+      "type": ["number", "null"],
+      "minimum": -180,
+      "maximum": 180,
+      "description": "Optional supplied geocoding enrichment. Same validation as latitude, handled independently; missing coordinates are never inferred."
+    },
+    "address_source": {
+      "type": ["string", "null"],
+      "enum": ["venue_page", "court_name_fallback", null],
+      "description": "Explicit address provenance supplied by geo.py. Null means no provenance was reported; normalization does not infer it from address text."
+    },
+    "geo_status": {
+      "type": ["string", "null"],
+      "enum": ["ok", "ok_region_unverified", "missing_address", "not_found", "outside_vietnam", "region_mismatch", "error", null],
+      "description": "Explicit source geocode_status report. Null means no report. Preserved independently of normalizer coordinate validation; an ok report is not authoritative location verification and can coexist with null coordinates. Unknown reported labels fail explicitly."
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Caller-supplied collection observation/run identity; does not affect entity identity."
+    },
+    "collected_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Required caller-supplied crawler envelope collection/completion time, independent of enrichment and normalization. Input requires an explicit timezone; adapter output is UTC with Z."
+    },
+    "geocoded_at": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Optional caller-supplied envelope geography enrichment completion time. Null when unavailable. Does not imply per-record geocoding success. Input requires a timezone; adapter output is UTC with Z."
+    },
+    "normalized_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Normalization execution time in UTC with Z, generated when omitted or supplied explicitly for reproducible calls. No fixed fractional-second precision is imposed by the schema."
+    }
+  },
+  "$defs": {
+    "nullable_string": {"type": ["string", "null"], "minLength": 1}
+  }
+}

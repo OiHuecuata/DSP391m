@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Threads crawl Bronze v1",
+  "description": "Replayable Threads crawler envelope, preserved with only schema_version and run_id added by the local collection job. Collected_at is the crawler's collection/completion timestamp, not publication time. Known stable fields are described without flattening or normalizing posts. Extra source/enrichment fields remain preserved and allowed.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["schema_version", "source", "run_id", "seed_query", "sort", "collected_at", "count", "query_runs", "posts"],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1"},
+    "source": {"type": "string", "const": "threads"},
+    "run_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$",
+      "description": "Collection observation identity shared with crawler status and Silver. Safe as a run-scoped local filename; not a post entity ID."
+    },
+    "seed_query": {"type": "string", "minLength": 1},
+    "sort": {"type": "string", "enum": ["recent", "top"]},
+    "collected_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timezone-aware crawler completion time, retained verbatim for replay and passed unchanged to each normalizer call."
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of posts; the job additionally checks count == len(posts), which JSON Schema cannot express here."
+    },
+    "query_runs": {"type": "array", "items": {"$ref": "#/$defs/query_run"}},
+    "posts": {"type": "array", "items": {"$ref": "#/$defs/search_post"}}
+  },
+  "$defs": {
+    "nullable_string": {"type": ["string", "null"]},
+    "source_id": {"type": ["string", "integer", "null"]},
+    "counter": {
+      "type": ["integer", "null"],
+      "description": "Crawler-provided engagement value. Search may already default missing source counters to zero; Bronze does not change that meaning."
+    },
+    "string_list": {"type": "array", "items": {"type": "string"}},
+    "query_run": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["query", "kind", "geo_name", "status"],
+      "properties": {
+        "query": {"type": "string"},
+        "kind": {"type": "string"},
+        "geo_name": {"$ref": "#/$defs/nullable_string"},
+        "status": {"type": "string", "enum": ["ok", "error"]},
+        "error": {"type": "string"},
+        "landed_url": {"type": "string"},
+        "raw_count": {"type": "integer", "minimum": 0},
+        "accepted_count": {"type": "integer", "minimum": 0},
+        "detail_success_count": {"type": "integer", "minimum": 0},
+        "detail_failed_count": {"type": "integer", "minimum": 0},
+        "page_info": {
+          "type": ["object", "null"],
+          "additionalProperties": true,
+          "description": "Source-native search pagination metadata."
+        }
+      }
+    },
+    "query_context": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "query": {"type": "string"},
+        "kind": {"type": "string"},
+        "geo_key": {"$ref": "#/$defs/nullable_string"},
+        "geo_name": {"$ref": "#/$defs/nullable_string"}
+      },
+      "description": "Collection context, including query geography; not verified post geography."
+    },
+    "search_post": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Unchanged crawler search/adapted record. Optional known fields allow imperfect records to be retained for inspection even when Silver rejects them. Successful detail enrichment is never required.",
+      "properties": {
+        "id": {"$ref": "#/$defs/source_id"},
+        "code": {"$ref": "#/$defs/nullable_string"},
+        "url": {"$ref": "#/$defs/nullable_string"},
+        "text": {"$ref": "#/$defs/nullable_string"},
+        "taken_at": {"type": ["number", "null"], "description": "Unchanged source publication time in Unix seconds."},
+        "like_count": {"$ref": "#/$defs/counter"},
+        "reply_count": {"$ref": "#/$defs/counter"},
+        "repost_count": {"$ref": "#/$defs/counter"},
+        "quote_count": {"$ref": "#/$defs/counter"},
+        "is_reply": {"type": ["boolean", "null"]},
+        "media_type": {"type": ["integer", "null"]},
+        "has_media": {"type": ["boolean", "null"]},
+        "user": {
+          "type": ["object", "null"],
+          "additionalProperties": true,
+          "properties": {
+            "pk": {"$ref": "#/$defs/source_id"},
+            "username": {"$ref": "#/$defs/nullable_string"},
+            "full_name": {"$ref": "#/$defs/nullable_string"},
+            "is_verified": {"type": ["boolean", "null"]}
+          }
+        },
+        "matched_queries": {"$ref": "#/$defs/string_list"},
+        "query_contexts": {"type": "array", "items": {"$ref": "#/$defs/query_context"}},
+        "categories": {"$ref": "#/$defs/string_list"},
+        "detected_locations": {"$ref": "#/$defs/string_list", "description": "Inferred text mentions retained from relevance adaptation."},
+        "relevance": {
+          "type": ["object", "null"],
+          "additionalProperties": true,
+          "properties": {
+            "vietnam_score": {"type": "integer"},
+            "topic_score": {"type": "integer"},
+            "language_hint": {"type": "string"},
+            "signals": {"$ref": "#/$defs/string_list"}
+          }
+        },
+        "detail": {
+          "type": ["object", "null"],
+          "additionalProperties": true,
+          "description": "Optional source-specific detail projection, including open-ended raw_payload, media and visible replies. Retained unchanged; null on failed enrichment."
+        },
+        "detail_status": {"type": ["string", "null"], "enum": ["ok", "error", null]},
+        "detail_error": {"$ref": "#/$defs/nullable_string"}
+      }
+    }
+  }
+}

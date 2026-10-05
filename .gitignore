@@ -284,6 +284,9 @@ docs/
 
 # Local for testing
 data/
+# Keep versioned data contracts trackable; runtime data elsewhere stays ignored.
+!/contracts/data/
+!/contracts/data/**
 .local/
 tmp/
 

@@ -1,0 +1,182 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Normalized social post v1",
+  "description": "One social-post entity observed in one collection run. Source-specific payloads, replies and media objects are excluded. All properties are required; unavailable optional scalars are null and absent context lists are empty. Threads is the first source adapter. Entity identity is independent of observation timestamps and run_id.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "record_id", "source", "source_record_id", "source_url",
+    "source_code", "text", "published_at", "author_id", "author_username",
+    "author_full_name", "author_is_verified", "like_count", "reply_count",
+    "repost_count", "quote_count", "is_reply", "media_type", "has_media",
+    "run_id", "collected_at", "normalized_at", "matched_queries",
+    "query_contexts", "categories", "detected_locations", "vietnam_score",
+    "topic_score", "language_hint", "relevance_signals", "detail_status",
+    "detail_error"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1",
+      "description": "Contract version, following the repository's string version convention."
+    },
+    "record_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Deterministic entity identity: source + ':' + source_record_id. For Threads, threads:<canonical outer post ID>. No random UUID or run identifier."
+    },
+    "source": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$",
+      "description": "Source namespace; the Threads adapter emits threads."
+    },
+    "source_record_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Canonical source post ID, retained as a string to avoid numeric precision loss. Threads uses the required outer search id, originally pk, regardless of enrichment."
+    },
+    "source_url": {
+      "type": ["string", "null"],
+      "format": "uri",
+      "pattern": "^https?://",
+      "description": "Source post URL from eligible detail, then search; null when unavailable."
+    },
+    "source_code": {
+      "$ref": "#/$defs/nullable_string",
+      "description": "Optional source shortcode. A supplied detail code conflicting with search makes the entire detail ineligible."
+    },
+    "text": {
+      "type": ["string", "null"],
+      "description": "Post text from eligible detail, then search. Empty text is valid; no available text is null."
+    },
+    "published_at": {
+      "$ref": "#/$defs/nullable_utc_timestamp",
+      "description": "Source publication time derived from Unix taken_at seconds. Eligible usable detail wins, then search; unavailable/invalid time is null, never now."
+    },
+    "author_id": {
+      "$ref": "#/$defs/nullable_string",
+      "description": "Source author identifier: Threads detail author.id, then search user.pk."
+    },
+    "author_username": {
+      "$ref": "#/$defs/nullable_string",
+      "description": "Detail author.username, then search user.username. Conflicting nonempty usernames make detail ineligible."
+    },
+    "author_full_name": {
+      "$ref": "#/$defs/nullable_string",
+      "description": "Detail author.full_name, then search user.full_name."
+    },
+    "author_is_verified": {
+      "$ref": "#/$defs/nullable_boolean",
+      "description": "Source-provided verification flag; false is preserved."
+    },
+    "like_count": {
+      "$ref": "#/$defs/nullable_counter",
+      "description": "Detail engagement.like_count, then search like_count. Crawler defaults can make missing source values indistinguishable from observed zero."
+    },
+    "reply_count": {
+      "$ref": "#/$defs/nullable_counter",
+      "description": "Detail engagement.reply_count, then search reply_count (direct_reply_count in the raw source). Not visible_reply_count; crawler zero defaults apply."
+    },
+    "repost_count": {
+      "$ref": "#/$defs/nullable_counter",
+      "description": "Detail engagement.repost_count, then search repost_count; crawler zero defaults apply."
+    },
+    "quote_count": {
+      "$ref": "#/$defs/nullable_counter",
+      "description": "Detail engagement.quote_count, then search quote_count; crawler zero defaults apply."
+    },
+    "is_reply": {
+      "$ref": "#/$defs/nullable_boolean",
+      "description": "Source reply flag from eligible detail, then search."
+    },
+    "media_type": {
+      "$ref": "#/$defs/nullable_counter",
+      "description": "Source-native numeric media type code, interpreted within source; Threads detail then search. No invented cross-platform media taxonomy."
+    },
+    "has_media": {
+      "$ref": "#/$defs/nullable_boolean",
+      "description": "True for eligible detail with a usable extracted image/video URL; otherwise search has_media. Empty detail media does not prove absence, since extraction is partial."
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Caller-supplied collection run/observation identifier; not entity identity."
+    },
+    "collected_at": {
+      "$ref": "#/$defs/utc_timestamp",
+      "description": "Caller-supplied collection time. Current Threads output supplies an envelope-level timestamp at collection completion, not per-post fetch time."
+    },
+    "normalized_at": {
+      "$ref": "#/$defs/utc_timestamp",
+      "description": "Normalization time in UTC. Generated when omitted by the caller; may be explicitly supplied for deterministic replay."
+    },
+    "matched_queries": {
+      "$ref": "#/$defs/string_list",
+      "description": "Search queries associated with this observation, preserving source order and values."
+    },
+    "query_contexts": {
+      "type": "array",
+      "description": "Collection query context, including query geography. This is not definitive post geography.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["query", "kind", "geo_key", "geo_name"],
+        "properties": {
+          "query": {"type": "string", "minLength": 1},
+          "kind": {"type": "string", "minLength": 1},
+          "geo_key": {"type": ["string", "null"]},
+          "geo_name": {"type": ["string", "null"]}
+        }
+      }
+    },
+    "categories": {
+      "$ref": "#/$defs/string_list",
+      "description": "Existing search-text topic labels from relevance adaptation, not recomputed from detail text."
+    },
+    "detected_locations": {
+      "$ref": "#/$defs/string_list",
+      "description": "Inferred text mentions from relevance adaptation. These are not verified post locations, coordinates, administrative geography, or canonical geographic entities."
+    },
+    "vietnam_score": {
+      "$ref": "#/$defs/nullable_counter",
+      "description": "Existing relevance.vietnam_score heuristic, preserved without rescoring."
+    },
+    "topic_score": {
+      "$ref": "#/$defs/nullable_counter",
+      "description": "Existing relevance.topic_score heuristic, preserved without rescoring."
+    },
+    "language_hint": {
+      "$ref": "#/$defs/nullable_string",
+      "description": "Existing relevance.language_hint heuristic; not an ML language prediction."
+    },
+    "relevance_signals": {
+      "$ref": "#/$defs/string_list",
+      "description": "Existing relevance.signals evidence, including separate geo:text and geo:query provenance."
+    },
+    "detail_status": {
+      "type": ["string", "null"],
+      "enum": ["ok", "error", null],
+      "description": "Crawler-reported enrichment state. Null means no reported state. An ok report does not override normalizer identity checks; unsafe detail is ignored without rewriting this source report."
+    },
+    "detail_error": {
+      "$ref": "#/$defs/nullable_string",
+      "description": "Crawler-reported error text when present; null otherwise. Failure never invalidates an otherwise valid search post."
+    }
+  },
+  "$defs": {
+    "nullable_string": {"type": ["string", "null"], "minLength": 1},
+    "nullable_boolean": {"type": ["boolean", "null"]},
+    "nullable_counter": {"type": ["integer", "null"], "minimum": 0},
+    "string_list": {"type": "array", "items": {"type": "string"}},
+    "utc_timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{6}Z$"
+    },
+    "nullable_utc_timestamp": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{6}Z$"
+    }
+  }
+}

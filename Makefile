@@ -9,7 +9,8 @@ BACKEND_URL ?= http://localhost:8080
 .PHONY: help install update format lint test run clean threads-crawler-test \
 	structure threads-crawler-status health_backend backend-run backend-test \
 	backend-build backend-vet backend-health backend-status frontend-run \
-	frontend-test frontend-lint frontend-build backend-check frontend-check check
+	frontend-test frontend-lint frontend-build backend-check frontend-check check \
+	collect-threads
 
 help:
 	@echo "Available commands:"
@@ -38,6 +39,7 @@ help:
 	@echo "  make clean                - Remove generated files"
 	@echo "  make threads-crawler-test - Test Threads crawler"
 	@echo "  make threads-crawler-status - Format the latest Threads snapshot"
+	@echo "  make collect-threads      - Collect Threads into local Bronze/Silver JSON"
 	@echo "  make structure            - Show project structure"
 	@echo ""
 	@echo "HTTP helpers use BACKEND_URL=$(BACKEND_URL) (override with make BACKEND_URL=...)."
@@ -93,6 +95,10 @@ threads-crawler-test:
 		--limit 10 \
 		--sort recent
 
+collect-threads:
+	PYTHONPATH=apps/collector/src poetry run python \
+		-m dsp_collector.jobs.collect_social
+
 threads-crawler-status:
 	@STATUS_FILE="apps/collector/.local/threads/status.json"; \
 	if [ ! -f "$$STATUS_FILE" ]; then \
@@ -103,7 +109,7 @@ threads-crawler-status:
 	poetry run python -m json.tool "$$STATUS_FILE"
 
 structure:
-	tree -I "node_modules"
+	tree -I "node_modules|__pycache__|*.pyc|.git|.next|test-results"
 
 # Run Go commands inside the backend's own module. Each recipe retains its cwd.
 backend-run:
