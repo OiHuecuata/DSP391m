@@ -6,11 +6,12 @@ import argparse
 import json
 import re
 import unicodedata
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from time import sleep
 from typing import Any
 
+from geopy.exc import GeocoderServiceError
 from geopy.geocoders import Nominatim
 from tqdm import tqdm
 
@@ -37,9 +38,7 @@ def extract_address(name: str | None) -> str:
 def _normalize_place(value: str) -> str:
     folded = unicodedata.normalize("NFD", value.casefold())
     folded = "".join(
-        character
-        for character in folded
-        if unicodedata.category(character) != "Mn"
+        character for character in folded if unicodedata.category(character) != "Mn"
     )
     folded = re.sub(
         r"\b(tinh|thanh pho|province|city|state|municipality)\b",
@@ -72,7 +71,7 @@ def geocode_address(
 
     try:
         location = geolocator.geocode(f"{address}, Vietnam", timeout=10)
-    except Exception as exc:
+    except GeocoderServiceError as exc:
         print(f"[pbplus-geo] geocoding failed for {address!r}: {exc}")
         return {"status": "error", "error": str(exc)}
 
@@ -149,7 +148,7 @@ def geocode_payload(
     locations: dict[str, dict[str, Any]] = {}
     posts = payload.get("posts")
     if not isinstance(posts, list):
-        raise ValueError("input JSON must contain a 'posts' list")
+        raise TypeError("input JSON must contain a 'posts' list")
 
     for post in tqdm(posts, desc="Geocoding PBPlus courts"):
         name = post.get("court_name") or post.get("name")
@@ -172,7 +171,7 @@ def geocode_payload(
             if result.get(key) is not None:
                 post[f"geocode_{key}"] = result[key]
 
-    payload["geocoded_at"] = datetime.now(timezone.utc).isoformat()
+    payload["geocoded_at"] = datetime.now(UTC).isoformat()
     return payload
 
 
@@ -211,9 +210,9 @@ def main() -> int:
     try:
         payload = json.loads(input_path.read_text(encoding="utf-8"))
         if not isinstance(payload, dict):
-            raise ValueError("input JSON must be an object")
+            raise TypeError("input JSON must be an object")
         geocoded_payload = geocode_payload(payload, delay=args.delay)
-    except (json.JSONDecodeError, OSError, ValueError) as exc:
+    except (json.JSONDecodeError, OSError, TypeError, ValueError) as exc:
         print(f"[pbplus-geo] ERROR: {exc}")
         return 1
 

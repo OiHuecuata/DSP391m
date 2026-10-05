@@ -10,7 +10,7 @@ BACKEND_URL ?= http://localhost:8080
 	structure threads-crawler-status health_backend backend-run backend-test \
 	backend-build backend-vet backend-health backend-status frontend-run \
 	frontend-test frontend-lint frontend-build backend-check frontend-check check \
-	collect-threads
+	collect-threads collect-pbplus
 
 help:
 	@echo "Available commands:"
@@ -40,6 +40,7 @@ help:
 	@echo "  make threads-crawler-test - Test Threads crawler"
 	@echo "  make threads-crawler-status - Format the latest Threads snapshot"
 	@echo "  make collect-threads      - Collect Threads into local Bronze/Silver JSON"
+	@echo "  make collect-pbplus       - Collect PBPlus into local Bronze/Silver JSON"
 	@echo "  make structure            - Show project structure"
 	@echo ""
 	@echo "HTTP helpers use BACKEND_URL=$(BACKEND_URL) (override with make BACKEND_URL=...)."
@@ -98,6 +99,10 @@ threads-crawler-test:
 collect-threads:
 	PYTHONPATH=apps/collector/src poetry run python \
 		-m dsp_collector.jobs.collect_social
+
+collect-pbplus:
+	PYTHONPATH=apps/collector/src poetry run python \
+		-m dsp_collector.jobs.collect_courts
 
 threads-crawler-status:
 	@STATUS_FILE="apps/collector/.local/threads/status.json"; \

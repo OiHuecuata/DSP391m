@@ -13,9 +13,7 @@ import argparse
 import copy
 import json
 import logging
-import os
 import re
-import tempfile
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
@@ -24,6 +22,7 @@ from typing import Any, Literal
 from uuid import uuid4
 
 from ..normalizers.social_post import normalize_social_post
+from ..runtime.artifacts import write_json_atomic as _write_json_atomic
 from ..runtime.config import default_artifact_root
 from ..runtime.status import CrawlerStatusTracker
 
@@ -81,30 +80,6 @@ def _validate_envelope(envelope: Mapping[str, Any]) -> None:
         raise ValueError("collected_at must be a timezone-aware datetime string")
     if envelope.get("schema_version", "1") != "1":
         raise ValueError("unsupported Bronze schema_version")
-
-
-def _write_json_atomic(path: Path, payload: Mapping[str, Any]) -> None:
-    """Commit a UTF-8 JSON file with no partially written destination.
-
-    Existing artifacts are rejected. Run IDs must be unique between concurrent
-    processes; this local single-run boundary does not implement writer locking.
-    """
-    serialized = (
-        json.dumps(payload, ensure_ascii=False, indent=2, allow_nan=False) + "\n"
-    )
-    path.parent.mkdir(parents=True, exist_ok=True)
-    if path.exists():
-        raise FileExistsError(f"artifact already exists: {path}")
-    fd, name = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=path.parent)
-    temporary = Path(name)
-    try:
-        with os.fdopen(fd, "w", encoding="utf-8") as file:
-            file.write(serialized)
-            file.flush()
-            os.fsync(file.fileno())
-        os.replace(temporary, path)
-    finally:
-        temporary.unlink(missing_ok=True)
 
 
 def process_threads_envelope(

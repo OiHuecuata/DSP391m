@@ -20,6 +20,7 @@ sys.path.insert(0, str(COLLECTOR_ROOT / "src"))
 
 from dsp_collector.jobs import collect_social as job
 from dsp_collector.normalizers.social_post import normalize_social_post
+from dsp_collector.runtime import artifacts
 from dsp_collector.runtime.config import default_artifact_root
 from dsp_collector.runtime.status import CrawlerStatusTracker
 
@@ -529,8 +530,8 @@ class CollectSocialTests(unittest.TestCase):
 
     def test_atomic_writer_flushes_fsyncs_then_replaces(self):
         path = self.root / "atomic.json"
-        real_replace = job.os.replace
-        with patch.object(job.os, "fsync", wraps=job.os.fsync) as fsync:
+        real_replace = artifacts.os.replace
+        with patch.object(artifacts.os, "fsync", wraps=artifacts.os.fsync) as fsync:
 
             def checked_replace(source, destination):
                 fsync.assert_called_once()
@@ -541,7 +542,7 @@ class CollectSocialTests(unittest.TestCase):
                 )
                 real_replace(source, destination)
 
-            with patch.object(job.os, "replace", side_effect=checked_replace):
+            with patch.object(artifacts.os, "replace", side_effect=checked_replace):
                 job._write_json_atomic(path, {"text": "Hà Nội"})
         self.assertEqual(
             json.loads(path.read_text(encoding="utf-8")), {"text": "Hà Nội"}
@@ -551,7 +552,9 @@ class CollectSocialTests(unittest.TestCase):
     def test_failed_atomic_replace_leaves_no_destination_or_temporary_file(self):
         path = self.root / "atomic.json"
         with (
-            patch.object(job.os, "replace", side_effect=OSError("replace failed")),
+            patch.object(
+                artifacts.os, "replace", side_effect=OSError("replace failed")
+            ),
             self.assertRaisesRegex(OSError, "replace failed"),
         ):
             job._write_json_atomic(path, {"value": 1})

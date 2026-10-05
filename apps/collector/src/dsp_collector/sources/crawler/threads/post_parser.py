@@ -464,8 +464,7 @@ def parse_post_detail(
             "visible_reply_count": 0,
             "is_quote_post": bool(info.get("is_quote_post")),
             "is_paid_partnership": bool(
-                main_post.get("is_paid_partnership")
-                or info.get("is_paid_partnership")
+                main_post.get("is_paid_partnership") or info.get("is_paid_partnership")
             ),
             "raw_payload": main_post,
         }

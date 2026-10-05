@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PBPlus crawl Bronze v1",
+  "description": "Replayable, source-oriented PBPlus directory crawler envelope. The job adds only schema_version and run_id and persists before optional geography. Known optional geography fields describe legacy/already-enriched input; the job never adds enrichment to its raw Bronze artifact. Extra source fields remain preserved. No canonical entity or analytics transformation occurs here.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["schema_version", "source", "run_id", "seed_query", "sort", "collected_at", "count", "query_runs", "posts"],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1"},
+    "source": {"type": "string", "const": "pbplus"},
+    "run_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$",
+      "description": "Shared collection observation identity, safe for local filenames. Court entity identity remains the source URL."
+    },
+    "seed_query": {"type": "string", "minLength": 1},
+    "sort": {"type": "string", "const": "directory"},
+    "collected_at": {"type": "string", "format": "date-time", "description": "Crawler completion timestamp preserved verbatim; not publication time."},
+    "geocoded_at": {"type": ["string", "null"], "format": "date-time", "description": "Optional timestamp supplied by existing geography processing, never invented for raw acquisition."},
+    "count": {"type": "integer", "minimum": 0, "description": "Number of court records; the job additionally enforces count == len(posts)."},
+    "query_runs": {"type": "array", "items": {"$ref": "#/$defs/query_run"}},
+    "posts": {"type": "array", "items": {"$ref": "#/$defs/court"}}
+  },
+  "$defs": {
+    "nullable_string": {"type": ["string", "null"]},
+    "string_list": {"type": "array", "items": {"type": "string"}},
+    "crawl_error": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["url", "error_type", "error"],
+      "properties": {
+        "url": {"type": "string"},
+        "error_type": {"type": "string"},
+        "error": {"type": "string"}
+      }
+    },
+    "query_run": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["query", "kind", "geo_name", "status", "landed_url", "raw_count", "failed_count", "accepted_count"],
+      "properties": {
+        "query": {"type": "string"},
+        "kind": {"type": "string", "const": "directory"},
+        "geo_name": {"type": "string", "const": "Vietnam", "description": "Source directory coverage, not verified per-court geography."},
+        "status": {"type": "string", "enum": ["empty", "error", "partial", "ok"]},
+        "landed_url": {"type": "string"},
+        "raw_count": {"type": "integer", "minimum": 0},
+        "failed_count": {"type": "integer", "minimum": 0},
+        "accepted_count": {"type": "integer", "minimum": 0},
+        "errors": {"type": "array", "items": {"$ref": "#/$defs/crawl_error"}}
+      }
+    },
+    "court": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Unchanged source record. Known fields are optional so imperfect records remain replayable even when Silver rejects them. URL identity and nullable missing values are preserved; no administrative geography is inferred.",
+      "properties": {
+        "id": {"$ref": "#/$defs/nullable_string"},
+        "code": {"$ref": "#/$defs/nullable_string"},
+        "url": {"$ref": "#/$defs/nullable_string"},
+        "has_media": {"type": ["boolean", "null"]},
+        "court_name": {"$ref": "#/$defs/nullable_string"},
+        "number_of_courts": {"type": ["integer", "null"], "description": "Raw crawler count, retained without defaulting missing counts to zero."},
+        "address": {"$ref": "#/$defs/nullable_string", "description": "May be acquired directly from the venue page before geography enrichment. Historical or externally supplied enriched replay input may also contain a geography-derived address. The normal collection job preserves the crawler's value without geocoding Bronze."},
+        "phone": {"$ref": "#/$defs/nullable_string"},
+        "opening_hours": {"$ref": "#/$defs/string_list"},
+        "services": {"$ref": "#/$defs/string_list"},
+        "latitude": {"type": ["number", "null"], "description": "Optional coordinate for historical or externally supplied enriched replay input. The current crawler does not produce coordinates, and the collection job persists Bronze before geocoding."},
+        "longitude": {"type": ["number", "null"], "description": "Optional coordinate for historical or externally supplied enriched replay input. The current crawler does not produce coordinates, and the collection job persists Bronze before geocoding."},
+        "address_source": {"type": ["string", "null"], "enum": ["venue_page", "court_name_fallback", null]},
+        "geocode_status": {"type": ["string", "null"], "enum": ["ok", "ok_region_unverified", "missing_address", "not_found", "outside_vietnam", "region_mismatch", "error", null]},
+        "geocode_matched_address": {"$ref": "#/$defs/nullable_string"},
+        "geocode_country": {"$ref": "#/$defs/nullable_string"},
+        "geocode_expected_region": {"$ref": "#/$defs/nullable_string"},
+        "geocode_error": {"$ref": "#/$defs/nullable_string"}
+      }
+    }
+  }
+}

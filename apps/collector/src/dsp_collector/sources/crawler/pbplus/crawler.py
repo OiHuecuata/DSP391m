@@ -11,7 +11,7 @@ import argparse
 import json
 import re
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 from urllib.parse import urljoin, urlparse
@@ -19,7 +19,6 @@ from urllib.parse import urljoin, urlparse
 import requests
 from bs4 import BeautifulSoup, Tag
 from tqdm import tqdm
-
 
 BASE_URL = "https://pickleballplus.vn"
 LIST_URL = f"{BASE_URL}/tim-kiem-san"
@@ -104,9 +103,12 @@ def _section_nodes(heading: Tag) -> list[Any]:
 
     for node in heading.find_all_next():
         node_name = getattr(node, "name", None)
-        if node_name and re.fullmatch(r"h[1-6]", node_name):
-            if int(node_name[1]) <= heading_level:
-                break
+        if (
+            node_name
+            and re.fullmatch(r"h[1-6]", node_name)
+            and int(node_name[1]) <= heading_level
+        ):
+            break
         nodes.append(node)
 
     return nodes
@@ -326,11 +328,7 @@ def crawl_pbplus_courts(
         "status": (
             "empty"
             if not court_links
-            else "error"
-            if errors and not posts
-            else "partial"
-            if errors
-            else "ok"
+            else "error" if errors and not posts else "partial" if errors else "ok"
         ),
         "landed_url": LIST_URL,
         "raw_count": len(court_links),
@@ -344,7 +342,7 @@ def crawl_pbplus_courts(
         "source": "pbplus",
         "seed_query": "pickleball courts",
         "sort": "directory",
-        "collected_at": datetime.now(timezone.utc).isoformat(),
+        "collected_at": datetime.now(UTC).isoformat(),
         "count": len(posts),
         "query_runs": [query_run],
         "posts": posts,

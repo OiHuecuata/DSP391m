@@ -91,7 +91,7 @@ def _status_update(
 
     try:
         getattr(tracker, method)(**kwargs)
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001
         print(
             f"[threads-crawler] status update failed ({method}): {exc}",
             flush=True,
@@ -318,9 +318,7 @@ def _fetch_post_detail(
     """Fetch one accepted Threads post and parse its full page detail."""
     url = post.get("url")
     if not url:
-        raise ThreadsCrawlerError(
-            f"Post {post.get('id')!r} has no canonical URL"
-        )
+        raise ThreadsCrawlerError(f"Post {post.get('id')!r} has no canonical URL")
 
     try:
         page.goto(
@@ -338,11 +336,7 @@ def _fetch_post_detail(
     try:
         return parse_post_detail(
             html,
-            expected_post_id=(
-                str(post["id"])
-                if post.get("id") is not None
-                else None
-            ),
+            expected_post_id=(str(post["id"]) if post.get("id") is not None else None),
             expected_code=post.get("code"),
             source_url=url,
         )
@@ -358,17 +352,13 @@ def _fetch_post_detail(
             return parse_post_detail(
                 html,
                 expected_post_id=(
-                    str(post["id"])
-                    if post.get("id") is not None
-                    else None
+                    str(post["id"]) if post.get("id") is not None else None
                 ),
                 expected_code=post.get("code"),
                 source_url=url,
             )
         except PlaywrightTimeoutError as exc:
-            raise ThreadsCrawlerError(
-                f"Post detail retry timed out: {url}"
-            ) from exc
+            raise ThreadsCrawlerError(f"Post detail retry timed out: {url}") from exc
         except ThreadsPostParserError as exc:
             raise ThreadsCrawlerError(
                 f"Failed to parse post detail: {url}: {exc}"
@@ -394,18 +384,11 @@ def _assert_post_detail_identity(
         mismatches.append(f"id expected={expected_id!r} actual={actual_id!r}")
 
     if expected_code is not None and actual_code != expected_code:
-        mismatches.append(
-            f"code expected={expected_code!r} actual={actual_code!r}"
-        )
+        mismatches.append(f"code expected={expected_code!r} actual={actual_code!r}")
 
-    if (
-        expected_username
-        and actual_username
-        and actual_username != expected_username
-    ):
+    if expected_username and actual_username and actual_username != expected_username:
         mismatches.append(
-            "username "
-            f"expected={expected_username!r} actual={actual_username!r}"
+            "username " f"expected={expected_username!r} actual={actual_username!r}"
         )
 
     if mismatches:
@@ -666,11 +649,12 @@ def main() -> int:
         flush=True,
     )
 
+    # Status tracking is optional and must not prevent collection.
     try:
         status_tracker: CrawlerStatusTracker | None = CrawlerStatusTracker(
             source="threads"
         )
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001
         print(
             f"[threads-crawler] status initialization failed: {exc}",
             flush=True,
@@ -708,6 +692,7 @@ def main() -> int:
         flush=True,
     )
     return 0
+
 
 if __name__ == "__main__":
     raise SystemExit(main())

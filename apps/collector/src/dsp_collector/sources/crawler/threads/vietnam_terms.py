@@ -518,11 +518,7 @@ def assess_post(
     #   retained only as collection metadata because Threads search can be noisy.
     strong_vietnam_evidence = bool(locations) or vietnamese_like
 
-    is_relevant = (
-        subject_present
-        and bool(categories)
-        and strong_vietnam_evidence
-    )
+    is_relevant = subject_present and bool(categories) and strong_vietnam_evidence
 
     language_hint = "vi" if vietnamese_like else "unknown_or_non_vi"
 
