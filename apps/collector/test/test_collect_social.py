@@ -20,9 +20,11 @@ sys.path.insert(0, str(COLLECTOR_ROOT / "src"))
 
 from dsp_collector.jobs import collect_social as job
 from dsp_collector.normalizers.social_post import normalize_social_post
+from dsp_collector.publishers import kafka
 from dsp_collector.runtime import artifacts
-from dsp_collector.runtime.config import default_artifact_root
+from dsp_collector.runtime.config import KafkaSettings, default_artifact_root
 from dsp_collector.runtime.status import CrawlerStatusTracker
+from test_kafka_publisher import FakeProducer
 
 SAMPLE_PATH = COLLECTOR_ROOT / ".local/threads/pickleball_sample.json"
 COLLECTED_AT = "2026-10-01T16:02:10.383825+00:00"
@@ -52,6 +54,16 @@ class CollectSocialTests(unittest.TestCase):
         )
         network.start()
         self.addCleanup(network.stop)
+        environment = patch.dict("os.environ", {"KAFKA_ENABLED": "false"})
+        environment.start()
+        self.addCleanup(environment.stop)
+        native = patch.object(
+            kafka,
+            "_producer",
+            side_effect=AssertionError("unit test created native Kafka producer"),
+        )
+        native.start()
+        self.addCleanup(native.stop)
         self.envelope = {
             "source": "threads",
             "seed_query": "pickleball",
@@ -611,6 +623,187 @@ class CollectSocialTests(unittest.TestCase):
                 )
             self.assertEqual(actual_exit, expected_exit)
             self.assertEqual(json.loads(output.getvalue())["rejected_count"], index)
+
+    def test_kafka_disabled_never_creates_publisher(self):
+        factory = Mock(side_effect=AssertionError("Kafka started while disabled"))
+        result = job.collect_threads(
+            crawler=Mock(return_value=self.envelope),
+            artifact_root=self.root,
+            publisher_factory=factory,
+        )
+        factory.assert_not_called()
+        self.assertIsNone(result.publication)
+        self.assertEqual(result.status, "success")
+
+    def kafka_collect(self, producer, *, creation_error=None):
+        tracker = CrawlerStatusTracker("threads", self.root / "status.json")
+        crawler = Mock(side_effect=self.tracked_crawler)
+
+        def factory(settings):
+            run_id = tracker.status.run_id
+            self.assertTrue((self.root / f"bronze/threads/{run_id}.json").exists())
+            silver = self.root / f"silver/social_posts/{run_id}.json"
+            self.assertEqual(json.loads(silver.read_text())["count"], 2)
+            self.assertEqual(tracker.status.status, "running")
+            if creation_error:
+                raise creation_error
+            return kafka.KafkaPublisher(
+                settings, producer_factory=lambda config: producer
+            )
+
+        result = job.collect_threads(
+            crawler=crawler,
+            status_tracker=tracker,
+            artifact_root=self.root,
+            publish_kafka=True,
+            kafka_settings=KafkaSettings(),
+            publisher_factory=factory,
+        )
+        crawler.assert_called_once()
+        return result, tracker
+
+    def test_kafka_success_only_after_silver_commit_and_ack(self):
+        producer = FakeProducer()
+        result, tracker = self.kafka_collect(producer)
+        self.assertEqual(result.status, "success")
+        self.assertEqual(result.publication.published_count, 2)
+        self.assertEqual(tracker.status.status, "success")
+        self.assertEqual(len(producer.messages), 2)
+
+    def test_kafka_failure_keeps_bronze_and_silver_without_crawler_retry(self):
+        result, tracker = self.kafka_collect(
+            FakeProducer(outcomes=["broker unavailable", "broker unavailable"])
+        )
+        self.assertEqual(result.status, "failed")
+        self.assertEqual(result.publication.failed_count, 2)
+        self.assertEqual(tracker.status.status, "failed")
+        bronze, silver = self.read_artifacts(result)
+        self.assertEqual(bronze["posts"], self.envelope["posts"])
+        self.assertEqual(silver["count"], 2)
+
+    def test_kafka_partial_acknowledgement_is_explicit(self):
+        result, tracker = self.kafka_collect(
+            FakeProducer(outcomes=[None, "delivery failed"])
+        )
+        self.assertEqual(result.status, "partial")
+        self.assertEqual(result.publication.published_count, 1)
+        self.assertEqual(result.publication.failed_count, 1)
+        self.assertEqual(tracker.status.status, "failed")
+        self.assertTrue(result.bronze_path.exists())
+        self.assertTrue(result.silver_path.exists())
+
+    def test_kafka_creation_failure_is_visible_after_artifacts_saved(self):
+        with self.assertRaisesRegex(kafka.PublicationError, "invalid producer config"):
+            self.kafka_collect(
+                FakeProducer(),
+                creation_error=kafka.PublicationError("invalid producer config"),
+            )
+        self.assertEqual(len(list((self.root / "bronze/threads").glob("*.json"))), 1)
+        self.assertEqual(
+            len(list((self.root / "silver/social_posts").glob("*.json"))), 1
+        )
+        self.assertEqual(
+            json.loads((self.root / "status.json").read_text())["status"], "failed"
+        )
+
+    def test_silver_write_failure_never_starts_kafka(self):
+        writer = job._write_json_atomic
+        factory = Mock(side_effect=AssertionError("publisher before Silver commit"))
+
+        def failing_writer(path, payload):
+            if "social_posts" in path.parts:
+                raise OSError("Silver denied")
+            writer(path, payload)
+
+        with (
+            patch.object(job, "_write_json_atomic", side_effect=failing_writer),
+            self.assertRaisesRegex(OSError, "Silver denied"),
+        ):
+            job.collect_threads(
+                crawler=Mock(return_value=self.envelope),
+                artifact_root=self.root,
+                publish_kafka=True,
+                publisher_factory=factory,
+            )
+        factory.assert_not_called()
+        self.assertEqual(len(list((self.root / "bronze/threads").glob("*.json"))), 1)
+
+    def test_cli_silver_replay_skips_crawling_normalizing_and_writing(self):
+        result = self.process()
+        before = {
+            path: path.read_bytes() for path in (result.bronze_path, result.silver_path)
+        }
+        for outcomes, expected_exit in (
+            ([], 0),
+            ([None, "failed"], 2),
+            (["failed", "failed"], 1),
+        ):
+            producer = FakeProducer(outcomes=outcomes)
+            output = io.StringIO()
+            with (
+                redirect_stdout(output),
+                patch.object(kafka, "_producer", return_value=producer),
+                patch.object(
+                    job, "_crawl_threads", side_effect=AssertionError("replay crawled")
+                ),
+                patch.object(
+                    job,
+                    "normalize_social_post",
+                    side_effect=AssertionError("replay normalized"),
+                ),
+                patch.object(
+                    job,
+                    "_write_json_atomic",
+                    side_effect=AssertionError("replay wrote"),
+                ),
+            ):
+                code = job.main(["--replay-silver", str(result.silver_path)])
+            self.assertEqual(code, expected_exit)
+            self.assertEqual(len(producer.messages), 2)
+            self.assertEqual(json.loads(output.getvalue())["input_count"], 2)
+        self.assertEqual({path: path.read_bytes() for path in before}, before)
+
+    def test_cli_bronze_replay_supports_flag_and_environment_opt_in(self):
+        source = self.root / "input.json"
+        source.write_text(
+            json.dumps(self.envelope, ensure_ascii=False), encoding="utf-8"
+        )
+        for index, use_flag in enumerate((True, False)):
+            producer = FakeProducer()
+            output = io.StringIO()
+
+            def create_producer(config, index=index, producer=producer):
+                self.assertTrue(
+                    (self.root / f"silver/social_posts/opt-in-{index}.json").exists()
+                )
+                return producer
+
+            args = [
+                "--replay",
+                str(source),
+                "--run-id",
+                f"opt-in-{index}",
+                "--artifact-root",
+                str(self.root),
+            ]
+            if use_flag:
+                args.append("--publish-kafka")
+            with (
+                redirect_stdout(output),
+                patch.dict(
+                    "os.environ", {"KAFKA_ENABLED": "false" if use_flag else "true"}
+                ),
+                patch.object(kafka, "_producer", side_effect=create_producer),
+                patch.object(
+                    job, "_crawl_threads", side_effect=AssertionError("replay crawled")
+                ),
+            ):
+                code = job.main(args)
+            self.assertEqual(code, 0)
+            self.assertEqual(
+                json.loads(output.getvalue())["publication"]["published_count"], 2
+            )
+            self.assertEqual(len(producer.messages), 2)
 
     def test_cli_failure_reports_error_and_returns_nonzero(self):
         with self.assertLogs(job.LOGGER, level="ERROR") as logs:

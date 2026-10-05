@@ -15,18 +15,25 @@ import json
 import logging
 import re
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
 from uuid import uuid4
 
 from ..normalizers.social_post import normalize_social_post
 from ..runtime.artifacts import write_json_atomic as _write_json_atomic
-from ..runtime.config import default_artifact_root
+from ..runtime.config import (
+    KafkaSettings,
+    default_artifact_root,
+    kafka_enabled_from_env,
+)
 from ..runtime.status import CrawlerStatusTracker
 
 LOGGER = logging.getLogger(__name__)
+
+if TYPE_CHECKING:
+    from ..publishers.kafka import KafkaPublisher, PublicationResult
 
 
 @dataclass(frozen=True, slots=True)
@@ -37,6 +44,7 @@ class CollectionResult:
     silver_path: Path
     count: int
     rejected_count: int
+    publication: PublicationResult | None = None
 
 
 def _run_id(value: Any) -> str:
@@ -192,6 +200,26 @@ def _report_failure(
             LOGGER.exception("Failed to persist Threads job failure status")
 
 
+def _publish_silver(
+    result: CollectionResult,
+    settings: KafkaSettings | None,
+    publisher_factory: Callable[[KafkaSettings], KafkaPublisher] | None,
+) -> CollectionResult:
+    # Called only after Silver is committed; disabled collection never imports Kafka.
+    from ..publishers.kafka import publish_social_batch
+
+    publication = publish_social_batch(
+        result.silver_path, settings=settings, publisher_factory=publisher_factory
+    )
+    statuses = (result.status, publication.status)
+    status = (
+        "failed"
+        if "failed" in statuses
+        else "partial" if "partial" in statuses else "success"
+    )
+    return replace(result, status=status, publication=publication)
+
+
 def collect_threads(
     *,
     query: str = "pickleball",
@@ -203,6 +231,9 @@ def collect_threads(
     artifact_root: str | Path | None = None,
     status_tracker: CrawlerStatusTracker | None = None,
     crawler: Callable[..., dict[str, Any]] | None = None,
+    publish_kafka: bool = False,
+    kafka_settings: KafkaSettings | None = None,
+    publisher_factory: Callable[[KafkaSettings], KafkaPublisher] | None = None,
 ) -> CollectionResult:
     """Invoke the existing crawler, preserve Bronze, then publish local Silver.
 
@@ -236,6 +267,8 @@ def collect_threads(
         result = process_threads_envelope(
             envelope, run_id=selected_run_id, artifact_root=artifact_root
         )
+        if publish_kafka or (kafka_settings is not None and kafka_settings.enabled):
+            result = _publish_silver(result, kafka_settings, publisher_factory)
         if status_tracker is not None:
             if result.status == "success":
                 status_tracker.succeed(
@@ -244,7 +277,7 @@ def collect_threads(
             else:
                 _report_failure(
                     status_tracker,
-                    f"{result.status}: {result.rejected_count} records rejected; Silver: {result.silver_path}",
+                    f"{result.status}: {result.rejected_count} records rejected; Kafka: {result.publication}; Silver: {result.silver_path}",
                 )
         return result
     except Exception as exc:
@@ -256,8 +289,19 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Collect/replay Threads into local Bronze and Silver JSON."
     )
-    parser.add_argument(
+    replay = parser.add_mutually_exclusive_group()
+    replay.add_argument(
         "--replay", type=Path, help="Process saved crawler/Bronze JSON offline."
+    )
+    replay.add_argument(
+        "--replay-silver",
+        type=Path,
+        help="Publish existing Threads Silver to Kafka without crawling or writing artifacts.",
+    )
+    parser.add_argument(
+        "--publish-kafka",
+        action="store_true",
+        help="Publish after Silver is saved; Kafka is disabled by default.",
     )
     parser.add_argument("--run-id", help="Run identity for a replay input without one.")
     parser.add_argument("--artifact-root", type=Path, default=default_artifact_root())
@@ -278,11 +322,18 @@ def main(argv: Sequence[str] | None = None) -> int:
             "--run-id is only supported with --replay; live runs reuse tracker identity"
         )
     try:
-        if args.replay is not None:
+        enabled = args.publish_kafka or kafka_enabled_from_env()
+        if args.replay_silver is not None:
+            from ..publishers.kafka import publish_social_batch
+
+            result = publish_social_batch(args.replay_silver)
+        elif args.replay is not None:
             envelope = json.loads(args.replay.read_text(encoding="utf-8"))
             result = process_threads_envelope(
                 envelope, run_id=args.run_id, artifact_root=args.artifact_root
             )
+            if enabled:
+                result = _publish_silver(result, None, None)
         else:
             tracker = (
                 None
@@ -300,6 +351,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 timeout_ms=args.timeout_ms,
                 artifact_root=args.artifact_root,
                 status_tracker=tracker,
+                publish_kafka=enabled,
             )
     except Exception:
         LOGGER.exception("Threads collection/replay failed")

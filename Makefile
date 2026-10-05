@@ -5,12 +5,14 @@ NPM ?= npm
 CURL ?= curl
 PYTHON ?= python3
 BACKEND_URL ?= http://localhost:8080
+KAFKA_SOCIAL_POST_TOPIC ?= $(shell PYTHONPATH=apps/collector/src poetry run python -c 'from dsp_collector.runtime.config import KAFKA_SOCIAL_POST_TOPIC; print(KAFKA_SOCIAL_POST_TOPIC)')
 
 .PHONY: help install update format lint test run clean threads-crawler-test \
 	structure threads-crawler-status health_backend backend-run backend-test \
 	backend-build backend-vet backend-health backend-status frontend-run \
 	frontend-test frontend-lint frontend-build backend-check frontend-check check \
-	collect-threads collect-pbplus
+	collect-threads collect-pbplus collect-threads-kafka kafka-up kafka-down \
+	kafka-status kafka-topic kafka-consume-social kafka-logs
 
 help:
 	@echo "Available commands:"
@@ -41,6 +43,11 @@ help:
 	@echo "  make threads-crawler-status - Format the latest Threads snapshot"
 	@echo "  make collect-threads      - Collect Threads into local Bronze/Silver JSON"
 	@echo "  make collect-pbplus       - Collect PBPlus into local Bronze/Silver JSON"
+	@echo "  make collect-threads-kafka - Collect Threads and publish saved Silver events"
+	@echo "  make kafka-up / kafka-down - Start / stop local Kafka (retain data)"
+	@echo "  make kafka-topic          - Create/describe the configured SocialPost topic"
+	@echo "  make kafka-status / kafka-logs - Inspect local Kafka"
+	@echo "  make kafka-consume-social - Read SocialPost events with keys"
 	@echo "  make structure            - Show project structure"
 	@echo ""
 	@echo "HTTP helpers use BACKEND_URL=$(BACKEND_URL) (override with make BACKEND_URL=...)."
@@ -103,6 +110,30 @@ collect-threads:
 collect-pbplus:
 	PYTHONPATH=apps/collector/src poetry run python \
 		-m dsp_collector.jobs.collect_courts
+
+collect-threads-kafka:
+	KAFKA_SOCIAL_POST_TOPIC="$(KAFKA_SOCIAL_POST_TOPIC)" PYTHONPATH=apps/collector/src poetry run python \
+		-m dsp_collector.jobs.collect_social --publish-kafka
+
+kafka-up:
+	docker compose up -d --wait --wait-timeout 120 kafka
+
+kafka-down:
+	docker compose stop kafka
+
+kafka-status:
+	docker compose ps kafka
+
+kafka-logs:
+	docker compose logs --tail 100 kafka
+
+kafka-topic:
+	sh infra/kafka/create-topics.sh "$(KAFKA_SOCIAL_POST_TOPIC)"
+
+kafka-consume-social:
+	docker compose exec -T kafka /opt/kafka/bin/kafka-console-consumer.sh \
+		--bootstrap-server kafka:29092 --topic "$(KAFKA_SOCIAL_POST_TOPIC)" \
+		--from-beginning --property print.key=true --property key.separator=' | '
 
 threads-crawler-status:
 	@STATUS_FILE="apps/collector/.local/threads/status.json"; \
