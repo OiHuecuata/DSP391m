@@ -1,4 +1,109 @@
+x-airflow-common: &airflow-common
+  image: dsp391m-airflow:3.3.2
+  build:
+    context: .
+    dockerfile: orchestration/airflow/Dockerfile
+  profiles: [airflow]
+  user: "${AIRFLOW_UID:-1000}:0"
+  working_dir: ${DSP_AIRFLOW_REPO_ROOT:-${PWD}}
+  env_file:
+    - path: .env
+      required: false
+  environment: &airflow-environment
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
+    AIRFLOW__CORE__PARALLELISM: "2"
+    AIRFLOW__CORE__EXECUTION_API_SERVER_URL: http://airflow-api-server:8080/execution/
+    AIRFLOW__CORE__AUTH_MANAGER: airflow.api_fastapi.auth.managers.simple.simple_auth_manager.SimpleAuthManager
+    AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_USERS: ${AIRFLOW_LOCAL_USERNAME:-admin}:admin
+    AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_PASSWORDS_FILE: /opt/airflow/config/passwords.json
+    AIRFLOW__CORE__FERNET_KEY_CMD: cat /opt/airflow/config/fernet_key
+    AIRFLOW__API_AUTH__JWT_SECRET_CMD: cat /opt/airflow/config/jwt_secret
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:${AIRFLOW_METADATA_PASSWORD:-airflow-local-only}@airflow-db/airflow
+    AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: "true"
+    AIRFLOW__DAG_PROCESSOR__MIN_FILE_PROCESS_INTERVAL: "10"
+    AIRFLOW__LOGGING__BASE_LOG_FOLDER: /opt/airflow/logs
+    DSP_AIRFLOW_REPO_ROOT: ${DSP_AIRFLOW_REPO_ROOT:-${PWD}}
+    DSP_AIRFLOW_SCHEDULE: ${DSP_AIRFLOW_SCHEDULE:-}
+    DSP_AIRFLOW_PBPLUS_MODE: ${DSP_AIRFLOW_PBPLUS_MODE:-replay}
+    DSP_AIRFLOW_PBPLUS_REPLAY: ${DSP_AIRFLOW_PBPLUS_REPLAY:-}
+    DSP_AIRFLOW_PBPLUS_GEOGRAPHY: ${DSP_AIRFLOW_PBPLUS_GEOGRAPHY:-}
+    DSP_MARKET_SIGNAL_WINDOW_DAYS: ${DSP_MARKET_SIGNAL_WINDOW_DAYS:-30}
+    CLICKHOUSE_HOST: clickhouse
+    CLICKHOUSE_PORT: "8123"
+    CLICKHOUSE_DATABASE: ${CLICKHOUSE_DATABASE:-dsp391m}
+    CLICKHOUSE_USER: ${CLICKHOUSE_USER:-dsp391m}
+    CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:-}
+  volumes:
+    # Preserve absolute local paths and expose source code read-only.
+    - .:${DSP_AIRFLOW_REPO_ROOT:-${PWD}}:ro
+    - ./orchestration/airflow/dags:/opt/airflow/dags:ro
+    # SimpleAuthManager opens its password file for update even on restart.
+    - ./.local/airflow/config:/opt/airflow/config
+    - ./.local/airflow/logs:/opt/airflow/logs
+    - ./.local/airflow/runs:${DSP_AIRFLOW_REPO_ROOT:-${PWD}}/.local/airflow/runs
+    - ./pipelines/spark/.local:${DSP_AIRFLOW_REPO_ROOT:-${PWD}}/pipelines/spark/.local
+  depends_on: &airflow-dependencies
+    airflow-db:
+      condition: service_healthy
+    airflow-init:
+      condition: service_completed_successfully
+
 services:
+  airflow-db:
+    image: postgres:16.13-bookworm
+    profiles: [airflow]
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: ${AIRFLOW_METADATA_PASSWORD:-airflow-local-only}
+      POSTGRES_DB: airflow
+    volumes:
+      - airflow-metadata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "airflow", "-d", "airflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+  airflow-init:
+    <<: *airflow-common
+    command: ["db", "migrate"]
+    depends_on:
+      airflow-db:
+        condition: service_healthy
+  airflow-api-server:
+    <<: *airflow-common
+    command: api-server
+    ports:
+      - "127.0.0.1:${AIRFLOW_PORT:-8081}:8080"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/api/v2/monitor/health"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 18
+  airflow-scheduler:
+    <<: *airflow-common
+    command: scheduler
+    depends_on:
+      <<: *airflow-dependencies
+      airflow-api-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8974/health"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 18
+  airflow-dag-processor:
+    <<: *airflow-common
+    command: dag-processor
+    healthcheck:
+      test: ["CMD-SHELL", "airflow jobs check --job-type DagProcessorJob --hostname \"$${HOSTNAME}\""]
+      interval: 10s
+      timeout: 10s
+      start_period: 30s
+      retries: 18
   clickhouse:
     image: clickhouse/clickhouse-server:25.8.16.34
     ports:
@@ -58,5 +163,6 @@ services:
       retries: 12
 
 volumes:
+  airflow-metadata:
   clickhouse-data:
   kafka-data:

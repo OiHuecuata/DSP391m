@@ -10,6 +10,12 @@ KAFKA_SOCIAL_POST_TOPIC ?= $(shell PYTHONPATH=apps/collector/src poetry run pyth
 DSP_JAVA_HOME ?= $(if $(JAVA_HOME),$(JAVA_HOME),$(CURDIR)/.local/tools/java17)
 SPARK_PYTHON = JAVA_HOME="$(DSP_JAVA_HOME)" PYTHONPATH=pipelines/spark/src:apps/collector/src poetry run python
 SPARK_ARTIFACT ?=
+AIRFLOW_COMPOSE = DSP_AIRFLOW_REPO_ROOT="$(CURDIR)" AIRFLOW_UID="$$(id -u)" docker compose --profile airflow
+AIRFLOW_CONF ?= {}
+AIRFLOW_RUN_ID ?=
+# Pass JSON as an environment value, never as interpolated shell code.
+export DSP_AIRFLOW_TRIGGER_CONF = $(AIRFLOW_CONF)
+export DSP_AIRFLOW_TRIGGER_RUN_ID = $(AIRFLOW_RUN_ID)
 
 .PHONY: help install update format lint test run clean threads-crawler-test \
 	structure threads-crawler-status health_backend backend-run backend-test \
@@ -69,6 +75,10 @@ help:
 	@echo "  make clickhouse-migrate - Apply typed serving DDL"
 	@echo "  make load-market-signals-clickhouse - Replace serving state from Delta Gold"
 	@echo "  make smoke-clickhouse - Compare Delta, repeated loads, SQL, and backend API"
+	@echo "  make airflow-init / airflow-up - Initialize/start local batch orchestration"
+	@echo "  make airflow-status / airflow-logs / airflow-dag-list - Inspect Airflow"
+	@echo "  make airflow-trigger-market-signals - Trigger with AIRFLOW_CONF JSON"
+	@echo "  make airflow-test / airflow-smoke / airflow-down - Validate/run smoke/stop"
 	@echo "  make databricks-build-wheel - Package existing jobs and contracts"
 	@echo "  make databricks-validate    - Validate/render configured job locally"
 	@echo "  make databricks-submit-social-gold - Submit to explicitly configured compute"
@@ -299,3 +309,35 @@ load-market-signals-clickhouse:
 
 smoke-clickhouse: clickhouse-up clickhouse-migrate
 	$(SPARK_PYTHON) -m dsp_spark.jobs.batch.smoke_clickhouse
+
+.PHONY: airflow-init airflow-up airflow-down airflow-status airflow-logs airflow-dag-list airflow-trigger-market-signals airflow-test airflow-smoke
+airflow-init:
+	$(PYTHON) orchestration/airflow/init_local.py
+	$(AIRFLOW_COMPOSE) build airflow-init
+	$(AIRFLOW_COMPOSE) up -d --wait --wait-timeout 120 airflow-db
+	$(AIRFLOW_COMPOSE) up -d --force-recreate --no-deps airflow-init
+	$(AIRFLOW_COMPOSE) wait airflow-init
+
+airflow-up: airflow-init
+	$(AIRFLOW_COMPOSE) up -d --wait --wait-timeout 180 clickhouse airflow-api-server airflow-dag-processor airflow-scheduler
+
+airflow-down:
+	$(AIRFLOW_COMPOSE) stop airflow-scheduler airflow-dag-processor airflow-api-server airflow-db
+
+airflow-status:
+	$(AIRFLOW_COMPOSE) ps --all airflow-db airflow-init airflow-api-server airflow-scheduler airflow-dag-processor
+
+airflow-logs:
+	$(AIRFLOW_COMPOSE) logs --tail 100 airflow-api-server airflow-scheduler airflow-dag-processor
+
+airflow-dag-list:
+	$(AIRFLOW_COMPOSE) exec -T airflow-scheduler airflow dags list
+
+airflow-trigger-market-signals:
+	$(PYTHON) orchestration/airflow/control.py
+
+airflow-test:
+	$(AIRFLOW_COMPOSE) run --rm --no-deps airflow-init python -m unittest discover -s orchestration/airflow/test -p 'test_*.py'
+
+airflow-smoke: airflow-up airflow-test
+	$(PYTHON) orchestration/airflow/smoke.py
