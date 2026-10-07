@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Location market signal snapshot v1",
+  "description": "One row per canonical location: rolling text-mentioned social activity plus latest known source supply at build time. Not measured demand or a historical supply-at-date reconstruction. Unresolved venues are build-level quality evidence only. The Delta table is fully replaced; no snapshot history.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "snapshot_date",
+    "window_start_date",
+    "window_end_date",
+    "window_days",
+    "location_id",
+    "location_name",
+    "social_post_count",
+    "social_like_count",
+    "social_reply_count",
+    "social_repost_count",
+    "social_quote_count",
+    "social_engagement_total",
+    "venue_count",
+    "known_court_count",
+    "venues_with_known_court_count",
+    "venues_without_known_court_count",
+    "court_count_coverage_ratio",
+    "has_social_signal",
+    "has_supply_signal",
+    "social_activity_per_venue",
+    "social_engagement_per_venue",
+    "gold_generated_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1"
+    },
+    "snapshot_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Deterministic analysis reference date, equal to window_end_date; not a historical supply date."
+    },
+    "window_start_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Inclusive social window start."
+    },
+    "window_end_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Inclusive social window end; maximum input social activity date unless explicitly overridden."
+    },
+    "window_days": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "location_id": {
+      "type": "string",
+      "pattern": "^vn-[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "location_name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Authoritative shared reference catalog name."
+    },
+    "social_post_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Sum of Gold daily post_count within the inclusive window; zero where social evidence is absent. Mentioned-place activity signal, not measured demand."
+    },
+    "social_like_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Sum of Gold daily like_count within the inclusive window; zero where social evidence is absent. Mentioned-place activity signal, not measured demand."
+    },
+    "social_reply_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Sum of Gold daily reply_count within the inclusive window; zero where social evidence is absent. Mentioned-place activity signal, not measured demand."
+    },
+    "social_repost_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Sum of Gold daily repost_count within the inclusive window; zero where social evidence is absent. Mentioned-place activity signal, not measured demand."
+    },
+    "social_quote_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Sum of Gold daily quote_count within the inclusive window; zero where social evidence is absent. Mentioned-place activity signal, not measured demand."
+    },
+    "social_engagement_total": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Sum of Gold daily engagement_total within the inclusive window; zero where social evidence is absent. Mentioned-place activity signal, not measured demand."
+    },
+    "venue_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "Latest known source venues; null when supply evidence is absent. PBPlus/source-specific, not complete national supply."
+    },
+    "known_court_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "Sum of explicitly known court counts; null when all counts are unknown or supply is absent. Never coalesced to zero."
+    },
+    "venues_with_known_court_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "Venues with an explicit court count, including known zero counts; null when supply is absent."
+    },
+    "venues_without_known_court_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "Venues whose court counts are unknown; null when supply is absent."
+    },
+    "court_count_coverage_ratio": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "venues_with_known_court_count / venue_count when positive; otherwise null. Court-count data coverage, not market completeness or location resolution."
+    },
+    "has_social_signal": {
+      "type": "boolean",
+      "description": "Whether this side has an input location row (social restricted to the selected window)."
+    },
+    "has_supply_signal": {
+      "type": "boolean",
+      "description": "Whether this side has an input location row (social restricted to the selected window)."
+    },
+    "social_activity_per_venue": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "social_post_count / venue_count when positive; otherwise null. Descriptive source-specific ratio, not a demand/gap score."
+    },
+    "social_engagement_per_venue": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "social_engagement_total / venue_count when positive; otherwise null. Descriptive source-specific ratio, not a demand/gap score."
+    },
+    "gold_generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{6}Z$"
+    }
+  }
+}

@@ -12,6 +12,7 @@ def main(argv=None):
     parser.add_argument(
         "--table",
         choices=(
+            "location_market_signal_snapshot",
             "social_posts",
             "courts",
             "threads_bronze",

@@ -19,6 +19,7 @@ from pyspark.sql import types as T
 from referencing import Registry, Resource
 
 CONTRACT_FILES = {
+    "location_market_signal_snapshot": "data/gold/location-market-signal-snapshot.v1.schema.json",
     "location_reference": "reference/vietnam-locations.v1.schema.json",
     "court_supply_by_location": "data/gold/court-supply-by-location.v1.schema.json",
     "social": "data/silver/social-post.v1.schema.json",

@@ -62,6 +62,8 @@ help:
 	@echo "  make spark-gold-court-supply / delta-inspect-gold-court-supply - Build/inspect venue supply"
 	@echo "  make location-reference-validate - Check the versioned alias catalog"
 	@echo "  make spark-gold-social     - Rebuild daily mentioned-location activity"
+	@echo "  make spark-gold-market-signal / delta-inspect-gold-market-signal - Build/inspect rolling activity and current supply"
+	@echo "  make databricks-validate-market-signal - Render analytical job offline"
 	@echo "  make delta-inspect-gold-social - Inspect the Gold activity table"
 	@echo "  make databricks-build-wheel - Package existing jobs and contracts"
 	@echo "  make databricks-validate    - Validate/render configured job locally"
@@ -264,3 +266,13 @@ location-reference-validate:
 
 databricks-validate-court-supply:
 	sh scripts/submit_databricks_job.sh --job court_supply_by_location --dry-run
+
+.PHONY: spark-gold-market-signal delta-inspect-gold-market-signal databricks-validate-market-signal
+spark-gold-market-signal:
+	$(SPARK_PYTHON) -m dsp_spark.jobs.batch.build_location_market_signal_snapshot
+
+delta-inspect-gold-market-signal:
+	$(SPARK_PYTHON) -m dsp_spark.jobs.batch.inspect_delta --table location_market_signal_snapshot
+
+databricks-validate-market-signal:
+	sh scripts/submit_databricks_job.sh --job location_market_signal_snapshot --dry-run

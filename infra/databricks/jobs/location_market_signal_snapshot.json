@@ -1,0 +1,22 @@
+{
+  "run_name": "dsp391-location-market-signal-snapshot",
+  "tasks": [
+    {
+      "task_key": "build_location_market_signal_snapshot",
+      "existing_cluster_id": "${DATABRICKS_CLUSTER_ID}",
+      "python_wheel_task": {
+        "package_name": "dsp391-spark-jobs",
+        "entry_point": "location_market_signal_snapshot",
+        "parameters": [
+          "--lakehouse-base-uri", "${DSP_LAKEHOUSE_BASE_URI}",
+          "--social-activity-path", "${DSP_DELTA_SOCIAL_ACTIVITY_DAILY_PATH}",
+          "--court-supply-path", "${DSP_DELTA_COURT_SUPPLY_BY_LOCATION_PATH}",
+          "--quality-path", "${DSP_DELTA_UNRESOLVED_COURT_LOCATIONS_PATH}",
+          "--gold-path", "${DSP_DELTA_LOCATION_MARKET_SIGNAL_SNAPSHOT_PATH}",
+          "--window-days", "${DSP_MARKET_SIGNAL_WINDOW_DAYS}"
+        ]
+      },
+      "libraries": [{"whl": "${DSP_DATABRICKS_WHEEL_URI}"}]
+    }
+  ]
+}

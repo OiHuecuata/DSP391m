@@ -45,6 +45,7 @@ Set `DSP_LAKEHOUSE_BASE_URI` to an absolute `file:///...` or `s3a://bucket/prefi
   silver/courts/
   gold/social_activity_daily/
   gold/court_supply_by_location/
+  gold/location_market_signal_snapshot/
   quality/unresolved_court_locations/
   rejected/social_posts/
   checkpoints/social_posts_kafka_to_delta/
@@ -54,7 +55,8 @@ Set `DSP_LAKEHOUSE_BASE_URI` to an absolute `file:///...` or `s3a://bucket/prefi
 `DSP_DELTA_SOCIAL_POSTS_PATH`, `DSP_DELTA_COURTS_PATH`,
 `DSP_DELTA_REJECTED_SOCIAL_PATH`, `DSP_DELTA_SOCIAL_ACTIVITY_DAILY_PATH` and
 `DSP_DELTA_COURT_SUPPLY_BY_LOCATION_PATH`,
-`DSP_DELTA_UNRESOLVED_COURT_LOCATIONS_PATH` and
+`DSP_DELTA_UNRESOLVED_COURT_LOCATIONS_PATH`,
+`DSP_DELTA_LOCATION_MARKET_SIGNAL_SNAPSHOT_PATH` and
 `DSP_SPARK_SOCIAL_CHECKPOINT_PATH` optionally
 override individual derived paths. Keep every table and checkpoint distinct.
 
@@ -68,6 +70,8 @@ Other configuration:
 | `DSP_KAFKA_SOCIAL_POST_TOPIC` | Existing collector topic constant |
 | `DSP_KAFKA_STARTING_OFFSETS` | `earliest`, used only for a new checkpoint |
 | `DSP_SPARK_TRIGGER_INTERVAL` | `10 seconds` |
+| `DSP_MARKET_SIGNAL_WINDOW_DAYS` | `30`, positive integer |
+| `DSP_MARKET_SIGNAL_END_DATE` | Unset; maximum Gold `activity_date` |
 
 S3A uses the AWS SDK v2 default credential chain: conventional environment,
 `AWS_PROFILE`/shared configuration, web identity and instance/role credentials.
@@ -239,3 +243,86 @@ for empty input), and reason counts. Gold and quality each use full atomic Delta
 replacement with strict schemas. They are separate transactions; after partial
 failure rerun the job. Only generated timestamps vary for unchanged Silver.
 PBPlus coverage does not establish national completeness. Use one writer at a time.
+
+## Location market signal snapshot
+
+```sh
+make spark-gold-market-signal
+make delta-inspect-gold-market-signal
+DSP_MARKET_SIGNAL_WINDOW_DAYS=7 DSP_MARKET_SIGNAL_END_DATE=2026-08-13 make spark-gold-market-signal
+```
+
+This first combined analytical product reads existing Gold `social_activity_daily`
+and `court_supply_by_location`, validates both contracts and canonical names,
+aggregates social metrics inside an explicit window, and performs a full outer
+join on `location_id`. It does not read Silver records or deduplicate logical
+posts again. The pure transformation lives in
+`processing/aggregate/location_market_signal_snapshot.py`; Delta I/O and quality
+reporting live in `jobs/batch/build_location_market_signal_snapshot.py`.
+
+The Draft 2020-12 contract is
+`contracts/data/gold/location-market-signal-snapshot.v1.schema.json`. All columns
+are scalar. Social counts are 64-bit integers; coverage and activity/venue ratios
+are nullable doubles. Dates and canonical UTC generation timestamps remain strings.
+The table has one row per catalog ID and is atomically replaced on each build,
+including removal of stale rows. There is no snapshot history. Unchanged inputs
+and window preserve every analytical metric; only `gold_generated_at` varies.
+
+Window end defaults to maximum `activity_date` across social Gold, never the
+wall-clock date. Start is end minus `window_days - 1`. Both boundaries are
+inclusive: `window_start_date <= activity_date <= window_end_date`.
+`snapshot_date` equals the selected end date and labels the analysis reference
+date; it is not the supply observation date or the build date. If social Gold
+is empty, an explicit valid `DSP_MARKET_SIGNAL_END_DATE` is required. With that
+override, supply-only rows are produced; both empty inputs produce an empty,
+contract-shaped Delta table. Invalid/empty configuration or an underflowing date
+range fails clearly. A missing input Delta table is an error, distinct from an
+existing empty table.
+
+Social evidence is text-mentioned-place activity, a proxy/signal, not measured
+actual demand or verified user/post origins. The presence flag means a Gold
+social row exists inside the window. Counts are summed directly from Gold:
+posts, likes, replies, reposts, quotes and total engagement. Multiple mentioned
+locations can receive one post's contribution, so a cross-location sum is not
+necessarily a unique-post count. Supply is the latest known source state at build
+time, not historical supply reconstructed for the social dates. PBPlus does not
+represent complete national supply, verified market coverage or court capacity.
+
+| Evidence | Social fields | Supply fields | Ratios |
+| --- | --- | --- | --- |
+| Both inputs | Summed window counts | Preserved source totals | Calculated for positive venue count |
+| Social only | Summed window counts | All null | All null |
+| Supply only | Zero counts, social flag false | Preserved source totals | Activity/engagement per venue zero; count coverage from supply |
+
+`has_supply_signal` records presence of a supply input row. `known_court_count`
+stays null when all venue court counts are unknown. An explicit known zero stays
+zero. `venues_without_known_court_count` is preserved without estimating missing
+courts. `court_count_coverage_ratio` is known-count venues divided by venue count:
+a measure of court-count data availability. `social_activity_per_venue` is post
+count divided by venue count; `social_engagement_per_venue` uses total engagement.
+A missing or nonpositive denominator produces null, never infinity or NaN. The
+current source supply contract rejects nonpositive venue counts before job output;
+the pure ratio calculation also handles zero safely. No court-count denominator,
+score, ranking, capacity estimate or recommendation is introduced.
+
+The catalog supplies output names. Name disagreement, unmapped/null IDs, or
+duplicate daily social/supply keys fail before replacing the output. This applies
+to all input Gold rows, including social rows outside the selected window. Upstream
+social Gold can retain unmapped mentions; this analytical table deliberately
+requires canonical IDs rather than guessing their geography.
+
+Build JSON reports `supply_total_logical_venues`, `supply_resolved_venues`,
+`supply_unresolved_venues`, and `supply_location_resolution_ratio` separately from
+location rows. Resolved total is summed from Gold supply; unresolved total comes
+from the existing `quality/unresolved_court_locations` artifact, never Silver or
+allocation across locations. Missing quality means total/unresolved/resolution
+ratio are null with `supply_quality_available=false`, not a claim of zero missing
+venues. Observable mixed/stale generation timestamps, resolved quality rows or
+duplicate unresolved logical IDs fail before output. Empty quality artifacts have
+no row timestamp, so their generation cannot be compared; these source artifacts
+remain separate Delta transactions and need a single coordinated writer.
+
+For the actual local verification and limitations, see
+[the smoke report](market-signal-local-smoke.md). For managed packaging,
+see [the Databricks adapter](../../infra/databricks/README.md). Cloud AWS S3 and
+remote Databricks execution remain unverified.

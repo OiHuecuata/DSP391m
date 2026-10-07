@@ -51,7 +51,7 @@ def build_wheel(output: Path | None = None):
             )
         (stage / "pyproject.toml").write_text("""[project]
 name = "dsp391-spark-jobs"
-version = "0.2.0"
+version = "0.3.0"
 description = "Portable DSP391 Spark jobs with canonical contract resources"
 requires-python = ">=3.12"
 dependencies = ["jsonschema (>=4.25.0,<5.0.0)"]
@@ -63,6 +63,7 @@ build-backend = "poetry.core.masonry.api"
 [project.scripts]
 social_activity_daily = "dsp_databricks.run_social_activity_daily:main"
 court_supply_by_location = "dsp_databricks.run_social_activity_daily:court_supply_main"
+location_market_signal_snapshot = "dsp_databricks.run_social_activity_daily:market_signal_main"
 
 [tool.poetry]
 packages = [{include = "dsp_spark"}, {include = "dsp_databricks"}, {include = "dsp_collector"}, {include = "dsp_contracts"}]
@@ -83,7 +84,7 @@ include = [{path = "dsp_contracts/**/*.json", format = "wheel"}]
             ],
             check=True,
         )
-    return output / "dsp391_spark_jobs-0.2.0-py3-none-any.whl"
+    return output / "dsp391_spark_jobs-0.3.0-py3-none-any.whl"
 
 
 if __name__ == "__main__":

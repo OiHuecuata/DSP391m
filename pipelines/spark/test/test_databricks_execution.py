@@ -33,6 +33,76 @@ CONFIG = {
 
 
 class DatabricksExecutionTests(unittest.TestCase):
+    def test_market_template_paths_window_and_explicit_end(self):
+        config = {
+            **CONFIG,
+            "DSP_DELTA_SOCIAL_ACTIVITY_DAILY_PATH": "s3a://offline-fixture/input/activity",
+            "DSP_DELTA_COURT_SUPPLY_BY_LOCATION_PATH": "s3a://offline-fixture/input/supply",
+            "DSP_DELTA_LOCATION_MARKET_SIGNAL_SNAPSHOT_PATH": "s3a://offline-fixture/output/market",
+            "DSP_MARKET_SIGNAL_WINDOW_DAYS": "7",
+            "DSP_MARKET_SIGNAL_END_DATE": "2026-10-05",
+        }
+        task = submit.render_job(config, "location_market_signal_snapshot")["tasks"][0]
+        self.assertEqual(
+            task["python_wheel_task"]["entry_point"], "location_market_signal_snapshot"
+        )
+        params = task["python_wheel_task"]["parameters"]
+        for key in (
+            "DSP_DELTA_SOCIAL_ACTIVITY_DAILY_PATH",
+            "DSP_DELTA_COURT_SUPPLY_BY_LOCATION_PATH",
+            "DSP_DELTA_LOCATION_MARKET_SIGNAL_SNAPSHOT_PATH",
+        ):
+            self.assertIn(config[key], params)
+        self.assertEqual(params[params.index("--window-days") + 1], "7")
+        self.assertEqual(params[-2:], ["--end-date", "2026-10-05"])
+        for changes in (
+            {"DSP_MARKET_SIGNAL_WINDOW_DAYS": "0"},
+            {"DSP_MARKET_SIGNAL_END_DATE": "2026-02-30"},
+            {"DSP_DELTA_COURT_SUPPLY_BY_LOCATION_PATH": "file:///tmp/supply"},
+            {
+                "DSP_DELTA_LOCATION_MARKET_SIGNAL_SNAPSHOT_PATH": config[
+                    "DSP_DELTA_SOCIAL_ACTIVITY_DAILY_PATH"
+                ]
+            },
+        ):
+            with self.subTest(changes=changes), self.assertRaises(ValueError):
+                submit.render_job(
+                    {**config, **changes}, "location_market_signal_snapshot"
+                )
+
+    def test_managed_market_job_reuses_session_and_passes_window(self):
+        spark = Mock(version="4.0.2")
+        session = Mock()
+        session.builder.getOrCreate.return_value = spark
+        with (
+            patch.dict(
+                "os.environ",
+                {"DATABRICKS_RUNTIME_VERSION": "offline-fixture"},
+                clear=True,
+            ),
+            patch.object(runner, "SparkSession", session),
+            patch.object(runner, "market_gold_main") as job,
+        ):
+            runner.market_signal_main(
+                [
+                    "--lakehouse-base-uri",
+                    CONFIG["DSP_LAKEHOUSE_BASE_URI"],
+                    "--window-days",
+                    "7",
+                    "--end-date",
+                    "2026-10-05",
+                ]
+            )
+        self.assertIs(job.call_args.kwargs["spark"], spark)
+        self.assertEqual(
+            job.call_args.kwargs["settings"].paths.location_market_signal_snapshot,
+            "s3a://offline-fixture/lake/gold/location_market_signal_snapshot",
+        )
+        self.assertEqual(job.call_args.kwargs["market_settings"].window_days, 7)
+        self.assertEqual(job.call_args.kwargs["market_settings"].end_date, "2026-10-05")
+        spark.stop.assert_not_called()
+        session.builder.master.assert_not_called()
+
     def test_job_targets_existing_compute_and_same_package(self):
         job = submit.render_job(CONFIG)
         task = job["tasks"][0]

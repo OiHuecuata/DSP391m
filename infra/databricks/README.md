@@ -13,7 +13,7 @@ configuration was available.
 make databricks-build-wheel
 ```
 
-The ignored output is `.local/databricks/dist/dsp391_spark_jobs-0.2.0-py3-none-any.whl`.
+The ignored output is `.local/databricks/dist/dsp391_spark_jobs-0.3.0-py3-none-any.whl`.
 Poetry builds a standard wheel with:
 
 - Existing `dsp_spark` modules, including the same Gold transform/job.
@@ -98,3 +98,28 @@ copying transformations or replacing/stopping the managed session.
 For an explicitly configured submission use
 `sh scripts/submit_databricks_job.sh --job court_supply_by_location`.
 No remote execution or AWS verification occurred during local preparation.
+
+## Market signal snapshot entrypoint
+
+The 0.3.0 wheel exposes `location_market_signal_snapshot` through the same managed
+session adapter. No transformation is copied into the adapter. Its template is
+`infra/databricks/jobs/location_market_signal_snapshot.json`.
+
+```sh
+make databricks-build-wheel
+make databricks-validate-market-signal
+```
+
+Validation requires the same explicit existing cluster, wheel URI and S3A base.
+It renders locally without credentials or remote execution. Override input Gold
+paths using `DSP_DELTA_SOCIAL_ACTIVITY_DAILY_PATH` and
+`DSP_DELTA_COURT_SUPPLY_BY_LOCATION_PATH`; override output with
+`DSP_DELTA_LOCATION_MARKET_SIGNAL_SNAPSHOT_PATH`. The existing unresolved quality
+artifact uses `DSP_DELTA_UNRESOLVED_COURT_LOCATIONS_PATH`. These paths must be
+distinct S3A targets. The renderer validates `DSP_MARKET_SIGNAL_WINDOW_DAYS`
+(default 30) and optional `DSP_MARKET_SIGNAL_END_DATE`, then passes them explicitly
+to the managed adapter. An unset end date selects max social Gold activity date;
+empty social Gold requires an explicit end date.
+
+Offline template/handoff tests and wheel resources are verified locally. No
+workspace/cluster execution or AWS S3 verification has occurred.

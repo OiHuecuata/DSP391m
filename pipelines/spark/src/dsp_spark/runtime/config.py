@@ -1,7 +1,9 @@
 """One portable runtime and one centrally derived lakehouse path convention."""
 
 import os
+import re
 from dataclasses import dataclass
+from datetime import date
 from pathlib import Path
 
 from ..io.s3 import storage_uri
@@ -34,6 +36,7 @@ class LakehousePaths:
     social_activity_daily: str = ""
     court_supply_by_location: str = ""
     unresolved_court_locations: str = ""
+    location_market_signal_snapshot: str = ""
 
     def __post_init__(self):
         base = storage_uri(self.base)
@@ -48,6 +51,7 @@ class LakehousePaths:
             "social_activity_daily": "gold/social_activity_daily",
             "court_supply_by_location": "gold/court_supply_by_location",
             "unresolved_court_locations": "quality/unresolved_court_locations",
+            "location_market_signal_snapshot": "gold/location_market_signal_snapshot",
         }.items():
             object.__setattr__(
                 self, field, storage_uri(getattr(self, field) or f"{base}/{suffix}")
@@ -75,7 +79,38 @@ class LakehousePaths:
             unresolved_court_locations=os.getenv(
                 "DSP_DELTA_UNRESOLVED_COURT_LOCATIONS_PATH", ""
             ),
+            location_market_signal_snapshot=os.getenv(
+                "DSP_DELTA_LOCATION_MARKET_SIGNAL_SNAPSHOT_PATH", ""
+            ),
         )
+
+
+@dataclass(frozen=True)
+class MarketSignalSettings:
+    window_days: int = 30
+    end_date: str | None = None
+
+    def __post_init__(self):
+        if type(self.window_days) is not int or self.window_days <= 0:
+            raise ValueError("DSP_MARKET_SIGNAL_WINDOW_DAYS must be a positive integer")
+        if self.end_date is not None:
+            try:
+                if not isinstance(self.end_date, str) or not re.fullmatch(
+                    r"[0-9]{4}-[0-9]{2}-[0-9]{2}", self.end_date
+                ):
+                    raise ValueError()
+                date.fromisoformat(self.end_date)
+            except ValueError:
+                raise ValueError(
+                    "DSP_MARKET_SIGNAL_END_DATE must be a valid YYYY-MM-DD date"
+                ) from None
+
+    @classmethod
+    def from_env(cls):
+        raw = os.getenv("DSP_MARKET_SIGNAL_WINDOW_DAYS", "30")
+        if not re.fullmatch(r"[0-9]+", raw):
+            raise ValueError("DSP_MARKET_SIGNAL_WINDOW_DAYS must be a positive integer")
+        return cls(int(raw), os.getenv("DSP_MARKET_SIGNAL_END_DATE"))
 
 
 @dataclass(frozen=True)
