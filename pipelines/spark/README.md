@@ -3,7 +3,9 @@
 The collector owns canonicalization. These jobs validate the existing contracts,
 retain canonical fields, and persist observations in Delta without normalizing
 Threads or PBPlus again. Gold reports daily activity associated with mentioned places and latest source-address court supply.
-There are no demand scores, ML, ClickHouse or Airflow jobs.
+There are no measured-demand scores or ML jobs. The existing Gold can be served
+through ClickHouse and refreshed through Airflow. For the finite complete local
+workflow, see [one-command E2E](../../orchestration/local/README.md).
 
 ## Runtime
 
@@ -116,7 +118,8 @@ retained inside `payload_json`; no flattening loses source detail.
 PBPlus validates the complete Silver batch before writing, explodes records
 with the contract-derived Court schema, and adds lakehouse ingestion time and
 artifact URI. Invalid structure or conflicting batch lineage fails before any
-write; empty batches create no table.
+write; a valid empty batch initializes a schema-correct Court Silver table.
+Later empty batches validate its schema and leave existing observations intact.
 
 Threads validates original Kafka JSON before Spark parsing can coerce or drop
 fields. It checks the event/payload contracts, envelope lineage, deterministic
@@ -124,6 +127,10 @@ event identity and Kafka key. It preserves the payload and Kafka topic,
 partition, offset and timestamp. Invalid JSON, payloads, identities or keys go
 to `rejected/social_posts`, with original value bytes/text, Kafka metadata,
 reason and rejection timestamp. A rejection-write failure stops the batch.
+The streaming job initializes schema-correct Social Silver at startup, even when
+Kafka has no messages and `foreachBatch` never runs. A batch with zero accepted
+events also initializes empty Silver; malformed events still go to rejection
+storage. Neither empty ingestion path creates fake records or clears prior data.
 
 All canonical date-time fields remain strings to preserve their exact values;
 added lakehouse/Kafka times use Spark timestamps with the UTC session timezone.
@@ -305,11 +312,23 @@ current source supply contract rejects nonpositive venue counts before job outpu
 the pure ratio calculation also handles zero safely. No court-count denominator,
 score, ranking, capacity estimate or recommendation is introduced.
 
-The catalog supplies output names. Name disagreement, unmapped/null IDs, or
-duplicate daily social/supply keys fail before replacing the output. This applies
-to all input Gold rows, including social rows outside the selected window. Upstream
-social Gold can retain unmapped mentions; this analytical table deliberately
-requires canonical IDs rather than guessing their geography.
+The catalog supplies output names. Only social rows with a non-null canonical
+`location_id` contribute to the market snapshot. Null-ID mentions remain in
+`social_activity_daily` with their original names and metrics as unresolved
+quality evidence; raw mentions and observation lineage also remain in Silver.
+Country (`Vietnam`), district/sub-city (`Cầu Giấy`, `Bắc Từ Liêm`, `Nam Từ Liêm`,
+`Thủ Đức`) and arbitrary unsupported mentions are not mapped to a city/province.
+Mixed and out-of-window unresolved evidence cannot poison canonical publication.
+Build JSON reports `unresolved_social_location_rows`,
+`unresolved_social_location_rows_in_window`, and `social_activity_source_path`
+so exclusions are visible and the preserved evidence can be inspected. These
+counts are daily location rows, not unique posts across locations.
+
+Nonnull unknown IDs, canonical name disagreements and duplicate canonical
+daily social/supply keys still fail before replacement. Contract validation
+continues to cover all input Gold rows, including unresolved evidence. Window
+end still defaults to the maximum date in the entire social Gold input, including
+unresolved mentions; if that input is empty, the explicit end date is required.
 
 Build JSON reports `supply_total_logical_venues`, `supply_resolved_venues`,
 `supply_unresolved_venues`, and `supply_location_resolution_ratio` separately from

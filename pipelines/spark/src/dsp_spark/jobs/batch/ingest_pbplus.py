@@ -46,7 +46,12 @@ def ingest_pbplus(spark, artifact: str | Path, settings: SparkSettings):
         .withColumn("lakehouse_ingested_at", F.current_timestamp())
         .withColumn("source_artifact_uri", F.lit(path.as_uri()))
     )
-    merge_delta(frame, settings.paths.courts, keys=("run_id", "record_id"))
+    merge_delta(
+        frame,
+        settings.paths.courts,
+        keys=("run_id", "record_id"),
+        initialize_empty=True,
+    )
     return {
         "run_id": batch["run_id"],
         "input_count": len(records),

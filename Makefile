@@ -56,6 +56,9 @@ help:
 	@echo "  make collect-threads      - Collect Threads into local Bronze/Silver JSON"
 	@echo "  make collect-pbplus       - Collect PBPlus into local Bronze/Silver JSON"
 	@echo "  make collect-threads-kafka - Collect Threads and publish saved Silver events"
+	@echo "  make pipeline-e2e         - Verified finite local pipeline (PIPELINE_MODE=replay/live)"
+	@echo "  make pipeline-preflight   - Validate E2E runtime, configuration and writable paths"
+	@echo "  make pipeline-e2e-test    - Isolated replay-twice, empty-input and failure acceptance smoke"
 	@echo "  make kafka-up / kafka-down - Start / stop local Kafka (retain data)"
 	@echo "  make kafka-topic          - Create/describe the configured SocialPost topic"
 	@echo "  make kafka-status / kafka-logs - Inspect local Kafka"
@@ -87,7 +90,7 @@ help:
 	@echo "HTTP helpers use BACKEND_URL=$(BACKEND_URL) (override with make BACKEND_URL=...)."
 
 install:
-	poetry install
+	poetry install --no-root
 
 update:
 	poetry update
@@ -341,3 +344,34 @@ airflow-test:
 
 airflow-smoke: airflow-up airflow-test
 	$(PYTHON) orchestration/airflow/smoke.py
+
+# Pass configuration as environment data, never interpolate user values into shell code.
+PIPELINE_CONFIG_VARS = PIPELINE_MODE PIPELINE_ENV_FILE THREADS_REPLAY_PATH PBPLUS_REPLAY_PATH PIPELINE_STATE_DIR \
+	PIPELINE_STREAM_TIMEOUT_SECONDS PIPELINE_COLLECTOR_TIMEOUT_SECONDS PIPELINE_THREADS_LIMIT PIPELINE_PBPLUS_LIMIT \
+	KAFKA_BOOTSTRAP_SERVERS KAFKA_CLIENT_ID KAFKA_DELIVERY_TIMEOUT_MS KAFKA_REQUEST_TIMEOUT_MS KAFKA_RETRIES \
+	DSP_KAFKA_BOOTSTRAP_SERVERS DSP_KAFKA_SOCIAL_POST_TOPIC DSP_KAFKA_STARTING_OFFSETS \
+	DSP_SPARK_MASTER DSP_SPARK_APP_NAME DSP_SPARK_TRIGGER_INTERVAL DSP_SPARK_JARS DSP_SPARK_IVY_DIR \
+	DSP_LAKEHOUSE_BASE_URI DSP_SPARK_SOCIAL_CHECKPOINT_PATH \
+	DSP_DELTA_THREADS_BRONZE_PATH DSP_DELTA_PBPLUS_BRONZE_PATH \
+	DSP_DELTA_SOCIAL_POSTS_PATH DSP_DELTA_COURTS_PATH DSP_DELTA_REJECTED_SOCIAL_PATH \
+	DSP_DELTA_SOCIAL_ACTIVITY_DAILY_PATH DSP_DELTA_COURT_SUPPLY_BY_LOCATION_PATH \
+	DSP_DELTA_UNRESOLVED_COURT_LOCATIONS_PATH DSP_DELTA_LOCATION_MARKET_SIGNAL_SNAPSHOT_PATH \
+	DSP_MARKET_SIGNAL_WINDOW_DAYS DSP_MARKET_SIGNAL_END_DATE \
+	CLICKHOUSE_HOST CLICKHOUSE_PORT CLICKHOUSE_DATABASE CLICKHOUSE_USER CLICKHOUSE_PASSWORD
+# Export only defined variables: exporting an undefined Make variable injects an
+# empty value, masking Python defaults and .env values.
+$(foreach variable,$(PIPELINE_CONFIG_VARS),$(if $(filter undefined,$(origin $(variable))),,$(eval export $(variable))))
+# Do not let this Makefile's computed topic default override a value from .env.
+ifneq ($(filter command line environment environment override,$(origin KAFKA_SOCIAL_POST_TOPIC)),)
+export KAFKA_SOCIAL_POST_TOPIC
+endif
+
+.PHONY: pipeline-e2e pipeline-preflight pipeline-e2e-test
+pipeline-e2e:
+	@$(SPARK_PYTHON) orchestration/local/pipeline.py
+
+pipeline-preflight:
+	@$(SPARK_PYTHON) orchestration/local/pipeline.py --preflight
+
+pipeline-e2e-test:
+	@$(SPARK_PYTHON) scripts/smoke_pipeline_e2e.py

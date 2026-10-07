@@ -1,0 +1,24 @@
+{
+  "schema_version": "1",
+  "source": "pbplus",
+  "run_id": "pipeline-fixture-pbplus-v1",
+  "seed_query": "pickleball courts",
+  "sort": "directory",
+  "collected_at": "2026-10-05T12:00:00Z",
+  "count": 2,
+  "query_runs": [],
+  "posts": [
+    {
+      "id": "https://pickleballplus.vn/san-tap/pipeline-fixture-hanoi",
+      "court_name": "Synthetic Hà Nội venue",
+      "address": "Venue, Hà Nội",
+      "number_of_courts": null
+    },
+    {
+      "id": "https://pickleballplus.vn/san-tap/pipeline-fixture-hue",
+      "court_name": "Synthetic Huế venue",
+      "address": "Venue, Huế",
+      "number_of_courts": 0
+    }
+  ]
+}

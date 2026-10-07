@@ -1,0 +1,11 @@
+{
+  "schema_version": "1",
+  "source": "pbplus",
+  "run_id": "pipeline-fixture-pbplus-empty-v1",
+  "seed_query": "pickleball courts",
+  "sort": "directory",
+  "collected_at": "2026-10-05T12:00:00Z",
+  "count": 0,
+  "query_runs": [],
+  "posts": []
+}

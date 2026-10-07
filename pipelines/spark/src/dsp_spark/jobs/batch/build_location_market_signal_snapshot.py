@@ -78,6 +78,24 @@ def build_location_market_signal_snapshot(
         social_input = validated_gold(social, "social_activity_daily")
         supply_input = validated_gold(supply, "court_supply_by_location")
         window = select_analysis_window(social_input, selected)
+        # Preserve unresolved evidence in the existing daily Gold dataset and
+        # explicitly report exclusions, including those outside this window.
+        social_quality = (
+            social_input.filter(F.col("location_id").isNull())
+            .agg(
+                F.count("*").alias("unresolved_social_location_rows"),
+                F.count(
+                    F.when(
+                        F.col("activity_date").between(
+                            window.start_date, window.end_date
+                        ),
+                        1,
+                    )
+                ).alias("unresolved_social_location_rows_in_window"),
+            )
+            .first()
+            .asDict()
+        )
         generated_at = (
             datetime.now(UTC).isoformat(timespec="microseconds").replace("+00:00", "Z")
         )
@@ -113,6 +131,8 @@ def build_location_market_signal_snapshot(
             "window_days": window.days,
             **counts,
             **quality,
+            **social_quality,
+            "social_activity_source_path": settings.paths.social_activity_daily,
             "gold_generated_at": generated_at,
             "path": settings.paths.location_market_signal_snapshot,
         }

@@ -91,15 +91,26 @@ def persist_social_batch(frame, batch_id: int, *, settings: SparkSettings):
             settings.paths.rejected_social,
             keys=("kafka_topic", "kafka_partition", "kafka_offset"),
         )
-        merge_delta(valid, settings.paths.social_posts, keys=("event_id",))
+        merge_delta(
+            valid,
+            settings.paths.social_posts,
+            keys=("event_id",),
+            initialize_empty=True,
+        )
     finally:
         frame.unpersist()
 
 
 def start_social_stream(spark, settings: SparkSettings, *, available_now: bool = False):
+    stream = read_social_stream(spark, settings)
+    # An empty source may never invoke foreachBatch. Derive the empty Silver
+    # schema through the same projection used by actual Kafka batches.
+    empty, _ = split_social_events(spark.createDataFrame([], stream.schema))
+    merge_delta(
+        empty, settings.paths.social_posts, keys=("event_id",), initialize_empty=True
+    )
     writer = (
-        read_social_stream(spark, settings)
-        .writeStream.queryName("social_posts_kafka_to_delta")
+        stream.writeStream.queryName("social_posts_kafka_to_delta")
         .option("checkpointLocation", settings.paths.social_checkpoint)
         .foreachBatch(partial(persist_social_batch, settings=settings))
     )

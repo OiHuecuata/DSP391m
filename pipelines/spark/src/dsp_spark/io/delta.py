@@ -25,11 +25,19 @@ def write_delta(frame: DataFrame, path: str) -> None:
     frame.write.format("delta").mode("append").option("mergeSchema", "false").save(path)
 
 
-def merge_delta(frame: DataFrame, path: str, *, keys: tuple[str, ...]) -> None:
+def merge_delta(
+    frame: DataFrame,
+    path: str,
+    *,
+    keys: tuple[str, ...],
+    initialize_empty: bool = False,
+) -> None:
     """Insert unseen keys only; first persisted observation wins exact replay.
 
     Intended for one writer per table. Delta optimistic concurrency failures are
     surfaced; neither silent overwrite nor schema evolution is enabled.
+    Required datasets can opt into schema-correct initialization with zero rows.
+    Later empty batches validate the schema and never clear existing observations.
     """
     if not keys or any(key not in frame.columns for key in keys):
         raise ValueError("merge keys must be present")
@@ -42,15 +50,16 @@ def merge_delta(frame: DataFrame, path: str, *, keys: tuple[str, ...]) -> None:
     ):
         raise ValueError("merge keys must be nonnull")
     unique = frame.dropDuplicates(list(keys))
-    if unique.isEmpty():
-        return
     path = storage_uri(path)
     if not DeltaTable.isDeltaTable(frame.sparkSession, path):
-        unique.write.format("delta").mode("errorifexists").option(
-            "mergeSchema", "false"
-        ).save(path)
+        if initialize_empty or not unique.isEmpty():
+            unique.write.format("delta").mode("errorifexists").option(
+                "mergeSchema", "false"
+            ).save(path)
         return
     _aligned(read_delta(frame.sparkSession, path), unique)
+    if unique.isEmpty():
+        return
     condition = " AND ".join(f"target.`{key}` = incoming.`{key}`" for key in keys)
     (
         DeltaTable.forPath(frame.sparkSession, path)

@@ -7,19 +7,31 @@ import tempfile
 import unittest
 from datetime import UTC, datetime
 from pathlib import Path
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path[:0] = [str(ROOT / "pipelines/spark/src"), str(ROOT / "apps/collector/src")]
 
+from dsp_collector.normalizers.social_post import normalize_social_post
 from dsp_collector.publishers.kafka import build_social_post_event
+from dsp_collector.sources.crawler.threads.vietnam_terms import QuerySpec, adapt_post
 from dsp_spark.io.delta import merge_delta, read_delta, write_delta
+from dsp_spark.jobs.batch.build_court_supply_by_location import (
+    build_court_supply_by_location,
+)
+from dsp_spark.jobs.batch.build_location_market_signal_snapshot import (
+    build_location_market_signal_snapshot,
+)
+from dsp_spark.jobs.batch.build_social_activity_daily import build_social_activity_daily
 from dsp_spark.jobs.batch.ingest_bronze import ingest_bronze
 from dsp_spark.jobs.batch.ingest_pbplus import ingest_pbplus
 from dsp_spark.jobs.streaming.social_kafka_to_delta import (
     persist_social_batch,
     split_social_events,
+    start_social_stream,
 )
-from dsp_spark.runtime.config import LakehousePaths, SparkSettings
+from dsp_spark.processing.clean.contracts import spark_schema
+from dsp_spark.runtime.config import LakehousePaths, MarketSignalSettings, SparkSettings
 from dsp_spark.runtime.spark import create_spark
 from jsonschema import ValidationError
 from pyspark.sql import types as T
@@ -214,12 +226,153 @@ class DeltaIntegrationTests(unittest.TestCase):
                 self.settings,
             )
 
-    def test_pbplus_empty_batch_creates_no_rows(self):
-        result = ingest_pbplus(
-            self.spark, self.artifact(self.batch(records=[])), self.settings
+    def test_pbplus_empty_initialization_rerun_and_later_observations(self):
+        empty = self.artifact(self.batch(records=[]), "empty.json")
+        for _ in range(2):
+            result = ingest_pbplus(self.spark, empty, self.settings)
+            self.assertEqual(result["input_count"], 0)
+            frame = read_delta(self.spark.newSession(), self.settings.paths.courts)
+            self.assertEqual(frame.count(), 0)
+            expected = [
+                *spark_schema("court").fields,
+                T.StructField("lakehouse_ingested_at", T.TimestampType()),
+                T.StructField("source_artifact_uri", T.StringType()),
+            ]
+            self.assertEqual(
+                [(f.name, f.dataType) for f in frame.schema],
+                [(f.name, f.dataType) for f in expected],
+            )
+        self.assertEqual(
+            build_court_supply_by_location(self.spark, self.settings)["gold_rows"], 0
         )
-        self.assertEqual(result["input_count"], 0)
-        self.assertFalse((self.root / "lake/silver/courts").exists())
+        nonempty = self.artifact(self.batch(), "nonempty.json")
+        ingest_pbplus(self.spark, nonempty, self.settings)
+        before = read_delta(self.spark, self.settings.paths.courts).collect()
+        ingest_pbplus(self.spark, nonempty, self.settings)
+        ingest_pbplus(self.spark, empty, self.settings)
+        self.assertEqual(
+            read_delta(self.spark, self.settings.paths.courts).collect(), before
+        )
+
+    def test_social_empty_initialization_gold_and_later_observations(self):
+        empty = self.kafka_frame([])
+        expected, _ = split_social_events(empty)
+        for batch_id in range(2):
+            persist_social_batch(empty, batch_id, settings=self.settings)
+            frame = read_delta(
+                self.spark.newSession(), self.settings.paths.social_posts
+            )
+            self.assertEqual(frame.count(), 0)
+            self.assertEqual(
+                [(f.name, f.dataType) for f in frame.schema],
+                [(f.name, f.dataType) for f in expected.schema],
+            )
+        self.assertEqual(
+            build_social_activity_daily(self.spark, self.settings)["gold_rows"], 0
+        )
+        ingest_pbplus(self.spark, self.artifact(self.batch(records=[])), self.settings)
+        build_court_supply_by_location(self.spark, self.settings)
+        with self.assertRaisesRegex(ValueError, "Empty social Gold requires"):
+            build_location_market_signal_snapshot(self.spark, self.settings)
+        result = build_location_market_signal_snapshot(
+            self.spark,
+            self.settings,
+            market_settings=MarketSignalSettings(end_date="2026-10-05"),
+        )
+        self.assertEqual(result["output_locations"], 0)
+        self.assertEqual(result["snapshot_date"], "2026-10-05")
+        self.assertEqual(
+            read_delta(
+                self.spark, self.settings.paths.location_market_signal_snapshot
+            ).count(),
+            0,
+        )
+        event = build_social_post_event(social())
+        persist_social_batch(self.kafka_frame([event]), 2, settings=self.settings)
+        before = read_delta(self.spark, self.settings.paths.social_posts).collect()
+        persist_social_batch(self.kafka_frame([event]), 2, settings=self.settings)
+        persist_social_batch(empty, 3, settings=self.settings)
+        self.assertEqual(
+            read_delta(self.spark, self.settings.paths.social_posts).collect(), before
+        )
+
+    def test_social_stream_without_microbatch_initializes_silver(self):
+        directory = self.root / "empty-stream"
+        directory.mkdir()
+        stream = self.spark.readStream.schema(KAFKA_SCHEMA).json(str(directory))
+        # Replace only transport: the real streaming startup, checkpoint and
+        # Delta initialization execute even when no foreachBatch is invoked.
+        with patch(
+            "dsp_spark.jobs.streaming.social_kafka_to_delta.read_social_stream",
+            return_value=stream,
+        ):
+            query = start_social_stream(self.spark, self.settings, available_now=True)
+            try:
+                self.assertTrue(query.awaitTermination(30))
+                self.assertEqual(
+                    sum(p["numInputRows"] for p in query.recentProgress), 0
+                )
+            finally:
+                if query.isActive:
+                    query.stop()
+        self.assertEqual(
+            read_delta(self.spark, self.settings.paths.social_posts).count(), 0
+        )
+
+    def test_crawler_mentions_through_delta_preserve_unresolved_quality(self):
+        raw = {
+            "id": "123",
+            "text": "Tìm sân pickleball Việt Nam tại Hà Nội, Cầu Giấy, Bắc Từ Liêm, Nam Từ Liêm, Thủ Đức",
+            "taken_at": datetime(2026, 10, 5, tzinfo=UTC).timestamp(),
+        }
+        adapted = adapt_post(
+            raw,
+            query_spec=QuerySpec(
+                "pickleball Vietnam", "pickleball", "vietnam", "Vietnam", 0, "country"
+            ),
+        )
+        self.assertIsNotNone(adapted)
+        record = normalize_social_post(adapted, run_id="geography", collected_at=AT)
+        unsupported = {"Vietnam", "Cầu Giấy", "Bắc Từ Liêm", "Nam Từ Liêm", "Thủ Đức"}
+        self.assertEqual(set(record["detected_locations"]), unsupported | {"Hà Nội"})
+        event = build_social_post_event(record)
+        ingest_pbplus(self.spark, self.artifact(self.batch(records=[])), self.settings)
+        build_court_supply_by_location(self.spark, self.settings)
+        previous = None
+        for attempt in range(2):
+            persist_social_batch(
+                self.kafka_frame([event]), attempt, settings=self.settings
+            )
+            build_social_activity_daily(self.spark, self.settings)
+            daily = read_delta(
+                self.spark, self.settings.paths.social_activity_daily
+            ).collect()
+            self.assertEqual(len(daily), 6)
+            self.assertEqual(
+                {r.location_name for r in daily if r.location_id is None}, unsupported
+            )
+            self.assertEqual(
+                read_delta(self.spark, self.settings.paths.social_posts).count(), 1
+            )
+            result = build_location_market_signal_snapshot(self.spark, self.settings)
+            self.assertEqual(result["unresolved_social_location_rows"], 5)
+            self.assertEqual(result["unresolved_social_location_rows_in_window"], 5)
+            row = (
+                read_delta(
+                    self.spark, self.settings.paths.location_market_signal_snapshot
+                )
+                .collect()[0]
+                .asDict()
+            )
+            self.assertEqual(row["location_id"], "vn-hanoi")
+            self.assertEqual(row["social_post_count"], 1)
+            self.assertTrue(row["has_social_signal"])
+            self.assertFalse(row["has_supply_signal"])
+            self.assertIsNone(row["venue_count"])
+            metrics = {k: v for k, v in row.items() if k != "gold_generated_at"}
+            if previous is not None:
+                self.assertEqual(metrics, previous)
+            previous = metrics
 
     def test_event_payload_event_id_and_kafka_metadata_preserved(self):
         event = build_social_post_event(social())
@@ -254,7 +407,9 @@ class DeltaIntegrationTests(unittest.TestCase):
             all(row.raw_value and row.reason and row.rejected_at for row in rows)
         )
         self.assertEqual({row.kafka_offset for row in rows}, set(range(4)))
-        self.assertFalse((self.root / "lake/silver/social_posts").exists())
+        self.assertEqual(
+            read_delta(self.spark, self.settings.paths.social_posts).count(), 0
+        )
 
     def test_kafka_key_conflict_rejected(self):
         valid, rejected = split_social_events(
@@ -315,6 +470,22 @@ class DeltaIntegrationTests(unittest.TestCase):
         path = (self.root / "reopen").as_uri()
         write_delta(self.spark.createDataFrame([(1,)], "id long"), path)
         self.assertEqual(read_delta(self.spark.newSession(), path).count(), 1)
+
+    def test_empty_merge_still_rejects_existing_schema_drift(self):
+        path = (self.root / "schema-drift").as_uri()
+        merge_delta(
+            self.spark.createDataFrame([], "id long"),
+            path,
+            keys=("id",),
+            initialize_empty=True,
+        )
+        with self.assertRaisesRegex(ValueError, "schema mismatch"):
+            merge_delta(
+                self.spark.createDataFrame([], "id string"),
+                path,
+                keys=("id",),
+                initialize_empty=True,
+            )
 
 
 if __name__ == "__main__":

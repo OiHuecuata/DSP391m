@@ -1,0 +1,30 @@
+{
+  "schema_version": "1",
+  "source": "threads",
+  "run_id": "pipeline-fixture-threads-v1",
+  "seed_query": "pickleball",
+  "sort": "recent",
+  "collected_at": "2026-10-05T12:00:00Z",
+  "count": 2,
+  "query_runs": [],
+  "posts": [
+    {
+      "id": "123",
+      "text": "Synthetic fixture: pickleball Hà Nội, Cầu Giấy, Vietnam",
+      "taken_at": 1791158400,
+      "like_count": 3,
+      "reply_count": 1,
+      "matched_queries": ["pickleball Hà Nội"],
+      "query_contexts": [
+        {"query": "pickleball Hà Nội", "kind": "city", "geo_key": "hanoi", "geo_name": "Hà Nội"}
+      ],
+      "detected_locations": ["Hà Nội", "Cầu Giấy", "Vietnam", "Unknown place"]
+    },
+    {
+      "id": "456",
+      "text": "Synthetic fixture: pickleball Đà Nẵng",
+      "taken_at": 1791158400,
+      "detected_locations": ["Đà Nẵng"]
+    }
+  ]
+}

@@ -90,9 +90,13 @@ def location_market_signal_snapshot(
     window: AnalysisWindow,
     generated_at: str,
 ) -> DataFrame:
-    reference = _canonical_inputs(social, supply)
+    # Null IDs are supported unresolved text evidence, retained in source Gold.
+    # They have no analytical geography and must not be coerced to a city.
+    # Nonnull IDs/names still undergo strict catalog and duplicate validation.
+    canonical_social = social.filter(F.col("location_id").isNotNull())
+    reference = _canonical_inputs(canonical_social, supply)
     activity = (
-        social.filter(
+        canonical_social.filter(
             F.col("activity_date").between(window.start_date, window.end_date)
         )
         .groupBy("location_id", "location_name")

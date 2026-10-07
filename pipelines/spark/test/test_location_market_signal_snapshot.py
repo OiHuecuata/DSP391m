@@ -252,12 +252,11 @@ class MarketSignalTests(unittest.TestCase):
                 all(not isinstance(v, float) or math.isfinite(v) for v in row)
             )
 
-    def test_catalog_mismatch_unknown_and_null_ids_rejected_in_either_source(self):
+    def test_catalog_mismatch_and_unknown_nonnull_ids_still_rejected(self):
         for a, s in [
             ([social(name="Hanoi")], [supply()]),
             ([social()], [supply(name="Hanoi")]),
             ([social(location_id="vn-unknown")], []),
-            ([social(location_id=None)], []),
             ([], [supply(location_id="vn-unknown")]),
         ]:
             with (
@@ -266,10 +265,93 @@ class MarketSignalTests(unittest.TestCase):
             ):
                 self.aggregate(a, s, MarketSignalSettings(end_date="2026-10-05"))
 
+    def test_unresolved_mentions_do_not_change_canonical_outer_join_or_ratios(self):
+        canonical = [social(), social(location_id="vn-da-nang", name="Đà Nẵng")]
+        venues = [supply(), supply("vn-hue", "Huế", known_court_count=None)]
+        unresolved = [
+            social(location_id=None, name=name)
+            for name in (
+                "Cầu Giấy",
+                "Bắc Từ Liêm",
+                "Nam Từ Liêm",
+                "Thủ Đức",
+                "Vietnam",
+                "Unknown place",
+            )
+        ]
+        before = self.aggregate(canonical, venues).orderBy("location_id").collect()
+        after = (
+            self.aggregate(canonical + unresolved, venues)
+            .orderBy("location_id")
+            .collect()
+        )
+        self.assertEqual(after, before)
+        self.assertEqual(len(after), 3)
+
+    def test_unresolved_locations_outside_active_window_do_not_block(self):
+        rows = self.aggregate(
+            [social(), social("2026-08-01", location_id=None, name="Vietnam")],
+            [supply()],
+            MarketSignalSettings(1, "2026-10-05"),
+        ).collect()
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0].social_post_count, 2)
+        self.assertEqual(rows[0].snapshot_date, "2026-10-05")
+
+    def test_only_unresolved_social_preserves_supply_without_coercion(self):
+        activity = [social(location_id=None, name="Vietnam")]
+        row = self.aggregate(activity, [supply()]).collect()[0]
+        self.assertEqual(row.location_id, "vn-hanoi")
+        self.assertFalse(row.has_social_signal)
+        self.assertEqual(row.social_post_count, 0)
+        self.assertEqual(row.snapshot_date, "2026-10-05")
+        self.assertEqual(self.aggregate(activity, []).count(), 0)
+
+    def test_delta_unresolved_evidence_is_preserved_and_exclusions_reported(self):
+        self.seed(
+            [
+                social(),
+                social(location_id=None, name="Cầu Giấy"),
+                social("2026-08-01", location_id=None, name="Vietnam"),
+            ],
+            [supply()],
+        )
+        source = read_delta(self.spark, self.settings.paths.social_activity_daily)
+        before = source.orderBy("activity_date", "location_name").collect()
+        for _ in range(2):
+            result = build_location_market_signal_snapshot(self.spark, self.settings)
+            self.assertEqual(result["output_locations"], 1)
+            self.assertEqual(result["unresolved_social_location_rows"], 2)
+            self.assertEqual(result["unresolved_social_location_rows_in_window"], 1)
+            self.assertEqual(
+                result["social_activity_source_path"],
+                self.settings.paths.social_activity_daily,
+            )
+            self.assertEqual(
+                read_delta(
+                    self.spark.newSession(), self.settings.paths.social_activity_daily
+                )
+                .orderBy("activity_date", "location_name")
+                .collect(),
+                before,
+            )
+
     def test_duplicate_source_keys_rejected(self):
         for a, s in [([social(), social()], []), ([social()], [supply(), supply()])]:
             with self.assertRaisesRegex(ValueError, "Duplicate Gold key"):
                 self.aggregate(a, s)
+
+    def test_invalid_unresolved_evidence_still_fails_before_publication(self):
+        self.seed([social(location_id=None, name="Vietnam", post_count=0)], [supply()])
+        with self.assertRaisesRegex(ValueError, "Gold contract violation"):
+            build_location_market_signal_snapshot(self.spark, self.settings)
+        self.assertFalse(
+            Path(
+                self.settings.paths.location_market_signal_snapshot.removeprefix(
+                    "file://"
+                )
+            ).exists()
+        )
 
     def test_empty_social_requires_end_and_then_preserves_supply(self):
         with self.assertRaisesRegex(ValueError, "Empty social Gold requires"):
