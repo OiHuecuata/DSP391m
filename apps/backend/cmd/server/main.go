@@ -4,28 +4,30 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
-	"github.com/spf13/viper"
 
 	api "github.com/username/DSP391m/apps/backend/internal/api"
+	"github.com/username/DSP391m/apps/backend/internal/config"
+	clickhouserepo "github.com/username/DSP391m/apps/backend/internal/repository/clickhouse"
 	collectorrepo "github.com/username/DSP391m/apps/backend/internal/repository/collector"
+	"github.com/username/DSP391m/apps/backend/internal/services/analytics"
 	systemservice "github.com/username/DSP391m/apps/backend/internal/services/system"
 )
 
 func main() {
-	// Temporary config
-	viper.SetDefault("server.port", 8080)
-	viper.SetDefault(
-		"collector.threads_status_path",
-		"../collector/.local/threads/status.json",
-	)
-
-	port := viper.GetInt("server.port")
-	threadsStatusPath := viper.GetString("collector.threads_status_path")
+	settings, err := config.Load()
+	if err != nil {
+		panic(err)
+	}
 
 	// Dependencies
-	collectorStatusRepo := collectorrepo.NewStatusRepository(threadsStatusPath)
+	collectorStatusRepo := collectorrepo.NewStatusRepository(settings.ThreadsStatusPath)
 	systemStatusService := systemservice.NewStatusService(collectorStatusRepo)
 	systemStatusHandler := api.NewStatusHandler(systemStatusService)
+	marketSignalRepo, err := clickhouserepo.NewMarketSignalRepository(settings.ClickHouse)
+	if err != nil {
+		panic(err)
+	}
+	marketSignalHandler := api.NewMarketSignalHandler(analytics.NewMarketSignalService(marketSignalRepo))
 
 	// Gin router
 	router := gin.Default()
@@ -40,8 +42,9 @@ func main() {
 		"/api/v1/system/status",
 		gin.WrapH(systemStatusHandler),
 	)
+	router.GET("/api/v1/analytics/location-market-signals", gin.WrapH(marketSignalHandler))
 
-	addr := fmt.Sprintf(":%d", port)
+	addr := fmt.Sprintf(":%d", settings.ServerPort)
 	if err := router.Run(addr); err != nil {
 		panic(err)
 	}

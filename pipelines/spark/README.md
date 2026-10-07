@@ -326,3 +326,10 @@ For the actual local verification and limitations, see
 [the smoke report](market-signal-local-smoke.md). For managed packaging,
 see [the Databricks adapter](../../infra/databricks/README.md). Cloud AWS S3 and
 remote Databricks execution remain unverified.
+
+## ClickHouse serving
+
+The current market-signal Delta Gold can be published to typed ClickHouse and
+read through the Go analytics API. Delta remains the analytical source of truth;
+ClickHouse is the serving/query layer. See [local commands and reload semantics](../../infra/clickhouse/README.md)
+and [the executed Delta → ClickHouse → API smoke](../../infra/clickhouse/local-smoke.md).

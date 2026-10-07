@@ -65,6 +65,10 @@ help:
 	@echo "  make spark-gold-market-signal / delta-inspect-gold-market-signal - Build/inspect rolling activity and current supply"
 	@echo "  make databricks-validate-market-signal - Render analytical job offline"
 	@echo "  make delta-inspect-gold-social - Inspect the Gold activity table"
+	@echo "  make clickhouse-up / clickhouse-down / clickhouse-status - Local serving service"
+	@echo "  make clickhouse-migrate - Apply typed serving DDL"
+	@echo "  make load-market-signals-clickhouse - Replace serving state from Delta Gold"
+	@echo "  make smoke-clickhouse - Compare Delta, repeated loads, SQL, and backend API"
 	@echo "  make databricks-build-wheel - Package existing jobs and contracts"
 	@echo "  make databricks-validate    - Validate/render configured job locally"
 	@echo "  make databricks-submit-social-gold - Submit to explicitly configured compute"
@@ -276,3 +280,22 @@ delta-inspect-gold-market-signal:
 
 databricks-validate-market-signal:
 	sh scripts/submit_databricks_job.sh --job location_market_signal_snapshot --dry-run
+
+.PHONY: clickhouse-up clickhouse-down clickhouse-status clickhouse-migrate load-market-signals-clickhouse smoke-clickhouse
+clickhouse-up:
+	docker compose up -d --wait --wait-timeout 120 clickhouse
+
+clickhouse-down:
+	docker compose stop clickhouse
+
+clickhouse-status:
+	docker compose ps clickhouse
+
+clickhouse-migrate:
+	$(SPARK_PYTHON) -m dsp_spark.jobs.batch.load_market_signals_clickhouse --migrate-only
+
+load-market-signals-clickhouse:
+	$(SPARK_PYTHON) -m dsp_spark.jobs.batch.load_market_signals_clickhouse
+
+smoke-clickhouse: clickhouse-up clickhouse-migrate
+	$(SPARK_PYTHON) -m dsp_spark.jobs.batch.smoke_clickhouse
