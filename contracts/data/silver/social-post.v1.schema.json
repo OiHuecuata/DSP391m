@@ -1,17 +1,41 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Normalized social post v1",
-  "description": "One social-post entity observed in one collection run. Source-specific payloads, replies and media objects are excluded. All properties are required; unavailable optional scalars are null and absent context lists are empty. Threads is the first source adapter. Entity identity is independent of observation timestamps and run_id.",
+  "description": "Canonical social observations. Threads, YouTube videos and YouTube top-level comments have separate namespaces; YouTube metrics retain native meaning. New nullable properties are optional for existing Threads producers.",
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "schema_version", "record_id", "source", "source_record_id", "source_url",
-    "source_code", "text", "published_at", "author_id", "author_username",
-    "author_full_name", "author_is_verified", "like_count", "reply_count",
-    "repost_count", "quote_count", "is_reply", "media_type", "has_media",
-    "run_id", "collected_at", "normalized_at", "matched_queries",
-    "query_contexts", "categories", "detected_locations", "vietnam_score",
-    "topic_score", "language_hint", "relevance_signals", "detail_status",
+    "schema_version",
+    "record_id",
+    "source",
+    "source_record_id",
+    "source_url",
+    "source_code",
+    "text",
+    "published_at",
+    "author_id",
+    "author_username",
+    "author_full_name",
+    "author_is_verified",
+    "like_count",
+    "reply_count",
+    "repost_count",
+    "quote_count",
+    "is_reply",
+    "media_type",
+    "has_media",
+    "run_id",
+    "collected_at",
+    "normalized_at",
+    "matched_queries",
+    "query_contexts",
+    "categories",
+    "detected_locations",
+    "vietnam_score",
+    "topic_score",
+    "language_hint",
+    "relevance_signals",
+    "detail_status",
     "detail_error"
   ],
   "properties": {
@@ -36,7 +60,10 @@
       "description": "Canonical source post ID, retained as a string to avoid numeric precision loss. Threads uses the required outer search id, originally pk, regardless of enrichment."
     },
     "source_url": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "format": "uri",
       "pattern": "^https?://",
       "description": "Source post URL from eligible detail, then search; null when unavailable."
@@ -46,7 +73,10 @@
       "description": "Optional source shortcode. A supplied detail code conflicting with search makes the entire detail ineligible."
     },
     "text": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "description": "Post text from eligible detail, then search. Empty text is valid; no available text is null."
     },
     "published_at": {
@@ -120,12 +150,33 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["query", "kind", "geo_key", "geo_name"],
+        "required": [
+          "query",
+          "kind",
+          "geo_key",
+          "geo_name"
+        ],
         "properties": {
-          "query": {"type": "string", "minLength": 1},
-          "kind": {"type": "string", "minLength": 1},
-          "geo_key": {"type": ["string", "null"]},
-          "geo_name": {"type": ["string", "null"]}
+          "query": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "type": "string",
+            "minLength": 1
+          },
+          "geo_key": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "geo_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
         }
       }
     },
@@ -154,29 +205,179 @@
       "description": "Existing relevance.signals evidence, including separate geo:text and geo:query provenance."
     },
     "detail_status": {
-      "type": ["string", "null"],
-      "enum": ["ok", "error", null],
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "ok",
+        "error",
+        null
+      ],
       "description": "Crawler-reported enrichment state. Null means no reported state. An ok report does not override normalizer identity checks; unsafe detail is ignored without rewriting this source report."
     },
     "detail_error": {
       "$ref": "#/$defs/nullable_string",
       "description": "Crawler-reported error text when present; null otherwise. Failure never invalidates an otherwise valid search post."
+    },
+    "view_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "YouTube video views only; unavailable is null."
+    },
+    "parent_record_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^youtube:[A-Za-z0-9_-]+$"
+    },
+    "video_duration": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Native ISO8601 YouTube video duration."
+    },
+    "tags": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
     }
   },
   "$defs": {
-    "nullable_string": {"type": ["string", "null"], "minLength": 1},
-    "nullable_boolean": {"type": ["boolean", "null"]},
-    "nullable_counter": {"type": ["integer", "null"], "minimum": 0},
-    "string_list": {"type": "array", "items": {"type": "string"}},
+    "nullable_string": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "nullable_boolean": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "nullable_counter": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "string_list": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
     "utc_timestamp": {
       "type": "string",
       "format": "date-time",
       "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{6}Z$"
     },
     "nullable_utc_timestamp": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "format": "date-time",
       "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{6}Z$"
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "source": {
+            "const": "threads"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "record_id": {
+            "pattern": "^threads:[0-9]+$"
+          },
+          "source_record_id": {
+            "pattern": "^[0-9]+$"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "source": {
+            "const": "youtube"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "record_id": {
+            "pattern": "^youtube:[A-Za-z0-9_-]+$"
+          },
+          "source_record_id": {
+            "pattern": "^[A-Za-z0-9_-]+$"
+          },
+          "parent_record_id": {
+            "type": "null"
+          }
+        },
+        "required": [
+          "view_count",
+          "parent_record_id",
+          "video_duration",
+          "tags"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "source": {
+            "const": "youtube_comment"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "record_id": {
+            "pattern": "^youtube-comment:[A-Za-z0-9_-]+$"
+          },
+          "source_record_id": {
+            "pattern": "^[A-Za-z0-9_-]+$"
+          },
+          "parent_record_id": {
+            "type": "string",
+            "pattern": "^youtube:[A-Za-z0-9_-]+$"
+          },
+          "view_count": {
+            "type": "null"
+          },
+          "video_duration": {
+            "type": "null"
+          },
+          "tags": {
+            "type": "null"
+          }
+        },
+        "required": [
+          "view_count",
+          "parent_record_id",
+          "video_duration",
+          "tags"
+        ]
+      }
+    }
+  ]
 }

@@ -1,0 +1,17 @@
+{
+  "threads": {
+    "query_seeds": ["pickleball", "sân pickleball", "chơi pickleball"],
+    "second_cycle_seeds": ["pickleball"],
+    "limit": 1000,
+    "per_query_cap": 200,
+    "max_results_per_query": 200,
+    "detail_limit": 8,
+    "query_delay": 2.0,
+    "retries": 1,
+    "timeout_ms": 20000,
+    "cycle_sorts": ["recent", "top"]
+  },
+  "pbplus": {"limit": 1000, "timeout": 20, "delay": 1.0, "retries": 1},
+  "minimum_free_bytes": 2147483648,
+  "between_cycles_seconds": 60
+}

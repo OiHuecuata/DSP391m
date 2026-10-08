@@ -14,11 +14,13 @@ from __future__ import annotations
 
 import argparse
 import json
+import random
 import sys
+import time
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlsplit
 
 from playwright.sync_api import Page, sync_playwright
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
@@ -70,6 +72,48 @@ SEARCH_RESULTS_MARKER = '"searchResults":{"inform_module"'
 
 class ThreadsCrawlerError(RuntimeError):
     """Raised when Threads search data cannot be fetched or parsed."""
+
+
+class ThreadsAccessBlocked(ThreadsCrawlerError):
+    """Public access requires authentication or has been rate limited."""
+
+
+def ensure_public_access(page, response):
+    if response is not None and response.status in (401, 403, 429):
+        raise ThreadsAccessBlocked(f"Public access blocked: HTTP {response.status}")
+    if any(
+        part in urlsplit(page.url).path
+        for part in ("/login", "/checkpoint", "/challenge")
+    ):
+        raise ThreadsAccessBlocked(
+            "Public request redirected to an access-control page"
+        )
+
+
+def expanded_query_plan(seeds):
+    plan, seen = [], set()
+    for seed in seeds:
+        for spec in build_query_plan(seed):
+            key = " ".join(spec.query.casefold().split())
+            if key not in seen:
+                seen.add(key)
+                plan.append(spec)
+    return plan
+
+
+def publication_range(posts):
+    dates = []
+    for post in posts:
+        value = post.get("taken_at")
+        if type(value) in (int, float):
+            try:
+                dates.append(datetime.fromtimestamp(value, UTC).isoformat())
+            except (ValueError, OverflowError, OSError):
+                pass
+    return {
+        "publication_min": min(dates) if dates else None,
+        "publication_max": max(dates) if dates else None,
+    }
 
 
 def _collector_root() -> Path:
@@ -196,6 +240,7 @@ def _post_from_edge(edge: dict[str, Any]) -> dict[str, Any] | None:
             "full_name": user.get("full_name"),
             "is_verified": bool(user.get("is_verified")),
         },
+        "raw_payload": post,
     }
 
 
@@ -260,11 +305,12 @@ def _fetch_search_html(
     print(f"[threads-crawler] opening: {search_url}", flush=True)
 
     try:
-        page.goto(
+        response = page.goto(
             search_url,
             wait_until="domcontentloaded",
             timeout=timeout_ms,
         )
+        ensure_public_access(page, response)
         page.wait_for_timeout(2_000)
         html = page.evaluate("document.documentElement.innerHTML")
 
@@ -273,10 +319,11 @@ def _fetch_search_html(
                 "[threads-crawler] searchResults not visible yet; retrying once...",
                 flush=True,
             )
-            page.reload(
+            response = page.reload(
                 wait_until="domcontentloaded",
                 timeout=timeout_ms,
             )
+            ensure_public_access(page, response)
             page.wait_for_timeout(3_000)
             html = page.evaluate("document.documentElement.innerHTML")
     except PlaywrightTimeoutError as exc:
@@ -321,11 +368,12 @@ def _fetch_post_detail(
         raise ThreadsCrawlerError(f"Post {post.get('id')!r} has no canonical URL")
 
     try:
-        page.goto(
+        response = page.goto(
             url,
             wait_until="domcontentloaded",
             timeout=timeout_ms,
         )
+        ensure_public_access(page, response)
         page.wait_for_timeout(1_500)
         html = page.evaluate("document.documentElement.innerHTML")
     except PlaywrightTimeoutError as exc:
@@ -342,10 +390,11 @@ def _fetch_post_detail(
         )
     except ThreadsPostParserError:
         try:
-            page.reload(
+            response = page.reload(
                 wait_until="domcontentloaded",
                 timeout=timeout_ms,
             )
+            ensure_public_access(page, response)
             page.wait_for_timeout(2_500)
             html = page.evaluate("document.documentElement.innerHTML")
 
@@ -406,6 +455,11 @@ def crawl_threads_posts(
     timeout_ms: int = DEFAULT_TIMEOUT_MS,
     per_query_cap: int = DEFAULT_PER_QUERY_CAP,
     status_tracker: CrawlerStatusTracker | None = None,
+    query_seeds: list[str] | None = None,
+    max_results_per_query: int = 30,
+    detail_limit: int | None = None,
+    query_delay: float = 0.75,
+    retries: int = 1,
 ) -> dict[str, Any]:
     """Execute the domain query plan and collect adapted posts."""
     if limit < 1:
@@ -413,7 +467,14 @@ def crawl_threads_posts(
     if per_query_cap < 1:
         raise ValueError("per_query_cap must be >= 1")
 
-    query_plan = build_query_plan(query)
+    if (
+        max_results_per_query < 1
+        or query_delay < 0
+        or retries < 0
+        or (detail_limit is not None and detail_limit < 0)
+    ):
+        raise ValueError("Invalid collection bounds")
+    query_plan = expanded_query_plan(query_seeds or [query])
 
     _status_update(
         status_tracker,
@@ -430,6 +491,10 @@ def crawl_threads_posts(
 
     collected: dict[str, dict[str, Any]] = {}
     query_runs: list[dict[str, Any]] = []
+    discovered_ids = set()
+    detail_attempts = 0
+    consecutive_errors = 0
+    stopping_reason = "query_plan_exhausted"
 
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(headless=headless)
@@ -445,7 +510,9 @@ def crawl_threads_posts(
         try:
             for query_spec in query_plan:
                 if len(collected) >= limit:
+                    stopping_reason = "result_limit"
                     break
+                query_started = time.monotonic()
 
                 _status_update(
                     status_tracker,
@@ -456,13 +523,38 @@ def crawl_threads_posts(
                 )
 
                 try:
-                    raw_posts, page_info, landed_url = _collect_for_query(
-                        search_page,
-                        query_spec=query_spec,
-                        sort=sort,
-                        timeout_ms=timeout_ms,
-                        raw_limit=30,
+                    for attempt in range(retries + 1):
+                        try:
+                            raw_posts, page_info, landed_url = _collect_for_query(
+                                search_page,
+                                query_spec=query_spec,
+                                sort=sort,
+                                timeout_ms=timeout_ms,
+                                raw_limit=max_results_per_query,
+                            )
+                            break
+                        except ThreadsAccessBlocked:
+                            raise
+                        except ThreadsCrawlerError:
+                            if attempt == retries:
+                                raise
+                            search_page.wait_for_timeout(
+                                int((2**attempt + random.uniform(0, 0.5)) * 1000)
+                            )
+                    consecutive_errors = 0
+                except ThreadsAccessBlocked as exc:
+                    query_runs.append(
+                        {
+                            "query": query_spec.query,
+                            "kind": query_spec.kind,
+                            "geo_name": query_spec.geo_name,
+                            "status": "error",
+                            "error": str(exc),
+                            "blocked": True,
+                        }
                     )
+                    stopping_reason = "access_blocked"
+                    break
                 except ThreadsCrawlerError as exc:
                     print(
                         f"[threads-crawler] query failed "
@@ -486,11 +578,24 @@ def crawl_threads_posts(
                         geo_name=query_spec.geo_name,
                         error=exc,
                     )
+                    consecutive_errors += 1
+                    if consecutive_errors >= 3:
+                        stopping_reason = "consecutive_source_errors"
+                        break
+                    search_page.wait_for_timeout(int(query_delay * 1000))
                     continue
 
                 accepted_this_query = 0
                 detail_success_count = 0
                 detail_failed_count = 0
+                detail_skipped_count = 0
+                eligible_duplicates = 0
+                irrelevant_count = 0
+                query_ids = {str(p["id"]) for p in raw_posts if p.get("id") is not None}
+                newly_discovered = len(query_ids - discovered_ids)
+                discovered_ids.update(query_ids)
+                detail_seconds = 0
+                detail_blocked = False
 
                 for raw_post in raw_posts:
                     adapted = adapt_post(
@@ -498,6 +603,7 @@ def crawl_threads_posts(
                         query_spec=query_spec,
                     )
                     if adapted is None:
+                        irrelevant_count += 1
                         continue
 
                     post_id = adapted.get("id")
@@ -507,35 +613,50 @@ def crawl_threads_posts(
                     post_id = str(post_id)
 
                     if post_id in collected:
+                        eligible_duplicates += 1
                         merge_adapted_post(
                             collected[post_id],
                             adapted,
                         )
                         continue
 
-                    try:
-                        detail = _fetch_post_detail(
-                            detail_page,
-                            post=adapted,
-                            timeout_ms=timeout_ms,
-                        )
-                        _assert_post_detail_identity(adapted, detail)
-                        adapted["detail"] = detail
-                        adapted["detail_status"] = "ok"
-                        detail_success_count += 1
-                    except ThreadsCrawlerError as exc:
-                        adapted["detail"] = None
-                        adapted["detail_status"] = "error"
-                        adapted["detail_error"] = str(exc)
-                        detail_failed_count += 1
-                        print(
-                            f"[threads-crawler] detail failed "
-                            f"post={post_id}: {exc}",
-                            flush=True,
-                        )
+                    if detail_limit is None or detail_attempts < detail_limit:
+                        detail_started = time.monotonic()
+                        detail_attempts += 1
+                        try:
+                            detail = _fetch_post_detail(
+                                detail_page, post=adapted, timeout_ms=timeout_ms
+                            )
+                            _assert_post_detail_identity(adapted, detail)
+                            adapted["detail"] = detail
+                            adapted["detail_status"] = "ok"
+                            detail_success_count += 1
+                        except ThreadsAccessBlocked as exc:
+                            adapted.update(
+                                detail=None,
+                                detail_status="error",
+                                detail_error=str(exc),
+                            )
+                            detail_failed_count += 1
+                            detail_blocked = True
+                            stopping_reason = "access_blocked"
+                        except ThreadsCrawlerError as exc:
+                            adapted.update(
+                                detail=None,
+                                detail_status="error",
+                                detail_error=str(exc),
+                            )
+                            detail_failed_count += 1
+                        detail_seconds += time.monotonic() - detail_started
+                    else:
+                        adapted.update(detail=None, detail_status=None)
+                        detail_skipped_count += 1
 
                     collected[post_id] = adapted
                     accepted_this_query += 1
+
+                    if detail_blocked:
+                        break
 
                     if accepted_this_query >= per_query_cap:
                         break
@@ -547,12 +668,33 @@ def crawl_threads_posts(
                         "query": query_spec.query,
                         "kind": query_spec.kind,
                         "geo_name": query_spec.geo_name,
-                        "status": "ok",
+                        "status": "error" if detail_blocked else "ok",
+                        "blocked": detail_blocked,
                         "landed_url": landed_url,
                         "raw_count": len(raw_posts),
                         "accepted_count": accepted_this_query,
                         "detail_success_count": detail_success_count,
                         "detail_failed_count": detail_failed_count,
+                        "detail_skipped_count": detail_skipped_count,
+                        "unique_discovered_count": newly_discovered,
+                        "duplicate_discovered_count": len(query_ids) - newly_discovered,
+                        "accepted_duplicates_count": eligible_duplicates,
+                        "relevance_rejected_count": irrelevant_count,
+                        "duration_seconds": time.monotonic() - query_started,
+                        "detail_seconds": detail_seconds,
+                        **publication_range(raw_posts),
+                        "pages": [
+                            {
+                                "page": 1,
+                                "raw_count": len(raw_posts),
+                                "page_info": page_info,
+                            }
+                        ],
+                        "pagination_stop": (
+                            "no_public_continuation"
+                            if not page_info or not page_info.get("has_next_page")
+                            else "cursor_without_supported_public_navigation"
+                        ),
                         "page_info": page_info,
                     }
                 )
@@ -578,13 +720,21 @@ def crawl_threads_posts(
                     flush=True,
                 )
 
-                search_page.wait_for_timeout(750)
+                search_page.wait_for_timeout(
+                    int((query_delay + random.uniform(0, 0.25)) * 1000)
+                )
+                if detail_blocked:
+                    break
         finally:
             browser.close()
 
     posts = list(collected.values())[:limit]
 
     if not posts:
+        if stopping_reason == "access_blocked":
+            raise ThreadsAccessBlocked(
+                query_runs[-1].get("error", "Public collection was blocked")
+            )
         raise ThreadsCrawlerError(
             "No posts matched the configured Vietnam relevance policy"
         )
@@ -597,6 +747,9 @@ def crawl_threads_posts(
         "count": len(posts),
         "query_runs": query_runs,
         "posts": posts,
+        "collection_stopping_reason": stopping_reason,
+        "discovered_unique_count": len(discovered_ids),
+        "query_seeds": query_seeds or [query],
     }
 
 

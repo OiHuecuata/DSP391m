@@ -59,6 +59,8 @@ help:
 	@echo "  make pipeline-e2e         - Verified finite local pipeline (PIPELINE_MODE=replay/live)"
 	@echo "  make pipeline-preflight   - Validate E2E runtime, configuration and writable paths"
 	@echo "  make pipeline-e2e-test    - Isolated replay-twice, empty-input and failure acceptance smoke"
+	@echo "  make collect-live-eda     - Paced live accumulation with durable metrics/manifests"
+	@echo "  make report-live-eda      - Measure local data quality/storage and export EDA Parquet"
 	@echo "  make kafka-up / kafka-down - Start / stop local Kafka (retain data)"
 	@echo "  make kafka-topic          - Create/describe the configured SocialPost topic"
 	@echo "  make kafka-status / kafka-logs - Inspect local Kafka"
@@ -375,3 +377,14 @@ pipeline-preflight:
 
 pipeline-e2e-test:
 	@$(SPARK_PYTHON) scripts/smoke_pipeline_e2e.py
+
+LIVE_EDA_CONFIG ?= configs/collection/live_eda.v1.json
+LIVE_EDA_OUTPUT ?= .local/live-eda
+LIVE_EDA_CYCLES ?= 2
+export LIVE_EDA_CONFIG LIVE_EDA_OUTPUT LIVE_EDA_CYCLES
+.PHONY: collect-live-eda report-live-eda
+collect-live-eda:
+	@$(SPARK_PYTHON) scripts/collect_live_dataset.py
+
+report-live-eda:
+	@$(SPARK_PYTHON) scripts/report_live_dataset.py --export

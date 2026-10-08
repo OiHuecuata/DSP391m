@@ -1,18 +1,58 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Threads Silver SocialPost event v1",
+  "title": "Multi-source Silver SocialPost event v1",
   "description": "Kafka transport envelope for an unchanged canonical Silver SocialPost observation. Payload uses the existing Silver contract. Implementations additionally enforce source/run_id/record_id agreement with payload and deterministic event identity. Replay can duplicate events; event identity is separate from Kafka offsets and entity identity.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "event_id", "event_type", "source", "run_id", "record_id", "emitted_at", "payload"],
+  "required": [
+    "schema_version",
+    "event_id",
+    "event_type",
+    "source",
+    "run_id",
+    "record_id",
+    "emitted_at",
+    "payload"
+  ],
   "properties": {
-    "schema_version": {"type": "string", "const": "1"},
-    "event_id": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$", "description": "SHA-256 of compact UTF-8 JSON array [run_id, record_id]. Stable for repeated publication of the same observation, independent of emitted_at."},
-    "event_type": {"type": "string", "const": "social_post.normalized"},
-    "source": {"type": "string", "const": "threads"},
-    "run_id": {"type": "string", "minLength": 1},
-    "record_id": {"type": "string", "minLength": 1, "description": "Preserved Silver entity identity, also used as the Kafka UTF-8 message key."},
-    "emitted_at": {"type": "string", "format": "date-time", "pattern": "Z$", "description": "UTC event creation time, separate from collection and normalization times."},
-    "payload": {"$ref": "../data/silver/social-post.v1.schema.json"}
+    "schema_version": {
+      "type": "string",
+      "const": "1"
+    },
+    "event_id": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "description": "SHA-256 of compact UTF-8 JSON array [run_id, record_id]. Stable for repeated publication of the same observation, independent of emitted_at."
+    },
+    "event_type": {
+      "type": "string",
+      "const": "social_post.normalized"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "threads",
+        "youtube",
+        "youtube_comment"
+      ]
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "record_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Preserved Silver entity identity, also used as the Kafka UTF-8 message key."
+    },
+    "emitted_at": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$",
+      "description": "UTC event creation time, separate from collection and normalization times."
+    },
+    "payload": {
+      "$ref": "../data/silver/social-post.v1.schema.json"
+    }
   }
 }

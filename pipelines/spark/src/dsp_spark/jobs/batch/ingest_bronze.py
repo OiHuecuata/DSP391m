@@ -25,8 +25,8 @@ BRONZE_SCHEMA = T.StructType(
 
 
 def ingest_bronze(spark, artifact: str | Path, settings: SparkSettings, *, source: str):
-    if source not in ("threads", "pbplus"):
-        raise ValueError("Bronze source must be threads or pbplus")
+    if source not in ("threads", "pbplus", "youtube"):
+        raise ValueError("Bronze source must be threads, pbplus or youtube")
     path = Path(artifact).resolve()
     # Decode bytes directly so even CRLF, whitespace and JSON property order
     # survive; do not reserialize or flatten raw source fields.
@@ -55,7 +55,9 @@ def ingest_bronze(spark, artifact: str | Path, settings: SparkSettings, *, sourc
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--source", required=True, choices=("threads", "pbplus"))
+    parser.add_argument(
+        "--source", required=True, choices=("threads", "pbplus", "youtube")
+    )
     parser.add_argument("--artifact", required=True, type=Path)
     args = parser.parse_args(argv)
     settings = SparkSettings.from_env()

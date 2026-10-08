@@ -19,6 +19,8 @@ from pyspark.sql import types as T
 from referencing import Registry, Resource
 
 CONTRACT_FILES = {
+    "youtube_bronze": "data/bronze/youtube-api.v1.schema.json",
+    "social_source_activity_daily": "data/gold/social-source-activity-daily.v1.schema.json",
     "location_market_signal_snapshot": "data/gold/location-market-signal-snapshot.v1.schema.json",
     "location_reference": "reference/vietnam-locations.v1.schema.json",
     "court_supply_by_location": "data/gold/court-supply-by-location.v1.schema.json",
@@ -176,12 +178,22 @@ def _validators(serialized: str):
 
 def validate(value, kind: str, *, documents: str | None = None) -> None:
     _validators(documents or contract_documents())[kind].validate(value)
-    if kind.endswith("_bronze") and value["count"] != len(value["posts"]):
+    if kind in ("threads_bronze", "pbplus_bronze") and value["count"] != len(
+        value["posts"]
+    ):
         raise ValueError("Bronze count does not match posts")
     if kind == "event":
         for name in ("source", "run_id", "record_id"):
             if value[name] != value["payload"][name]:
                 raise ValueError(f"event {name} conflicts with payload")
+        if value["source"] in ("youtube", "youtube_comment"):
+            prefix = (
+                "youtube-comment:"
+                if value["source"] == "youtube_comment"
+                else "youtube:"
+            )
+            if value["record_id"] != prefix + value["payload"]["source_record_id"]:
+                raise ValueError("YouTube identity conflicts with source_record_id")
         identity = json.dumps(
             [value["run_id"], value["record_id"]],
             ensure_ascii=False,

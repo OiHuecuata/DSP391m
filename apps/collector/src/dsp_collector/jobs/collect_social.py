@@ -157,8 +157,12 @@ def process_threads_envelope(
                 }
             )
 
+    collection_errors = [
+        copy.deepcopy(q) for q in bronze["query_runs"] if q.get("status") == "error"
+    ]
+    has_errors = bool(errors or collection_errors)
     status: Literal["success", "partial", "failed"] = (
-        "partial" if errors and records else "failed" if errors else "success"
+        "partial" if has_errors and records else "failed" if has_errors else "success"
     )
     silver = {
         "schema_version": "1",
@@ -174,6 +178,7 @@ def process_threads_envelope(
         "count": len(records),
         "rejected_count": len(errors),
         "normalization_errors": errors,
+        "collection_errors": collection_errors,
         "records": records,
     }
     _write_json_atomic(silver_path, silver)
@@ -234,6 +239,7 @@ def collect_threads(
     publish_kafka: bool = False,
     kafka_settings: KafkaSettings | None = None,
     publisher_factory: Callable[[KafkaSettings], KafkaPublisher] | None = None,
+    crawl_options: dict[str, Any] | None = None,
 ) -> CollectionResult:
     """Invoke the existing crawler, preserve Bronze, then publish local Silver.
 
@@ -255,6 +261,7 @@ def collect_threads(
             timeout_ms=timeout_ms,
             per_query_cap=per_query_cap,
             status_tracker=status_tracker,
+            **(crawl_options or {}),
         )
         if status_tracker is not None:
             selected_run_id = status_tracker.status.run_id

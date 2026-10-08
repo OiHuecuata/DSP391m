@@ -1,0 +1,17 @@
+{
+  "minimum_free_bytes": 2147483648,
+  "threads": {
+    "query": "pickleball", "limit": 100, "sort": "recent", "per_query_cap": 25,
+    "timeout_ms": 20000, "query_seeds": ["pickleball"], "max_results_per_query": 25,
+    "detail_limit": 2, "query_delay": 2, "retries": 1
+  },
+  "youtube": {
+    "keywords": ["pickleball", "sân pickleball", "chơi pickleball"],
+    "include_geography": true, "max_queries": 7, "max_pages": 2,
+    "page_size": 25, "max_videos": 100, "max_requests": 40,
+    "max_search_requests": 14, "max_comment_requests": 20,
+    "max_comment_pages": 2, "max_comments_per_video": 100,
+    "order": "date", "request_delay": 1, "retries": 1
+  },
+  "pbplus": {"limit": 1000, "timeout": 20, "delay": 1, "retries": 1}
+}

@@ -285,7 +285,7 @@ class KafkaPublisherTests(unittest.TestCase):
         publisher.close()
 
     def test_pbplus_is_not_accepted(self):
-        with self.assertRaisesRegex(ValueError, "Threads only"):
+        with self.assertRaisesRegex(ValueError, "Unsupported SocialPost source"):
             kafka.build_social_post_event({**self.record, "source": "pbplus"})
         with self.assertRaises(ValueError):
             self.publish({**self.batch, "source": "pbplus"})

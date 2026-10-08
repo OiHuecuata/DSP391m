@@ -21,9 +21,9 @@ MAX_LOCAL_ROWS = 100_000
 logger = logging.getLogger(__name__)
 
 
-def serving_types():
+def serving_types(kind=KIND):
     result = {}
-    contract = json.loads(contract_documents())[KIND]
+    contract = json.loads(contract_documents())[kind]
     for name, spec in contract["properties"].items():
         kinds = spec["type"] if isinstance(spec["type"], list) else [spec["type"]]
         kind = next(k for k in kinds if k != "null")

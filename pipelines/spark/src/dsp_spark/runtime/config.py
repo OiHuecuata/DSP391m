@@ -27,6 +27,8 @@ def default_social_topic() -> str:
 @dataclass(frozen=True)
 class LakehousePaths:
     base: str
+    youtube_bronze: str = ""
+    social_source_activity_daily: str = ""
     threads_bronze: str = ""
     pbplus_bronze: str = ""
     social_posts: str = ""
@@ -42,6 +44,8 @@ class LakehousePaths:
         base = storage_uri(self.base)
         object.__setattr__(self, "base", base)
         for field, suffix in {
+            "youtube_bronze": "bronze/youtube",
+            "social_source_activity_daily": "gold/social_source_activity_daily",
             "threads_bronze": "bronze/threads",
             "pbplus_bronze": "bronze/pbplus",
             "social_posts": "silver/social_posts",
@@ -66,6 +70,10 @@ class LakehousePaths:
     def from_env(cls):
         return cls(
             base=os.getenv("DSP_LAKEHOUSE_BASE_URI", default_base_uri()),
+            youtube_bronze=os.getenv("DSP_DELTA_YOUTUBE_BRONZE_PATH", ""),
+            social_source_activity_daily=os.getenv(
+                "DSP_DELTA_SOCIAL_SOURCE_ACTIVITY_DAILY_PATH", ""
+            ),
             threads_bronze=os.getenv("DSP_DELTA_THREADS_BRONZE_PATH", ""),
             pbplus_bronze=os.getenv("DSP_DELTA_PBPLUS_BRONZE_PATH", ""),
             social_posts=os.getenv("DSP_DELTA_SOCIAL_POSTS_PATH", ""),

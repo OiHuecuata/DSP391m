@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "YouTube API Bronze envelope v1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "source",
+    "run_id",
+    "collected_at",
+    "query_runs",
+    "responses",
+    "videos",
+    "comments",
+    "video_queries",
+    "requests",
+    "errors"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1"
+    },
+    "source": {
+      "type": "string",
+      "const": "youtube"
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "collected_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "query_runs": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "responses": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "videos": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "comments": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "video_queries": {
+      "type": "object"
+    },
+    "requests": {
+      "type": "object"
+    }
+  }
+}

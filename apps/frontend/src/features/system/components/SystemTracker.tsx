@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { ComingSoon } from "./ComingSoon";
 import { CrawlerTracker } from "./CrawlerTracker";
 import { TrackerTabs } from "./TrackerTabs";
@@ -12,7 +13,7 @@ export function SystemTracker() {
   const [mainTab, setMainTab] = useState("system");
   const [systemTab, setSystemTab] = useState("crawler");
   return <div className="tracker-shell">
-    <header className="site-header"><div className="brand"><span className="brand-mark" aria-hidden="true">D</span>DSP391m<span className="brand-divider" />Data platform</div></header>
+    <header className="site-header"><div className="brand"><span className="brand-mark" aria-hidden="true">D</span>DSP391m<span className="brand-divider" />Data platform<Link href="/data-operations">Data Operations</Link></div></header>
     <main className="tracker-main">
       <div className="page-heading"><span className="eyebrow">Platform operations</span><h1>Tracker</h1><p>Follow your data collection, from query to completion.</p></div>
       <TrackerTabs id="main" label="Tracker sections" options={mainTabs} selected={mainTab} onSelect={setMainTab} />

@@ -97,6 +97,27 @@ dt { font-size: 12px; color: var(--muted); margin-bottom: 7px; }
 .loading-ring { width: 22px; height: 22px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
 .pulse { animation: pulse 1.8s ease-in-out infinite; }
 .site-footer { border-top: 1px solid var(--border); padding: 20px; color: var(--muted); font-size: 11px; text-align: center; }
+.ops-panel { padding: 24px; margin-bottom: 20px; }
+.ops-panel h2 { font-size: 20px; margin-bottom: 12px; }
+.ops-source-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 24px; }
+.ops-infra-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.ops-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
+.ops-main button { border: 1px solid var(--border); border-radius: 6px; background: var(--surface); padding: 9px 12px; font-size: 13px; }
+.ops-main button:disabled { opacity: .5; cursor: default; }
+.ops-actions button:first-child { background: var(--accent); color: white; }
+.ops-toggle, .ops-interval { display: flex; gap: 8px; align-items: center; font-size: 12px; margin: 16px 0; }
+.ops-interval { flex-wrap: wrap; }
+.ops-interval input { width: 100%; border: 1px solid var(--border); border-radius: 6px; padding: 6px; background: var(--surface); }
+.ops-details { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 10px; margin: 20px 0; }
+.ops-details dd { margin: 0; font-size: 12px; text-align: right; overflow-wrap: anywhere; }
+.ops-details dt { margin: 0; }
+.ops-table-scroll { overflow-x: auto; }
+.ops-main table { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; }
+.ops-main th, .ops-main td { padding: 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.ops-main td:first-child { overflow-wrap: anywhere; max-width: 240px; }
+.ops-main .brand { flex-wrap: wrap; }
+.ops-notice { background: var(--background); border-color: var(--border); margin-top: 16px; }
+@media (max-width: 800px) { .ops-source-grid, .ops-infra-grid { grid-template-columns: 1fr; } }
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes pulse { 50% { opacity: .35; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }

@@ -26,6 +26,8 @@ from dsp_spark.jobs.batch.build_social_activity_daily import build_social_activi
 from dsp_spark.jobs.batch.ingest_bronze import ingest_bronze
 from dsp_spark.jobs.batch.ingest_pbplus import ingest_pbplus
 from dsp_spark.jobs.streaming.social_kafka_to_delta import (
+    initialize_social_silver,
+    migrate_social_schema,
     persist_social_batch,
     split_social_events,
     start_social_stream,
@@ -50,6 +52,21 @@ KAFKA_SCHEMA = T.StructType(
 
 
 class DeltaIntegrationTests(unittest.TestCase):
+    def test_social_empty_initialization_needs_no_kafka_and_preserves_rows(self):
+        initialize_social_silver(self.spark, self.settings)
+        self.assertEqual(
+            read_delta(self.spark, self.settings.paths.social_posts).count(), 0
+        )
+        persist_social_batch(
+            self.kafka_frame([build_social_post_event(self.youtube_record())]),
+            0,
+            settings=self.settings,
+        )
+        initialize_social_silver(self.spark, self.settings)
+        self.assertEqual(
+            read_delta(self.spark, self.settings.paths.social_posts).count(), 1
+        )
+
     @classmethod
     def setUpClass(cls):
         cls.spark = create_spark(
@@ -126,6 +143,114 @@ class DeltaIntegrationTests(unittest.TestCase):
                 )
             )
         return self.spark.createDataFrame(rows, KAFKA_SCHEMA)
+
+    def youtube_record(self, run_id="youtube-a", comment=False):
+        from dsp_collector.normalizers.youtube import normalize_youtube
+
+        payload = {
+            "id": "comment_1" if comment else "video_00001",
+            "snippet": {
+                "title": "Sân Hà Nội",
+                "description": "pickleball",
+                "textOriginal": "Sân Hà Nội",
+                "publishedAt": AT,
+                "likeCount": 3,
+            },
+            "statistics": {"viewCount": "100", "likeCount": "5", "commentCount": "2"},
+        }
+        return normalize_youtube(
+            payload,
+            run_id=run_id,
+            collected_at=AT,
+            video_id="video_00001" if comment else None,
+        )
+
+    def test_youtube_stream_observations_and_exact_replay(self):
+        events = [
+            build_social_post_event(self.youtube_record()),
+            build_social_post_event(self.youtube_record(comment=True)),
+        ]
+        frame = self.kafka_frame(events)
+        persist_social_batch(frame, 0, settings=self.settings)
+        persist_social_batch(frame, 1, settings=self.settings)
+        self.assertEqual(
+            read_delta(self.spark, self.settings.paths.social_posts).count(), 2
+        )
+        another = build_social_post_event(self.youtube_record(run_id="youtube-b"))
+        persist_social_batch(self.kafka_frame([another]), 2, settings=self.settings)
+        stored = read_delta(self.spark, self.settings.paths.social_posts)
+        self.assertEqual(stored.count(), 3)
+        self.assertEqual(stored.select("record_id").distinct().count(), 2)
+
+    def test_explicit_nullable_social_migration_preserves_old_rows(self):
+        event = build_social_post_event(social())
+        old, _ = split_social_events(self.kafka_frame([event]))
+        old = old.drop("view_count", "parent_record_id", "video_duration", "tags")
+        old.write.format("delta").save(self.settings.paths.social_posts)
+        migrate_social_schema(self.spark, self.settings)
+        stored = read_delta(self.spark, self.settings.paths.social_posts)
+        self.assertEqual(stored.count(), 1)
+        self.assertIsNone(stored.first().view_count)
+        persist_social_batch(
+            self.kafka_frame([build_social_post_event(self.youtube_record())]),
+            1,
+            settings=self.settings,
+        )
+        self.assertEqual(
+            read_delta(self.spark, self.settings.paths.social_posts).count(), 2
+        )
+
+    def test_youtube_bronze_replay_is_immutable(self):
+        envelope = {
+            "schema_version": "1",
+            "source": "youtube",
+            "run_id": "youtube-a",
+            "collected_at": AT,
+            "videos": [],
+            "comments": [],
+            "responses": [],
+            "query_runs": [],
+            "video_queries": {},
+            "requests": {},
+            "errors": [],
+        }
+        path = self.artifact(envelope)
+        ingest_bronze(self.spark, path, self.settings, source="youtube")
+        ingest_bronze(self.spark, path, self.settings, source="youtube")
+        rows = read_delta(self.spark, self.settings.paths.youtube_bronze).collect()
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0].payload_json, path.read_text())
+
+    def test_source_gold_never_adds_views_to_threads_engagement(self):
+        from dsp_spark.processing.aggregate.social_activity_daily import (
+            social_activity_daily,
+            social_source_activity_daily,
+        )
+        from dsp_spark.processing.clean.gold import validated_gold
+
+        threads_record = {
+            **social(),
+            "published_at": AT.replace("Z", ".000000Z"),
+            "detected_locations": ["Hà Nội"],
+        }
+        events = [
+            build_social_post_event(threads_record),
+            build_social_post_event(self.youtube_record()),
+            build_social_post_event(self.youtube_record(comment=True)),
+        ]
+        valid, _ = split_social_events(self.kafka_frame(events))
+        daily = validated_gold(
+            social_source_activity_daily(valid, generated_at=AT),
+            "social_source_activity_daily",
+        )
+        rows = {r.source: r for r in daily.filter("location_name = 'Hà Nội'").collect()}
+        self.assertEqual(rows["youtube"].youtube_views, 100)
+        self.assertEqual(rows["youtube"].youtube_likes, 5)
+        self.assertIsNone(rows["youtube"].threads_engagement)
+        self.assertEqual(rows["youtube_comment"].youtube_comment_likes, 3)
+        self.assertIsNone(rows["youtube_comment"].youtube_views)
+        threads = social_activity_daily(valid, generated_at=AT)
+        self.assertEqual(threads.select("post_count").first()[0], 1)
 
     def test_runtime_and_delta_extensions(self):
         self.assertEqual(self.spark.version, "4.0.2")

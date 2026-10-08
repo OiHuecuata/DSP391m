@@ -11,6 +11,7 @@ from ...processing.aggregate.social_activity_daily import (
     eligible_location_posts,
     latest_social_posts,
     social_activity_daily,
+    social_source_activity_daily,
 )
 from ...processing.clean.contracts import spark_schema
 from ...processing.clean.gold import validated_gold
@@ -27,7 +28,17 @@ def build_social_activity_daily(spark, settings: SparkSettings):
         )
         gold = social_activity_daily(silver, generated_at=generated_at)
         gold = validated_gold(gold, "social_activity_daily").persist()
-        latest = latest_social_posts(silver)
+        source_silver = silver
+        if "view_count" not in source_silver.columns:
+            source_silver = source_silver.withColumn(
+                "view_count", F.lit(None).cast("long")
+            )
+        source_gold = validated_gold(
+            social_source_activity_daily(source_silver, generated_at=generated_at),
+            "social_source_activity_daily",
+        )
+        replace_delta(source_gold, settings.paths.social_source_activity_daily)
+        latest = latest_social_posts(silver.filter(F.col("source") == "threads"))
         logical_posts = (
             eligible_location_posts(latest).select("record_id").distinct().count()
         )

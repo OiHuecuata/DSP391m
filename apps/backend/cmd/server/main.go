@@ -1,7 +1,12 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/gin-gonic/gin"
 
@@ -10,6 +15,7 @@ import (
 	clickhouserepo "github.com/username/DSP391m/apps/backend/internal/repository/clickhouse"
 	collectorrepo "github.com/username/DSP391m/apps/backend/internal/repository/collector"
 	"github.com/username/DSP391m/apps/backend/internal/services/analytics"
+	"github.com/username/DSP391m/apps/backend/internal/services/dataops"
 	systemservice "github.com/username/DSP391m/apps/backend/internal/services/system"
 )
 
@@ -28,6 +34,12 @@ func main() {
 		panic(err)
 	}
 	marketSignalHandler := api.NewMarketSignalHandler(analytics.NewMarketSignalService(marketSignalRepo))
+	manager, err := dataops.NewManager(dataops.Options{Root: settings.RepoRoot, Directory: settings.CollectionState, Python: settings.CollectionPython, Config: settings.CollectionConfig, YouTubeConfigured: settings.YouTubeConfigured})
+	if err != nil {
+		panic(err)
+	}
+	defer manager.Close()
+	operations := &api.DataOpsHandler{Manager: manager, Status: dataops.NewStatusService(settings.LakehouseURI, settings.ClickHouse, manager)}
 
 	// Gin router
 	router := gin.Default()
@@ -43,9 +55,20 @@ func main() {
 		gin.WrapH(systemStatusHandler),
 	)
 	router.GET("/api/v1/analytics/location-market-signals", gin.WrapH(marketSignalHandler))
+	for _, path := range []string{"data-ops/status", "data-ops/lakehouse", "data-ops/warehouse", "data-ops/runs", "collection/status"} {
+		router.GET("/api/v1/"+path, gin.WrapH(operations))
+	}
+	for _, path := range []string{"collection/start", "collection/stop", "collection/run", "collection/retry"} {
+		router.POST("/api/v1/"+path, gin.WrapH(operations))
+	}
+	router.PATCH("/api/v1/collection/config", gin.WrapH(operations))
 
 	addr := fmt.Sprintf(":%d", settings.ServerPort)
-	if err := router.Run(addr); err != nil {
+	server := &http.Server{Addr: addr, Handler: router}
+	done := make(chan os.Signal, 1)
+	signal.Notify(done, syscall.SIGINT, syscall.SIGTERM)
+	go func() { <-done; _ = server.Shutdown(context.Background()) }()
+	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		panic(err)
 	}
 }

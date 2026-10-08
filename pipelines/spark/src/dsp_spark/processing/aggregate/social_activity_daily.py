@@ -55,7 +55,9 @@ def eligible_location_posts(latest: DataFrame) -> DataFrame:
 
 def social_activity_daily(silver: DataFrame, *, generated_at: str) -> DataFrame:
     """Full deterministic aggregation; only the supplied rebuild time varies."""
-    mentions = eligible_location_posts(latest_social_posts(silver))
+    mentions = eligible_location_posts(
+        latest_social_posts(silver.filter(F.col("source") == "threads"))
+    )
     grouped = mentions.groupBy("activity_date", "location_id", "location_name").agg(
         F.count("record_id").alias("post_count"),
         *(
@@ -71,5 +73,32 @@ def social_activity_daily(silver: DataFrame, *, generated_at: str) -> DataFrame:
             "engagement_total",
             sum((F.col(name) for name in ENGAGEMENT_COLUMNS), F.lit(0)),
         )
+        .withColumn("gold_generated_at", F.lit(generated_at))
+    )
+
+
+def social_source_activity_daily(silver, *, generated_at):
+    """Separate native measures by source; geography is text mentions only."""
+    mentions = eligible_location_posts(latest_social_posts(silver))
+    metrics = {
+        "threads_engagement": (
+            "threads",
+            sum((F.coalesce(F.col(k), F.lit(0)) for k in ENGAGEMENT_COLUMNS), F.lit(0)),
+        ),
+        "youtube_views": ("youtube", F.col("view_count")),
+        "youtube_likes": ("youtube", F.col("like_count")),
+        "youtube_comment_count": ("youtube", F.col("reply_count")),
+        "youtube_comment_likes": ("youtube_comment", F.col("like_count")),
+    }
+    return (
+        mentions.groupBy("activity_date", "location_id", "location_name", "source")
+        .agg(
+            F.count("record_id").alias("record_count"),
+            *(
+                F.sum(F.when(F.col("source") == source, expression)).alias(name)
+                for name, (source, expression) in metrics.items()
+            ),
+        )
+        .withColumn("schema_version", F.lit("1"))
         .withColumn("gold_generated_at", F.lit(generated_at))
     )

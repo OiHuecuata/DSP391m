@@ -1,6 +1,7 @@
 """Finite local E2E control plane composing the existing collector and data jobs."""
 
 import argparse
+import fcntl
 import hashlib
 import json
 import os
@@ -10,6 +11,7 @@ import signal
 import subprocess
 import sys
 import tempfile
+from contextlib import contextmanager
 from dataclasses import asdict, dataclass
 from importlib.metadata import version
 from pathlib import Path
@@ -18,6 +20,22 @@ from uuid import uuid4
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(ROOT / "apps/collector/src"), str(ROOT / "pipelines/spark/src")]
+
+
+@contextmanager
+def lakehouse_lock(config):
+    """One writer across backend cycles and finite local orchestration commands."""
+    uri = urlsplit(config.spark.paths.base)
+    if uri.scheme != "file" or uri.netloc:
+        raise ValueError("Local pipeline writer lock requires a local file URI")
+    directory = Path(unquote(uri.path))
+    directory.mkdir(parents=True, exist_ok=True)
+    with (directory / ".pipeline-writer.lock").open("a") as lock:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            raise RuntimeError("Another local pipeline writer is active") from None
+        yield
 
 
 def digest(path):
@@ -521,6 +539,11 @@ def verify(spark, config, collections):
 
 
 def execute(config, summary, directory):
+    with lakehouse_lock(config):
+        return _execute_locked(config, summary, directory)
+
+
+def _execute_locked(config, summary, directory):
     from dsp_collector.publishers.kafka import publish_social_batch
     from dsp_spark.io.clickhouse import (
         ClickHouseClient,

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import random
 import re
 import time
 from datetime import UTC, datetime
@@ -41,6 +42,10 @@ class PBPlusCrawlerError(RuntimeError):
     """Raised when court listings cannot be collected."""
 
 
+class PBPlusAccessBlocked(PBPlusCrawlerError):
+    """Stop rather than retry authentication or rate-limit responses."""
+
+
 def _collector_root() -> Path:
     return Path(__file__).resolve().parents[5]
 
@@ -59,12 +64,16 @@ def get_page(
     for attempt in range(retries + 1):
         try:
             response = requests.get(url, headers=HEADERS, timeout=timeout)
+            if response.status_code in (401, 403, 429):
+                raise PBPlusAccessBlocked(
+                    f"Public directory access blocked: HTTP {response.status_code}"
+                )
             response.raise_for_status()
             return BeautifulSoup(response.text, "html.parser")
         except requests.RequestException:
             if attempt == retries:
                 raise
-            time.sleep(min(2**attempt, 8))
+            time.sleep(min(2**attempt, 8) + random.uniform(0, 0.25))
 
     raise AssertionError("unreachable")
 
@@ -305,13 +314,26 @@ def crawl_pbplus_courts(
         raise ValueError("retries must be >= 0")
 
     listing_soup = get_page(LIST_URL, timeout=timeout, retries=retries)
-    court_links = find_court_links(listing_soup)[:limit]
+    all_links = find_court_links(listing_soup)
+    raw_links = [
+        a["href"] for a in listing_soup.select("a[href]") if "/san-tap/" in a["href"]
+    ]
+    court_links = all_links[:limit]
     posts: list[dict[str, Any]] = []
     errors: list[dict[str, str]] = []
+    blocked = False
+    requested = 0
 
     for url in tqdm(court_links, desc="Crawling PBPlus courts"):
+        requested += 1
         try:
             posts.append(scrape_court(url, timeout=timeout, retries=retries))
+        except PBPlusAccessBlocked as exc:
+            errors.append(
+                {"url": url, "error_type": type(exc).__name__, "error": str(exc)}
+            )
+            blocked = True
+            break
         except (requests.RequestException, ValueError) as exc:
             errors.append(
                 {"url": url, "error_type": type(exc).__name__, "error": str(exc)}
@@ -319,7 +341,7 @@ def crawl_pbplus_courts(
             print(f"[pbplus-crawler] failed {url}: {exc}", flush=True)
 
         if delay:
-            time.sleep(delay)
+            time.sleep(delay + random.uniform(0, 0.1))
 
     query_run: dict[str, Any] = {
         "query": LIST_URL,
@@ -334,6 +356,16 @@ def crawl_pbplus_courts(
         "raw_count": len(court_links),
         "failed_count": len(errors),
         "accepted_count": len(posts),
+        "listing_entries_discovered": len(raw_links),
+        "unique_links_discovered": len(all_links),
+        "duplicate_links": len(raw_links) - len(all_links),
+        "detail_pages_requested": requested,
+        "stop_reason": (
+            "access_blocked"
+            if blocked
+            else "directory_exhausted" if len(all_links) <= limit else "limit"
+        ),
+        "blocked": blocked,
     }
     if errors:
         query_run["errors"] = errors

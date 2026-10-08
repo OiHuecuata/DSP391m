@@ -2,6 +2,15 @@ package config
 
 import "testing"
 
+func TestClickHouseHostRejectsCredentialURLs(t *testing.T) {
+	for _, host := range []string{"user:fixture-secret@localhost", "http://localhost", "localhost/path"} {
+		c := ClickHouse{Host: host, Port: 8123, User: "test", Database: "test", Timeout: 1}
+		if c.Validate() == nil {
+			t.Fatal("unsafe host accepted")
+		}
+	}
+}
+
 func TestClickHouseEnvironment(t *testing.T) {
 	t.Setenv("CLICKHOUSE_HOST", "127.0.0.1")
 	t.Setenv("CLICKHOUSE_PORT", "18123")

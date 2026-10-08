@@ -1,0 +1,160 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "activity_date",
+    "location_id",
+    "location_name",
+    "source",
+    "record_count",
+    "threads_engagement",
+    "youtube_views",
+    "youtube_likes",
+    "youtube_comment_count",
+    "youtube_comment_likes",
+    "gold_generated_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1"
+    },
+    "activity_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "location_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "location_name": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "threads",
+        "youtube",
+        "youtube_comment"
+      ]
+    },
+    "record_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "threads_engagement": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "youtube_views": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "youtube_likes": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "youtube_comment_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "youtube_comment_likes": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "gold_generated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "source": {
+            "const": "threads"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "youtube_views": {
+            "type": "null"
+          },
+          "youtube_likes": {
+            "type": "null"
+          },
+          "youtube_comment_count": {
+            "type": "null"
+          },
+          "youtube_comment_likes": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "source": {
+            "const": "youtube"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "threads_engagement": {
+            "type": "null"
+          },
+          "youtube_comment_likes": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "source": {
+            "const": "youtube_comment"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "threads_engagement": {
+            "type": "null"
+          },
+          "youtube_views": {
+            "type": "null"
+          },
+          "youtube_likes": {
+            "type": "null"
+          },
+          "youtube_comment_count": {
+            "type": "null"
+          }
+        }
+      }
+    }
+  ]
+}

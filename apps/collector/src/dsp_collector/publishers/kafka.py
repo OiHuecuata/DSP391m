@@ -1,4 +1,4 @@
-"""Threads Silver event transport only: no crawling, normalization or storage.
+"""Canonical multi-source Silver event transport: no crawling, normalization or storage.
 
 Acknowledgements, not enqueue success, determine publication results. Idempotence
 protects retries within a producer session; later Silver replay can duplicate
@@ -100,6 +100,12 @@ def validate_social_post_event(event: Mapping[str, Any]) -> None:
     for field in ("source", "run_id", "record_id"):
         if event[field] != event["payload"][field]:
             raise ValueError(f"event {field} conflicts with Silver payload")
+    if event["source"] in ("youtube", "youtube_comment"):
+        prefix = (
+            "youtube-comment:" if event["source"] == "youtube_comment" else "youtube:"
+        )
+        if event["record_id"] != prefix + event["payload"]["source_record_id"]:
+            raise ValueError("YouTube identity conflicts with source_record_id")
     if event["event_id"] != _event_id(event["run_id"], event["record_id"]):
         raise ValueError("event_id conflicts with observation identity")
 
@@ -109,8 +115,8 @@ def build_social_post_event(
 ) -> dict[str, Any]:
     """Wrap an already-normalized record, preserving its entire payload."""
     _validate(record, _validators()[0])
-    if record["source"] != "threads":
-        raise ValueError("Kafka SocialPost publication supports Threads only")
+    if record["source"] not in ("threads", "youtube", "youtube_comment"):
+        raise ValueError("Unsupported SocialPost source")
     when = datetime.now(UTC) if emitted_at is None else emitted_at
     if when.utcoffset() is None:
         raise ValueError("emitted_at must be timezone-aware")
@@ -245,8 +251,11 @@ def publish_social_batch(
         batch = json.loads(Path(batch).read_text(encoding="utf-8"))
     if not isinstance(batch, Mapping):
         raise TypeError("Silver batch must be an object")
-    if batch.get("source") != "threads" or batch.get("schema_version") != "1":
-        raise ValueError("expected a Threads Silver v1 batch")
+    if (
+        batch.get("source") not in ("threads", "youtube")
+        or batch.get("schema_version") != "1"
+    ):
+        raise ValueError("expected a supported SocialPost Silver v1 batch")
     records = batch.get("records")
     run_id = batch.get("run_id")
     if (
