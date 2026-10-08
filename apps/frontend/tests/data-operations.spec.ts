@@ -7,6 +7,22 @@ function snapshot(status = "IDLE"): Operations {
 }
 async function show(page: Page, data = snapshot()) { await page.route("**/api/v1/data-ops/status", (route) => route.fulfill({ json: data })); await page.goto("/data-operations"); await expect(page.getByRole("heading", { name: "Collection", exact: true })).toBeVisible(); }
 
+for (const [bytes, expected] of [
+  [3_884_671, "0.0039 GB"],
+  [500_000_000, "0.500 GB"],
+  [1_500_000_000, "1.50 GB"],
+] as const) {
+  test(`Data Lake card displays ${bytes} bytes as ${expected}`, async ({ page }) => {
+    const data = snapshot();
+    data.lakehouse.physical_bytes = bytes;
+    await show(page, data);
+    const card = page.getByRole("region", { name: "Data Lake", exact: true });
+    const label = card.getByText("Physical size", { exact: true });
+    await expect(label).toBeVisible();
+    await expect(label.locator("+ dd")).toHaveText(expected);
+  });
+}
+
 test("Data Lake and Warehouse cards show actual response metrics", async ({ page }) => { await show(page); await expect(page.getByRole("region", { name: "Data Lake", exact: true })).toContainText("Local Delta Lake"); await expect(page.getByRole("region", { name: "Data Lake", exact: true })).toContainText("100"); await expect(page.getByRole("region", { name: "Data Warehouse", exact: true })).toContainText("2026-10-07"); await expect(page.getByRole("region", { name: "Data Warehouse", exact: true })).toContainText("dsp391m"); });
 test("source cards show telemetry and server-only configuration flag", async ({ page }) => { await show(page, snapshot("PARTIAL")); const youtube = page.getByRole("article", { name: "YouTube collection" }); await expect(youtube).toContainText("API configured: Yes"); await expect(youtube).toContainText("4 / 10"); await expect(page.getByRole("article", { name: "Threads collection" })).toContainText("PARTIAL"); await expect(page.getByRole("article", { name: "PBPlus collection" })).toBeVisible(); expect(await page.content()).not.toContain("YOUTUBE_API_KEY"); expect(await page.content()).not.toContain("AIza"); });
 test("Start sends selected sources and intervals and returns immediately", async ({ page }) => { await show(page); await page.getByLabel("Enable YouTube", { exact: true }).uncheck(); await page.getByLabel("Threads interval seconds", { exact: true }).fill("86400"); let body; await page.route("**/api/v1/collection/start", async (route) => { body = route.request().postDataJSON(); return route.fulfill({ status: 202, json: snapshot("RUNNING").collection }); }); await page.getByRole("button", { name: "Start continuous collection", exact: true }).click(); await expect(page.getByRole("status")).toContainText("You can close this browser"); expect(body).toMatchObject({ sources: { threads: { enabled: true, interval_seconds: 86400 }, youtube: { enabled: false }, pbplus: { enabled: false } } }); });
