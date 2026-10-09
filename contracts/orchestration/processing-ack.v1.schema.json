@@ -1,0 +1,238 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ack_version": {
+      "const": "1"
+    },
+    "ack_id": {
+      "$ref": "processing-manifest.v1.schema.json#/$defs/id"
+    },
+    "manifest_id": {
+      "$ref": "processing-manifest.v1.schema.json#/$defs/id"
+    },
+    "attempt_id": {
+      "$ref": "processing-manifest.v1.schema.json#/$defs/version"
+    },
+    "stage": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{0,63}$",
+      "not": {
+        "pattern": "[\\r\\n]"
+      }
+    },
+    "outcome": {
+      "enum": [
+        "STARTED",
+        "SUCCESS",
+        "PARTIAL",
+        "FAILED",
+        "PUBLICATION_UNCERTAIN",
+        "FENCING_REQUIRED",
+        "CANCELLED",
+        "SKIPPED"
+      ]
+    },
+    "collection_outcome": {
+      "enum": [
+        "success",
+        "partial",
+        "failed"
+      ]
+    },
+    "started_at": {
+      "$ref": "processing-manifest.v1.schema.json#/$defs/nullable_timestamp"
+    },
+    "completed_at": {
+      "$ref": "processing-manifest.v1.schema.json#/$defs/nullable_timestamp"
+    },
+    "input_refs": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "processing-manifest.v1.schema.json#/$defs/input"
+          },
+          {
+            "$ref": "processing-manifest.v1.schema.json#/$defs/delta"
+          },
+          {
+            "$ref": "processing-manifest.v1.schema.json#/$defs/kafka"
+          }
+        ]
+      }
+    },
+    "output_refs": {
+      "type": "array",
+      "items": {
+        "$ref": "processing-manifest.v1.schema.json#/$defs/output"
+      }
+    },
+    "error": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "code": {
+              "enum": [
+                "INPUT_INVALID",
+                "ARTIFACT_UNAVAILABLE",
+                "SCHEMA_MISMATCH",
+                "PROCESSING_FAILED",
+                "PUBLICATION_FAILED",
+                "IO_FAILURE",
+                "OWNERSHIP_INVALID",
+                "UNKNOWN_ERROR"
+              ]
+            },
+            "retryable": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "code",
+            "retryable"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "owner_reference": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "target_identity": {
+              "$ref": "processing-manifest.v1.schema.json#/$defs/id"
+            },
+            "process_id": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "required": [
+            "target_identity",
+            "process_id"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "publication_generation_reference": {
+      "anyOf": [
+        {
+          "$ref": "processing-manifest.v1.schema.json#/$defs/version"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "ack_version",
+    "ack_id",
+    "manifest_id",
+    "attempt_id",
+    "stage",
+    "outcome",
+    "collection_outcome",
+    "started_at",
+    "completed_at",
+    "input_refs",
+    "output_refs",
+    "error",
+    "owner_reference",
+    "publication_generation_reference"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "file:///dsp-contracts/orchestration/processing-ack.v1.schema.json",
+  "title": "ProcessingAcknowledgement v1",
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "outcome": {
+            "const": "STARTED"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "started_at": {
+            "$ref": "processing-manifest.v1.schema.json#/$defs/timestamp"
+          },
+          "completed_at": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "outcome": {
+            "enum": [
+              "SUCCESS",
+              "PARTIAL",
+              "FAILED",
+              "CANCELLED",
+              "SKIPPED"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "completed_at": {
+            "$ref": "processing-manifest.v1.schema.json#/$defs/timestamp"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "outcome": {
+            "const": "FAILED"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "error": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "enum": [
+                  "INPUT_INVALID",
+                  "ARTIFACT_UNAVAILABLE",
+                  "SCHEMA_MISMATCH",
+                  "PROCESSING_FAILED",
+                  "PUBLICATION_FAILED",
+                  "IO_FAILURE",
+                  "OWNERSHIP_INVALID",
+                  "UNKNOWN_ERROR"
+                ]
+              },
+              "retryable": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "code",
+              "retryable"
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

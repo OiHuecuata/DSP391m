@@ -1,0 +1,818 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "manifest_version": {
+      "const": "1"
+    },
+    "manifest_id": {
+      "$ref": "#/$defs/id"
+    },
+    "processing_spec_hash": {
+      "$ref": "#/$defs/id"
+    },
+    "payload_sha256": {
+      "$ref": "#/$defs/hash"
+    },
+    "input_order": {
+      "enum": [
+        "UNORDERED",
+        "ORDERED"
+      ]
+    },
+    "inputs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/input"
+      },
+      "uniqueItems": true
+    },
+    "ingestion_refs": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "#/$defs/delta"
+          },
+          {
+            "$ref": "#/$defs/kafka"
+          }
+        ]
+      },
+      "uniqueItems": true
+    },
+    "acquisition": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "outcome": {
+          "enum": [
+            "success",
+            "partial",
+            "failed"
+          ]
+        },
+        "accepted_records": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "coverage": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "status": {
+              "enum": [
+                "UNKNOWN",
+                "NOT_SEARCHED",
+                "SEARCHED_WITH_ZERO_RESULTS",
+                "PARTIALLY_COLLECTED",
+                "RATE_LIMITED",
+                "ACCESS_DENIED",
+                "COLLECTION_FAILED",
+                "SOURCE_UNSUPPORTED",
+                "PLANNED_QUERIES_COMPLETE"
+              ]
+            },
+            "planned_queries": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 9223372036854775807
+            },
+            "successful_queries": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 9223372036854775807
+            },
+            "failed_queries": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 9223372036854775807
+            },
+            "records_returned": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 9223372036854775807
+            },
+            "resolved_records": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 9223372036854775807
+            },
+            "pagination_complete": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "result_limit_reached": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "status"
+          ]
+        },
+        "runs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "source_platform": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "not": {
+                  "pattern": "[\\r\\n]"
+                }
+              },
+              "collection_run_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "outcome": {
+                "enum": [
+                  "success",
+                  "partial",
+                  "failed"
+                ]
+              },
+              "accepted_records": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0,
+                "maximum": 9223372036854775807
+              },
+              "coverage": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "status": {
+                    "enum": [
+                      "UNKNOWN",
+                      "NOT_SEARCHED",
+                      "SEARCHED_WITH_ZERO_RESULTS",
+                      "PARTIALLY_COLLECTED",
+                      "RATE_LIMITED",
+                      "ACCESS_DENIED",
+                      "COLLECTION_FAILED",
+                      "SOURCE_UNSUPPORTED",
+                      "PLANNED_QUERIES_COMPLETE"
+                    ]
+                  },
+                  "planned_queries": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 0,
+                    "maximum": 9223372036854775807
+                  },
+                  "successful_queries": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 0,
+                    "maximum": 9223372036854775807
+                  },
+                  "failed_queries": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 0,
+                    "maximum": 9223372036854775807
+                  },
+                  "records_returned": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 0,
+                    "maximum": 9223372036854775807
+                  },
+                  "resolved_records": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 0,
+                    "maximum": 9223372036854775807
+                  },
+                  "pagination_complete": {
+                    "type": [
+                      "boolean",
+                      "null"
+                    ]
+                  },
+                  "result_limit_reached": {
+                    "type": [
+                      "boolean",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "status"
+                ]
+              }
+            },
+            "required": [
+              "source_platform",
+              "collection_run_id",
+              "outcome",
+              "accepted_records"
+            ]
+          }
+        }
+      },
+      "required": [
+        "outcome",
+        "accepted_records",
+        "coverage",
+        "runs"
+      ]
+    },
+    "target_identity": {
+      "$ref": "#/$defs/id"
+    },
+    "targets": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "base_uri": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^file://"
+        },
+        "resources": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^(group|delta|clickhouse):"
+          }
+        },
+        "include_group": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "base_uri",
+        "resources",
+        "include_group"
+      ]
+    },
+    "processing_spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "analysis_end_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "window_days": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        "processing_contract_version": {
+          "$ref": "#/$defs/version"
+        },
+        "code_version": {
+          "$ref": "#/$defs/version"
+        },
+        "configuration_hash": {
+          "$ref": "#/$defs/hash"
+        },
+        "reference_version": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/version"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "feature_version": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/version"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "policy_version": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/version"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "tombstone_version": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/version"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "analysis_end_date",
+        "window_days",
+        "processing_contract_version",
+        "code_version",
+        "configuration_hash",
+        "reference_version",
+        "feature_version",
+        "policy_version",
+        "tombstone_version"
+      ]
+    },
+    "readiness": {
+      "enum": [
+        "NOT_READY",
+        "READY",
+        "PARTIAL_READY",
+        "COLLECTION_FAILED",
+        "FENCING_REQUIRED"
+      ]
+    },
+    "created_at": {
+      "$ref": "#/$defs/timestamp"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "origin": {
+          "enum": [
+            "MANUAL",
+            "REPLAY",
+            "SYNTHETIC",
+            "AUTOMATED"
+          ]
+        }
+      },
+      "required": []
+    }
+  },
+  "required": [
+    "manifest_version",
+    "manifest_id",
+    "processing_spec_hash",
+    "payload_sha256",
+    "input_order",
+    "inputs",
+    "ingestion_refs",
+    "acquisition",
+    "target_identity",
+    "targets",
+    "processing_spec",
+    "readiness",
+    "created_at",
+    "metadata"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "file:///dsp-contracts/orchestration/processing-manifest.v1.schema.json",
+  "title": "ProcessingManifest v1",
+  "$defs": {
+    "hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "not": {
+        "pattern": "[\\r\\n]"
+      }
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "not": {
+        "pattern": "[\\r\\n]"
+      }
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:+-]{0,127}$",
+      "not": {
+        "pattern": "[\\r\\n]"
+      }
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{6}Z$",
+      "not": {
+        "pattern": "[\\r\\n]"
+      }
+    },
+    "nullable_timestamp": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{6}Z$",
+          "not": {
+            "pattern": "[\\r\\n]"
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "artifact",
+            "observations"
+          ]
+        },
+        "source_platform": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "not": {
+            "pattern": "[\\r\\n]"
+          }
+        },
+        "collection_run_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "artifact_uri": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^(file|s3a|https)://"
+        },
+        "content_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "artifact_schema_version": {
+          "$ref": "#/$defs/version"
+        },
+        "record_count": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "policy_reference": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/version"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source_record_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "observation_range": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "first_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            "last_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            }
+          },
+          "required": [
+            "first_id",
+            "last_id"
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "source_platform",
+        "collection_run_id",
+        "artifact_uri",
+        "content_sha256",
+        "artifact_schema_version",
+        "record_count"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "observations"
+              }
+            }
+          },
+          "then": {
+            "anyOf": [
+              {
+                "required": [
+                  "source_record_id"
+                ],
+                "properties": {
+                  "source_record_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                  }
+                }
+              },
+              {
+                "required": [
+                  "observation_range"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "delta": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "delta"
+        },
+        "source_platform": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "not": {
+            "pattern": "[\\r\\n]"
+          }
+        },
+        "collection_run_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "uri": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^(file|s3a|https)://"
+        },
+        "delta_version": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "schema_version": {
+          "$ref": "#/$defs/version"
+        },
+        "content_sha256": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/hash"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "source_platform",
+        "collection_run_id",
+        "uri",
+        "delta_version",
+        "schema_version"
+      ]
+    },
+    "kafka": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "kafka_ack"
+        },
+        "source_platform": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "not": {
+            "pattern": "[\\r\\n]"
+          }
+        },
+        "collection_run_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "broker_namespace": {
+          "$ref": "#/$defs/version"
+        },
+        "topic": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,248}$",
+          "not": {
+            "pattern": "[\\r\\n]"
+          }
+        },
+        "partition": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "first_offset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "last_offset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "acknowledged_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "kind",
+        "source_platform",
+        "collection_run_id",
+        "broker_namespace",
+        "topic",
+        "partition",
+        "first_offset",
+        "last_offset",
+        "acknowledged_count"
+      ]
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "artifact",
+            "delta",
+            "clickhouse"
+          ]
+        },
+        "uri": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^(file|s3a|https)://"
+        },
+        "schema_version": {
+          "$ref": "#/$defs/version"
+        },
+        "validation": {
+          "const": "VALIDATED"
+        },
+        "version": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/version"
+            },
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fingerprint": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/hash"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "uri",
+        "schema_version",
+        "validation",
+        "version",
+        "fingerprint"
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "readiness": {
+            "const": "READY"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "acquisition": {
+            "properties": {
+              "outcome": {
+                "const": "success"
+              }
+            }
+          }
+        },
+        "anyOf": [
+          {
+            "properties": {
+              "inputs": {
+                "minItems": 1
+              }
+            }
+          },
+          {
+            "properties": {
+              "ingestion_refs": {
+                "minItems": 1
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "readiness": {
+            "const": "PARTIAL_READY"
+          }
+        }
+      },
+      "then": {
+        "anyOf": [
+          {
+            "properties": {
+              "inputs": {
+                "minItems": 1
+              }
+            }
+          },
+          {
+            "properties": {
+              "ingestion_refs": {
+                "minItems": 1
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
