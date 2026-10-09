@@ -280,10 +280,13 @@ yarn-error.log*
 next-env.d.ts
 
 # Documents (will be public when done)
-docs/
+docs/*
 
 # Local for testing
 data/
+!docs/data/
+docs/data/*
+!docs/data/DSP391m_Data_Requirements_v1.0.md
 # Keep versioned data contracts trackable; runtime data elsewhere stays ignored.
 !/contracts/data/
 !/contracts/data/**

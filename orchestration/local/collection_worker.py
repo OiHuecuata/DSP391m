@@ -46,12 +46,15 @@ def cycle_status(collection_status, error_count):
     return "PARTIAL" if collection_status == "partial" or error_count else "SUCCESS"
 
 
-def execute(source, run_id, directory, policy, report, update):
-    with pipeline.lakehouse_lock(pipeline.resolve_config()):
-        return _execute_locked(source, run_id, directory, policy, report, update)
+def execute(source, run_id, directory, policy, report, update, *, ownership=None):
+    config = pipeline.resolve_config()
+    with pipeline.lakehouse_lock(config, ownership=ownership):
+        return _execute_locked(
+            source, run_id, directory, policy, report, update, config=config
+        )
 
 
-def _execute_locked(source, run_id, directory, policy, report, update):
+def _execute_locked(source, run_id, directory, policy, report, update, *, config=None):
     from delta.tables import DeltaTable
     from dsp_collector.jobs.collect_courts import process_pbplus_envelope
     from dsp_collector.jobs.collect_social import process_threads_envelope
@@ -96,7 +99,7 @@ def _execute_locked(source, run_id, directory, policy, report, update):
     from dsp_spark.runtime.spark import create_spark
     from pyspark.sql import functions as F
 
-    config = pipeline.resolve_config()
+    config = pipeline.resolve_config() if config is None else config
 
     def stage(name, operation):
         report["stage"] = name

@@ -1,7 +1,6 @@
 """Finite local E2E control plane composing the existing collector and data jobs."""
 
 import argparse
-import fcntl
 import hashlib
 import json
 import os
@@ -11,7 +10,6 @@ import signal
 import subprocess
 import sys
 import tempfile
-from contextlib import contextmanager
 from dataclasses import asdict, dataclass
 from importlib.metadata import version
 from pathlib import Path
@@ -19,23 +17,18 @@ from urllib.parse import unquote, urlsplit
 from uuid import uuid4
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path[:0] = [str(ROOT / "apps/collector/src"), str(ROOT / "pipelines/spark/src")]
+sys.path[:0] = [
+    str(ROOT),
+    str(ROOT / "apps/collector/src"),
+    str(ROOT / "pipelines/spark/src"),
+]
+
+from orchestration.local.analytical_refresh import analytical_ownership
 
 
-@contextmanager
-def lakehouse_lock(config):
-    """One writer across backend cycles and finite local orchestration commands."""
-    uri = urlsplit(config.spark.paths.base)
-    if uri.scheme != "file" or uri.netloc:
-        raise ValueError("Local pipeline writer lock requires a local file URI")
-    directory = Path(unquote(uri.path))
-    directory.mkdir(parents=True, exist_ok=True)
-    with (directory / ".pipeline-writer.lock").open("a") as lock:
-        try:
-            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except BlockingIOError:
-            raise RuntimeError("Another local pipeline writer is active") from None
-        yield
+def lakehouse_lock(config, *, ownership=None):
+    """Compatibility entrypoint for shared local analytical ownership."""
+    return analytical_ownership(config, ownership=ownership)
 
 
 def digest(path):
@@ -538,8 +531,8 @@ def verify(spark, config, collections):
     }
 
 
-def execute(config, summary, directory):
-    with lakehouse_lock(config):
+def execute(config, summary, directory, *, ownership=None):
+    with lakehouse_lock(config, ownership=ownership):
         return _execute_locked(config, summary, directory)
 
 
