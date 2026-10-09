@@ -14,6 +14,7 @@ from ...processing.clean.contracts import (
     validation_reason,
 )
 from ...runtime.config import SparkSettings
+from ...runtime.ownership import job_ownership
 from ...runtime.spark import create_spark
 
 SOCIAL_ADDITIONS = ("view_count", "parent_record_id", "video_duration", "tags")
@@ -186,7 +187,7 @@ def start_social_stream(spark, settings: SparkSettings, *, available_now: bool =
     return writer.start()
 
 
-def main(argv=None):
+def main(argv=None, *, settings=None, ownership=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--available-now",
@@ -194,16 +195,24 @@ def main(argv=None):
         help="Drain currently available Kafka data, then exit.",
     )
     args = parser.parse_args(argv)
-    settings = SparkSettings.from_env()
-    spark = create_spark(settings, kafka=True)
-    query = None
-    try:
-        query = start_social_stream(spark, settings, available_now=args.available_now)
-        query.awaitTermination()
-    finally:
-        if query is not None and query.isActive:
-            query.stop()
-        spark.stop()
+    settings = settings or SparkSettings.from_env()
+    with job_ownership(
+        settings,
+        outputs=("social_posts", "rejected_social", "social_checkpoint"),
+        ownership=ownership,
+        refresh_group=False,
+    ):
+        spark = create_spark(settings, kafka=True)
+        query = None
+        try:
+            query = start_social_stream(
+                spark, settings, available_now=args.available_now
+            )
+            query.awaitTermination()
+        finally:
+            if query is not None and query.isActive:
+                query.stop()
+            spark.stop()
 
 
 if __name__ == "__main__":

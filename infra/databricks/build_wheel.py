@@ -19,6 +19,12 @@ def build_wheel(output: Path | None = None):
                 target = stage / "dsp_spark" / path.relative_to(source)
                 target.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(path, target)
+        ownership = stage / "orchestration/local"
+        ownership.mkdir(parents=True)
+        shutil.copyfile(
+            ROOT / "orchestration/local/analytical_refresh.py",
+            ownership / "analytical_refresh.py",
+        )
         platform = stage / "dsp_databricks"
         platform.mkdir()
         shutil.copyfile(
@@ -66,7 +72,7 @@ court_supply_by_location = "dsp_databricks.run_social_activity_daily:court_suppl
 location_market_signal_snapshot = "dsp_databricks.run_social_activity_daily:market_signal_main"
 
 [tool.poetry]
-packages = [{include = "dsp_spark"}, {include = "dsp_databricks"}, {include = "dsp_collector"}, {include = "dsp_contracts"}]
+packages = [{include = "dsp_spark"}, {include = "dsp_databricks"}, {include = "dsp_collector"}, {include = "dsp_contracts"}, {include = "orchestration"}]
 include = [{path = "dsp_contracts/**/*.json", format = "wheel"}]
 """)
         # Poetry supplies its own build backend. Spark and Delta are deliberately

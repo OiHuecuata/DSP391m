@@ -13,6 +13,7 @@ from ...processing.aggregate.location_market_signal_snapshot import (
 )
 from ...processing.clean.gold import validated_gold
 from ...runtime.config import MarketSignalSettings, SparkSettings
+from ...runtime.ownership import job_ownership
 from ...runtime.spark import create_spark
 
 
@@ -143,7 +144,7 @@ def build_location_market_signal_snapshot(
         social.unpersist()
 
 
-def main(argv=None, *, spark=None, settings=None, market_settings=None):
+def main(argv=None, *, spark=None, settings=None, market_settings=None, ownership=None):
     selected = settings or SparkSettings.from_env()
     market = (
         market_settings
@@ -151,19 +152,22 @@ def main(argv=None, *, spark=None, settings=None, market_settings=None):
         else MarketSignalSettings.from_env()
     )
     owned = spark is None
-    spark = create_spark(selected) if owned else spark
-    try:
-        print(
-            json.dumps(
-                build_location_market_signal_snapshot(
-                    spark, selected, market_settings=market
-                ),
-                ensure_ascii=False,
+    with job_ownership(
+        selected, outputs=("location_market_signal_snapshot",), ownership=ownership
+    ):
+        spark = create_spark(selected) if owned else spark
+        try:
+            print(
+                json.dumps(
+                    build_location_market_signal_snapshot(
+                        spark, selected, market_settings=market
+                    ),
+                    ensure_ascii=False,
+                )
             )
-        )
-    finally:
-        if owned:
-            spark.stop()
+        finally:
+            if owned:
+                spark.stop()
 
 
 if __name__ == "__main__":

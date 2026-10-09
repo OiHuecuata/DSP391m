@@ -27,7 +27,8 @@ from ...io.clickhouse import (
 )
 from ...processing.clean.contracts import spark_schema
 from ...runtime.clickhouse import ClickHouseSettings
-from ...runtime.config import SparkSettings
+from ...runtime.config import LakehousePaths, SparkSettings
+from ...runtime.ownership import job_ownership
 from ...runtime.spark import create_spark
 
 
@@ -143,7 +144,14 @@ def null_fixtures(source):
     return [social_only, unknown_supply]
 
 
-def main():
+def main(*, settings=None, connection=None, ownership=None):
+    settings = settings or SparkSettings.from_env()
+    connection = connection or ClickHouseSettings.from_env()
+    with job_ownership(warehouse=connection, ownership=ownership):
+        return _run_smoke(settings, connection)
+
+
+def _run_smoke(settings, connection):
     root = next(
         p
         for p in Path(__file__).resolve().parents
@@ -151,8 +159,6 @@ def main():
     )
     output = root / ".local/clickhouse-smoke.json"
     output.parent.mkdir(exist_ok=True)
-    settings = SparkSettings.from_env()
-    connection = ClickHouseSettings.from_env()
     spark = create_spark(settings)
     try:
         source = read_gold_rows(spark, settings.paths.location_market_signal_snapshot)
@@ -188,10 +194,22 @@ def main():
                 fixture_settings = replace(
                     connection, database="dsp_smoke_" + uuid4().hex
                 )
-                with ClickHouseClient(fixture_settings) as fixture_client:
+                fixture_path = (temp / "null-gold").as_uri()
+                fixture_spark = SparkSettings(
+                    LakehousePaths(
+                        temp.as_uri(), location_market_signal_snapshot=fixture_path
+                    )
+                )
+                with (
+                    job_ownership(
+                        fixture_spark,
+                        outputs=("location_market_signal_snapshot",),
+                        warehouse=fixture_settings,
+                    ),
+                    ClickHouseClient(fixture_settings) as fixture_client,
+                ):
                     try:
                         migrate(fixture_client)
-                        fixture_path = (temp / "null-gold").as_uri()
                         spark.createDataFrame(
                             null_fixtures(source), spark_schema(TABLE)
                         ).write.format("delta").save(fixture_path)

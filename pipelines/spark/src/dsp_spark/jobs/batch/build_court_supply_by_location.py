@@ -12,6 +12,7 @@ from ...processing.aggregate.court_supply_by_location import (
 )
 from ...processing.clean.gold import validated_gold
 from ...runtime.config import SparkSettings
+from ...runtime.ownership import job_ownership
 from ...runtime.spark import create_spark
 
 
@@ -62,19 +63,24 @@ def build_court_supply_by_location(spark, settings: SparkSettings):
         silver.unpersist()
 
 
-def main(argv=None, *, spark=None, settings=None):
+def main(argv=None, *, spark=None, settings=None, ownership=None):
     selected = settings or SparkSettings.from_env()
     owned = spark is None
-    spark = create_spark(selected) if owned else spark
-    try:
-        print(
-            json.dumps(
-                build_court_supply_by_location(spark, selected), ensure_ascii=False
+    with job_ownership(
+        selected,
+        outputs=("court_supply_by_location", "unresolved_court_locations"),
+        ownership=ownership,
+    ):
+        spark = create_spark(selected) if owned else spark
+        try:
+            print(
+                json.dumps(
+                    build_court_supply_by_location(spark, selected), ensure_ascii=False
+                )
             )
-        )
-    finally:
-        if owned:
-            spark.stop()
+        finally:
+            if owned:
+                spark.stop()
 
 
 if __name__ == "__main__":

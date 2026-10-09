@@ -16,6 +16,7 @@ from ...processing.aggregate.social_activity_daily import (
 from ...processing.clean.contracts import spark_schema
 from ...processing.clean.gold import validated_gold
 from ...runtime.config import SparkSettings
+from ...runtime.ownership import job_ownership
 from ...runtime.spark import create_spark
 
 
@@ -70,19 +71,26 @@ def build_social_activity_daily(spark, settings: SparkSettings):
         silver.unpersist()
 
 
-def main(argv=None, *, spark=None, settings=None):
+def main(argv=None, *, spark=None, settings=None, ownership=None):
     # A supplied managed session runs the very same job without local JVM/JAR
     # setup or stopping a platform-owned SparkSession.
     selected = settings or SparkSettings.from_env()
     owned = spark is None
-    spark = create_spark(selected) if owned else spark
-    try:
-        print(
-            json.dumps(build_social_activity_daily(spark, selected), ensure_ascii=False)
-        )
-    finally:
-        if owned:
-            spark.stop()
+    with job_ownership(
+        selected,
+        outputs=("social_activity_daily", "social_source_activity_daily"),
+        ownership=ownership,
+    ):
+        spark = create_spark(selected) if owned else spark
+        try:
+            print(
+                json.dumps(
+                    build_social_activity_daily(spark, selected), ensure_ascii=False
+                )
+            )
+        finally:
+            if owned:
+                spark.stop()
 
 
 if __name__ == "__main__":

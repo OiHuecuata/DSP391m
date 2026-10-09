@@ -9,6 +9,7 @@ from pyspark.sql import types as T
 from ...io.delta import merge_delta
 from ...processing.clean.contracts import parse_json, validate
 from ...runtime.config import SparkSettings
+from ...runtime.ownership import job_ownership
 from ...runtime.spark import create_spark
 
 BRONZE_SCHEMA = T.StructType(
@@ -53,19 +54,22 @@ def ingest_bronze(spark, artifact: str | Path, settings: SparkSettings, *, sourc
     }
 
 
-def main(argv=None):
+def main(argv=None, *, settings=None, ownership=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--source", required=True, choices=("threads", "pbplus", "youtube")
     )
     parser.add_argument("--artifact", required=True, type=Path)
     args = parser.parse_args(argv)
-    settings = SparkSettings.from_env()
-    spark = create_spark(settings)
-    try:
-        print(ingest_bronze(spark, args.artifact, settings, source=args.source))
-    finally:
-        spark.stop()
+    settings = settings or SparkSettings.from_env()
+    with job_ownership(
+        settings, outputs=(args.source + "_bronze",), ownership=ownership
+    ):
+        spark = create_spark(settings)
+        try:
+            print(ingest_bronze(spark, args.artifact, settings, source=args.source))
+        finally:
+            spark.stop()
 
 
 if __name__ == "__main__":

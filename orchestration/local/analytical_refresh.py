@@ -48,11 +48,11 @@ class AnalyticalTargets:
         return "sha256:" + hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 
-def canonical_targets(config):
+def canonical_targets(config, *, include_group=True):
     """Snapshot physical targets, excluding credentials and execution metadata."""
     paths = config.spark.paths
     base = _local_path(paths.base)
-    resources = {"group:" + base.as_uri()}
+    resources = {"group:" + base.as_uri()} if include_group else set()
     for name, value in vars(paths).items():
         if name != "base":
             resources.add("delta:" + _local_path(value).as_uri())
@@ -178,13 +178,13 @@ def _lock_paths(targets):
 
 
 @contextmanager
-def analytical_ownership(config, *, ownership=None):
+def analytical_ownership(config, *, ownership=None, include_group=True):
     """External calls fail fast on contention; internal calls reuse a live token.
 
     Reuse is explicit, thread/process-bound, and limited to already-held targets.
     The outer operation alone releases ownership, including after exceptions.
     """
-    targets = canonical_targets(config)
+    targets = canonical_targets(config, include_group=include_group)
     if ownership is not None:
         _validate(ownership, targets)
         yield ownership
