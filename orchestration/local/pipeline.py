@@ -573,18 +573,6 @@ def _execute_locked(config, summary, directory):
         )
     summary["threads_run_id"] = collections["threads"]["run_id"]
     summary["pbplus_run_id"] = collections["pbplus"]["run_id"]
-    publication = stage(
-        "kafka_publish",
-        lambda: publish_social_batch(
-            collections["threads"]["silver_path"], settings=config.kafka
-        ),
-    )
-    summary["publication"] = asdict(publication)
-    if (
-        publication.status != "success"
-        or publication.published_count != collections["threads"]["count"]
-    ):
-        raise ValueError("Not all expected social messages were acknowledged")
     spark = stage("spark_runtime", lambda: create_spark(config.spark, kafka=True))
     query = None
     try:
@@ -598,6 +586,20 @@ def _execute_locked(config, summary, directory):
                     source=source,
                 ),
             )
+        # ingest_bronze verifies the saved immutable run before we expose its
+        # normalized events. A failed startup/archive must leave Kafka untouched.
+        publication = stage(
+            "kafka_publish",
+            lambda: publish_social_batch(
+                collections["threads"]["silver_path"], settings=config.kafka
+            ),
+        )
+        summary["publication"] = asdict(publication)
+        if (
+            publication.status != "success"
+            or publication.published_count != collections["threads"]["count"]
+        ):
+            raise ValueError("Not all expected social messages were acknowledged")
         stage(
             "court_silver",
             lambda: ingest_pbplus(

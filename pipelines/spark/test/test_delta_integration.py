@@ -297,6 +297,58 @@ class DeltaIntegrationTests(unittest.TestCase):
         self.assertEqual({row.run_id for row in rows}, {"a", "b"})
         self.assertTrue(all(row.source == "pbplus" for row in rows))
 
+    def test_bronze_conflicting_run_payload_fails_without_overwriting_original(self):
+        original = self.bronze("threads")
+        path = self.artifact(original, "original.json")
+        ingest_bronze(self.spark, path, self.settings, source="threads")
+        changed = copy.deepcopy(original)
+        changed["posts"][0]["text"] = "different synthetic source content"
+        conflict = self.artifact(changed, "conflict.json")
+        with self.assertRaisesRegex(ValueError, "Bronze run/envelope verification"):
+            ingest_bronze(self.spark, conflict, self.settings, source="threads")
+        rows = read_delta(self.spark, self.settings.paths.threads_bronze).collect()
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0].payload_json.encode(), path.read_bytes())
+        self.assertEqual(rows[0].artifact_uri, path.as_uri())
+
+    def test_bronze_identical_bytes_at_another_uri_preserve_original_provenance(self):
+        first = self.artifact(self.bronze("threads"), "first.json")
+        ingest_bronze(self.spark, first, self.settings, source="threads")
+        second = self.root / "copied.json"
+        second.write_bytes(first.read_bytes())
+        ingest_bronze(self.spark, second, self.settings, source="threads")
+        rows = read_delta(self.spark, self.settings.paths.threads_bronze).collect()
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0].artifact_uri, first.as_uri())
+        self.assertEqual(rows[0].payload_json.encode(), second.read_bytes())
+
+    def test_bronze_missing_commit_readback_cannot_report_ingestion_success(self):
+        from dsp_spark.jobs.batch.ingest_bronze import BRONZE_SCHEMA
+
+        path = self.artifact(self.bronze("threads"))
+        empty = self.spark.createDataFrame([], BRONZE_SCHEMA)
+        with (
+            patch("dsp_spark.jobs.batch.ingest_bronze.merge_delta"),
+            patch("dsp_spark.jobs.batch.ingest_bronze.read_delta", return_value=empty),
+            self.assertRaisesRegex(ValueError, "Bronze run/envelope verification"),
+        ):
+            ingest_bronze(self.spark, path, self.settings, source="threads")
+        self.assertFalse((self.root / "lake/bronze/threads").exists())
+
+    def test_bronze_duplicate_persisted_run_is_not_acknowledged(self):
+        path = self.artifact(self.bronze("threads"))
+        ingest_bronze(self.spark, path, self.settings, source="threads")
+        rows = read_delta(self.spark, self.settings.paths.threads_bronze).collect()
+        duplicate = self.spark.createDataFrame(
+            rows, read_delta(self.spark, self.settings.paths.threads_bronze).schema
+        )
+        write_delta(duplicate, self.settings.paths.threads_bronze)
+        with self.assertRaisesRegex(ValueError, "Bronze run/envelope verification"):
+            ingest_bronze(self.spark, path, self.settings, source="threads")
+        self.assertEqual(
+            read_delta(self.spark, self.settings.paths.threads_bronze).count(), 2
+        )
+
     def test_invalid_bronze_rejected_before_write(self):
         for change in (
             {"count": 99},

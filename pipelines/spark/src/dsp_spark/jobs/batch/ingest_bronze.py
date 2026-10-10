@@ -4,9 +4,10 @@ import argparse
 from datetime import UTC, datetime
 from pathlib import Path
 
+from pyspark.sql import functions as F
 from pyspark.sql import types as T
 
-from ...io.delta import merge_delta
+from ...io.delta import merge_delta, read_delta
 from ...processing.clean.contracts import parse_json, validate
 from ...runtime.config import SparkSettings
 from ...runtime.ownership import job_ownership
@@ -46,6 +47,22 @@ def ingest_bronze(spark, artifact: str | Path, settings: SparkSettings, *, sourc
     frame = spark.createDataFrame([row], BRONZE_SCHEMA)
     target = getattr(settings.paths, source + "_bronze")
     merge_delta(frame, target, keys=("source", "run_id"))
+    # Insert-only merges keep the first payload under a run identity. Confirm
+    # that it really is this artifact before callers publish/ingest Silver.
+    # A byte-identical replay may come from another URI; retain the original URI.
+    saved = (
+        read_delta(spark, target)
+        .filter((F.col("source") == source) & (F.col("run_id") == envelope["run_id"]))
+        .select("schema_version", "collected_at", "payload_json")
+        .limit(2)
+        .collect()
+    )
+    if len(saved) != 1 or (
+        saved[0].schema_version,
+        saved[0].collected_at,
+        saved[0].payload_json,
+    ) != (envelope["schema_version"], envelope["collected_at"], raw):
+        raise ValueError("Bronze run/envelope verification failed")
     return {
         "source": source,
         "run_id": envelope["run_id"],
