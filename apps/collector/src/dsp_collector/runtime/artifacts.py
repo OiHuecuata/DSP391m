@@ -16,6 +16,21 @@ def write_json_atomic(path: Path, payload: Mapping[str, Any]) -> None:
     Existing artifacts are rejected. Run IDs must be unique between concurrent
     processes; this local single-run boundary does not implement writer locking.
     """
+    if "bronze" in path.parts:
+        from .bronze import apply_source_policy, check_secrets, load_policies
+
+        check_secrets(payload)
+        policy = load_policies(os.getenv("DSP_SOURCE_POLICY_REGISTRY")).get(
+            payload.get("source"), {}
+        )
+        if policy:
+            apply_source_policy(
+                {
+                    "source_platform": payload.get("source"),
+                    "collected_at": payload.get("collected_at"),
+                },
+                {payload.get("source"): policy},
+            )
     serialized = (
         json.dumps(payload, ensure_ascii=False, indent=2, allow_nan=False) + "\n"
     )

@@ -1,0 +1,182 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Bronze engagement-snapshots v1",
+  "description": "Source content \u00d7 measurement time \u00d7 run. Counters are cumulative; missing is null. Identity is SHA-256 of [dataset, platform, source ID, run ID, UTC collection time]; additional source fields survive in raw_payload. JSON fields are encoded strings. Technical timestamps use UTC.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "observation_id",
+    "source_platform",
+    "source_record_id",
+    "record_type",
+    "source_url",
+    "collected_at",
+    "source_created_at",
+    "source_updated_at",
+    "collection_run_id",
+    "query_id",
+    "query_metadata",
+    "raw_payload",
+    "payload_hash",
+    "retention_policy_id",
+    "retention_expires_at",
+    "artifact_uri",
+    "native_content_id",
+    "content_type",
+    "metric_scope",
+    "observed_at",
+    "view_count",
+    "like_count",
+    "comment_count",
+    "share_count",
+    "repost_count",
+    "quote_count",
+    "reply_count",
+    "metric_availability",
+    "ingested_at",
+    "ingestion_metadata"
+  ],
+  "properties": {
+    "schema_version": {
+      "$ref": "observation.v1.schema.json#/$defs/schema_version"
+    },
+    "observation_id": {
+      "$ref": "observation.v1.schema.json#/$defs/observation_id"
+    },
+    "source_platform": {
+      "$ref": "observation.v1.schema.json#/$defs/source_platform"
+    },
+    "source_record_id": {
+      "$ref": "observation.v1.schema.json#/$defs/source_record_id"
+    },
+    "record_type": {
+      "type": "string",
+      "enum": [
+        "Metric"
+      ]
+    },
+    "source_url": {
+      "$ref": "observation.v1.schema.json#/$defs/source_url"
+    },
+    "collected_at": {
+      "$ref": "observation.v1.schema.json#/$defs/collected_at"
+    },
+    "source_created_at": {
+      "$ref": "observation.v1.schema.json#/$defs/source_created_at"
+    },
+    "source_updated_at": {
+      "$ref": "observation.v1.schema.json#/$defs/source_updated_at"
+    },
+    "collection_run_id": {
+      "$ref": "observation.v1.schema.json#/$defs/collection_run_id"
+    },
+    "query_id": {
+      "$ref": "observation.v1.schema.json#/$defs/query_id"
+    },
+    "query_metadata": {
+      "$ref": "observation.v1.schema.json#/$defs/query_metadata"
+    },
+    "raw_payload": {
+      "$ref": "observation.v1.schema.json#/$defs/raw_payload"
+    },
+    "payload_hash": {
+      "$ref": "observation.v1.schema.json#/$defs/payload_hash"
+    },
+    "retention_policy_id": {
+      "$ref": "observation.v1.schema.json#/$defs/retention_policy_id"
+    },
+    "retention_expires_at": {
+      "$ref": "observation.v1.schema.json#/$defs/retention_expires_at"
+    },
+    "artifact_uri": {
+      "$ref": "observation.v1.schema.json#/$defs/artifact_uri"
+    },
+    "native_content_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "content_type": {
+      "type": "string",
+      "enum": [
+        "post",
+        "video",
+        "comment",
+        "venue"
+      ]
+    },
+    "metric_scope": {
+      "type": "string",
+      "const": "cumulative"
+    },
+    "observed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "view_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 9223372036854775807
+    },
+    "like_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 9223372036854775807
+    },
+    "comment_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 9223372036854775807
+    },
+    "share_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 9223372036854775807
+    },
+    "repost_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 9223372036854775807
+    },
+    "quote_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 9223372036854775807
+    },
+    "reply_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 9223372036854775807
+    },
+    "metric_availability": {
+      "type": "string"
+    },
+    "ingested_at": {
+      "$ref": "observation.v1.schema.json#/$defs/ingested_at"
+    },
+    "ingestion_metadata": {
+      "$ref": "observation.v1.schema.json#/$defs/ingestion_metadata"
+    }
+  }
+}

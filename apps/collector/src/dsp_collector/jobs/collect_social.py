@@ -158,8 +158,15 @@ def process_threads_envelope(
             )
 
     collection_errors = [
-        copy.deepcopy(q) for q in bronze["query_runs"] if q.get("status") == "error"
+        copy.deepcopy(q)
+        for q in bronze["query_runs"]
+        if q.get("status") == "error" or q.get("detail_failed_count", 0)
     ]
+    collection_errors.extend(
+        {"source_record_id": p.get("id"), "error": p.get("detail_error")}
+        for p in bronze["posts"]
+        if p.get("detail_status") == "error"
+    )
     has_errors = bool(errors or collection_errors)
     status: Literal["success", "partial", "failed"] = (
         "partial" if has_errors and records else "failed" if has_errors else "success"

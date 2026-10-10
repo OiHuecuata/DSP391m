@@ -59,6 +59,7 @@ def _execute_locked(source, run_id, directory, policy, report, update):
     from dsp_collector.jobs.collect_youtube import process_youtube_envelope
     from dsp_collector.publishers.kafka import (
         build_social_post_event,
+        publish_bronze_batch,
         publish_social_batch,
     )
     from dsp_collector.runtime.status import CrawlerStatusTracker
@@ -246,6 +247,11 @@ def _execute_locked(source, run_id, directory, policy, report, update):
             if DeltaTable.isDeltaTable(spark, table_path)
             else None
         )
+        if source != "pbplus" and DeltaTable.isDeltaTable(
+            spark, config.spark.paths.social_comments
+        ):
+            comments = read_delta(spark, config.spark.paths.social_comments)
+            before = before.unionByName(comments) if before is not None else comments
         previous_ids = (
             {r[0] for r in before.select("record_id").distinct().collect()}
             if before is not None
@@ -269,6 +275,19 @@ def _execute_locked(source, run_id, directory, policy, report, update):
             if not DeltaTable.isDeltaTable(spark, config.spark.paths.social_posts):
                 initialize_social_silver(spark, config.spark)
         else:
+            raw_publication = stage(
+                "bronze_kafka",
+                lambda: asdict(
+                    publish_bronze_batch(result["bronze_path"], settings=config.kafka)
+                ),
+            )
+            errors += raw_publication["failed_count"]
+            report["metrics"]["errors"] = errors
+            if raw_publication["flush_error"] or any(
+                e.get("event_id") or e.get("observation_id")
+                for e in raw_publication["errors"]
+            ):
+                raise RuntimeError("bronze_kafka_delivery_failed")
             pub = stage(
                 "kafka",
                 lambda: asdict(
@@ -292,9 +311,14 @@ def _execute_locked(source, run_id, directory, policy, report, update):
                 "seconds": time.monotonic() - t,
                 "input_records": consumed,
             }
-        actual = (
-            read_delta(spark, table_path).filter(F.col("run_id") == run_id).collect()
-        )
+        current = read_delta(spark, table_path)
+        if source != "pbplus" and DeltaTable.isDeltaTable(
+            spark, config.spark.paths.social_comments
+        ):
+            current = current.unionByName(
+                read_delta(spark, config.spark.paths.social_comments)
+            )
+        actual = current.filter(F.col("run_id") == run_id).collect()
         actual_map = {r.record_id: r.asDict(recursive=True) for r in actual}
         if len(actual) != len(records) or any(
             any(actual_map.get(r["record_id"], {}).get(k) != v for k, v in r.items())
@@ -414,6 +438,7 @@ def main(argv=None):
         try:
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
             policy = json.loads(args.config.read_text())
+            report["collection_configuration"] = policy.get(args.source)
             import shutil
 
             if shutil.disk_usage(args.state).free < policy.get(
@@ -438,6 +463,30 @@ def main(argv=None):
         finally:
             report["completed_at"] = datetime.now(UTC).isoformat()
             pipeline.write_report(directory / "summary.json", report)
+            if (
+                report["status"] == "FAILED"
+                and report.get("stage") == "collecting"
+                and not (
+                    directory / "bronze" / args.source / f"{args.run_id}.json"
+                ).exists()
+            ):
+                try:
+                    from dsp_collector.publishers.kafka import publish_bronze_batch
+
+                    publication = publish_bronze_batch(
+                        directory / "summary.json",
+                        settings=pipeline.resolve_config().kafka,
+                    )
+                    report["stages"]["bronze_failed_run"] = {
+                        "result": asdict(publication)
+                    }
+                except Exception:  # noqa: BLE001
+                    # Keep terminal source status replayable if ingestion is unavailable.
+                    report["stages"]["bronze_failed_run"] = {
+                        "status": "failed",
+                        "error": "Terminal status retained in summary.json for ingestion replay",
+                    }
+                pipeline.write_report(directory / "summary.json", report)
             update(
                 {
                     "stage": "finished",

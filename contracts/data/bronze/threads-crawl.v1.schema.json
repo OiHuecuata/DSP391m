@@ -33,7 +33,7 @@
     "source_id": {"type": ["string", "integer", "null"]},
     "counter": {
       "type": ["integer", "null"],
-      "description": "Crawler-provided engagement value. Search may already default missing source counters to zero; Bronze does not change that meaning."
+      "description": "Crawler-provided engagement value. Current collection preserves unavailable counters as null. Historical projected zeros remain unchanged; native raw payload takes precedence when available."
     },
     "string_list": {"type": "array", "items": {"type": "string"}},
     "query_run": {

@@ -351,14 +351,14 @@ def extract_media(raw_post: dict[str, Any]) -> list[dict[str, Any]]:
     return media
 
 
-def _engagement(raw_post: dict[str, Any]) -> dict[str, int]:
+def _engagement(raw_post: dict[str, Any]) -> dict[str, int | None]:
     info = raw_post.get("text_post_app_info") or {}
 
     return {
-        "like_count": int(raw_post.get("like_count") or 0),
-        "reply_count": int(info.get("direct_reply_count") or 0),
-        "repost_count": int(info.get("repost_count") or 0),
-        "quote_count": int(info.get("quote_count") or 0),
+        "like_count": int(raw_post.get("like_count")),
+        "reply_count": info.get("direct_reply_count"),
+        "repost_count": info.get("repost_count"),
+        "quote_count": info.get("quote_count"),
     }
 
 
@@ -377,6 +377,7 @@ def _compact_post(
         "taken_at": raw_post.get("taken_at"),
         "author": _author(raw_post),
         "engagement": _engagement(raw_post),
+        "raw_payload": raw_post,
         "is_reply": bool(info.get("is_reply")),
         "media_type": raw_post.get("media_type"),
         "media": extract_media(raw_post),

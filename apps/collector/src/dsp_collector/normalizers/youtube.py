@@ -1,6 +1,7 @@
 """YouTube videos and public top-level comments, without invented statistics."""
 
 import re
+from urllib.parse import urlencode
 
 from ..sources.crawler.threads.vietnam_terms import _detect_locations, _detect_topics
 from .social_post import _utc_timestamp, normalize_social_post
@@ -14,9 +15,17 @@ def counter(value):
 
 def normalize_youtube(payload, *, run_id, collected_at, queries=(), video_id=None):
     identity = payload.get("id")
-    if not isinstance(identity, str) or not re.fullmatch(r"[A-Za-z0-9_-]+", identity):
-        raise ValueError("Invalid YouTube source identity")
     comment = video_id is not None
+    if (
+        not isinstance(identity, str)
+        or not identity
+        or (
+            any(c.isspace() for c in identity)
+            if comment
+            else re.fullmatch(r"[A-Za-z0-9_-]+", identity) is None
+        )
+    ):
+        raise ValueError("Invalid YouTube source identity")
     snippet = payload.get("snippet", {})
     stats = payload.get("statistics", {})
     text = (
@@ -35,8 +44,8 @@ def normalize_youtube(payload, *, run_id, collected_at, queries=(), video_id=Non
         source="youtube_comment" if comment else "youtube",
         source_record_id=identity,
         record_id=("youtube-comment:" if comment else "youtube:") + identity,
-        source_url=f"https://www.youtube.com/watch?v={video_id or identity}"
-        + (f"&lc={identity}" if comment else ""),
+        source_url="https://www.youtube.com/watch?"
+        + urlencode({"v": video_id, "lc": identity} if comment else {"v": identity}),
         text=text,
         published_at=(
             _utc_timestamp(snippet["publishedAt"])
@@ -58,7 +67,7 @@ def normalize_youtube(payload, *, run_id, collected_at, queries=(), video_id=Non
         reply_count=None if comment else counter(stats.get("commentCount")),
         repost_count=None,
         quote_count=None,
-        is_reply=False,
+        is_reply=bool(snippet.get("parentId")) if comment else False,
         media_type=None,
         has_media=not comment,
         matched_queries=list(queries),

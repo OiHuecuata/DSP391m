@@ -352,10 +352,10 @@
       "then": {
         "properties": {
           "record_id": {
-            "pattern": "^youtube-comment:[A-Za-z0-9_-]+$"
+            "pattern": "^youtube-comment:\\S+$"
           },
           "source_record_id": {
-            "pattern": "^[A-Za-z0-9_-]+$"
+            "pattern": "^\\S+$"
           },
           "parent_record_id": {
             "type": "string",

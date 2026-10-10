@@ -174,13 +174,16 @@ class DeltaIntegrationTests(unittest.TestCase):
         persist_social_batch(frame, 0, settings=self.settings)
         persist_social_batch(frame, 1, settings=self.settings)
         self.assertEqual(
-            read_delta(self.spark, self.settings.paths.social_posts).count(), 2
+            read_delta(self.spark, self.settings.paths.social_posts).count(), 1
         )
         another = build_social_post_event(self.youtube_record(run_id="youtube-b"))
         persist_social_batch(self.kafka_frame([another]), 2, settings=self.settings)
         stored = read_delta(self.spark, self.settings.paths.social_posts)
-        self.assertEqual(stored.count(), 3)
-        self.assertEqual(stored.select("record_id").distinct().count(), 2)
+        self.assertEqual(stored.count(), 2)
+        self.assertEqual(stored.select("record_id").distinct().count(), 1)
+        self.assertEqual(
+            read_delta(self.spark, self.settings.paths.social_comments).count(), 1
+        )
 
     def test_explicit_nullable_social_migration_preserves_old_rows(self):
         event = build_social_post_event(social())

@@ -227,10 +227,10 @@ def _post_from_edge(edge: dict[str, Any]) -> dict[str, Any] | None:
         "url": url,
         "text": caption.get("text") if isinstance(caption, dict) else None,
         "taken_at": post.get("taken_at"),
-        "like_count": post.get("like_count") or 0,
-        "reply_count": info.get("direct_reply_count") or 0,
-        "repost_count": info.get("repost_count") or 0,
-        "quote_count": info.get("quote_count") or 0,
+        "like_count": post.get("like_count"),
+        "reply_count": info.get("direct_reply_count"),
+        "repost_count": info.get("repost_count"),
+        "quote_count": info.get("quote_count"),
         "is_reply": bool(info.get("is_reply")),
         "media_type": post.get("media_type"),
         "has_media": has_media,
@@ -474,6 +474,7 @@ def crawl_threads_posts(
         or (detail_limit is not None and detail_limit < 0)
     ):
         raise ValueError("Invalid collection bounds")
+    started_at = datetime.now(UTC).isoformat()
     query_plan = expanded_query_plan(query_seeds or [query])
 
     _status_update(
@@ -743,6 +744,7 @@ def crawl_threads_posts(
         "source": "threads",
         "seed_query": query,
         "sort": sort,
+        "started_at": started_at,
         "collected_at": datetime.now(UTC).isoformat(),
         "count": len(posts),
         "query_runs": query_runs,
