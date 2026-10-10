@@ -47,7 +47,7 @@ def _collector_root() -> Path:
 
 
 def default_output_path() -> Path:
-    return _collector_root() / ".local" / "pbplus" / "pickleball_sample.json"
+    return _collector_root() / ".local" / "pbplus" / "pickleball_court_raw.json"
 
 
 def get_page(
@@ -172,15 +172,50 @@ def _extract_labeled_value(
     label: str,
     *,
     stop_labels: tuple[str, ...],
+    stop_patterns: tuple[str, ...] = (),
 ) -> str | None:
-    stops = "|".join(re.escape(value) for value in stop_labels)
-    pattern = rf"\b{re.escape(label)}\s*:\s*(.+?)(?=\s+(?:{stops})\s*:|$)"
+    stop_clauses = []
+    if stop_labels:
+        stops = "|".join(re.escape(value) for value in stop_labels)
+        stop_clauses.append(rf"\s+(?:{stops})\s*:")
+    if stop_patterns:
+        stop_clauses.append(rf"\s+(?:{'|'.join(stop_patterns)})")
+    stop = rf"(?=(?:{'|'.join(stop_clauses)})|$)"
+    pattern = rf"\b{re.escape(label)}\s*:\s*(.+?){stop}"
     match = re.search(pattern, text, flags=re.IGNORECASE)
     if not match:
         return None
 
     value = " ".join(match.group(1).split()).strip(" :-")
     return value or None
+
+
+def _clean_address(value: str | None) -> str | None:
+    """Remove court setup/count wording while retaining location details."""
+    if not value:
+        return None
+
+    cleaned = re.sub(
+        r"^(?:cụm\s+)?\d+\s+sân(?:\s+(?:pickleball|trong\s+nhà|ngoài\s+trời|có\s+mái\s+che))*\s+(?:tại|ở)\s+",
+        "",
+        value.strip(),
+        flags=re.IGNORECASE,
+    )
+    cleaned = re.split(
+        r"\s*[✅⏰🔥🎾📞🛎🏆]|\s*\(?\s*(?:Link\s+(?:Map|bản\s+đồ)|Bản\s+đồ\s+Google\s+Maps)\b|\s+\b(?:Với\s+cơ\s+sở\s+vật\s+chất|Lịch\s+trống|Ưu\s+đãi\s+đặc\s+biệt|Dịch\s+vụ\s+đa\s+dạng|Hotline|Liên\s+hệ\s+ngay|Tập\s+máy)\b",
+        cleaned,
+        maxsplit=1,
+        flags=re.IGNORECASE,
+    )[0]
+    # Parenthetical text on PBPlus often contains directions, sales notes, or
+    # alternate administrative names that make the address harder to geocode.
+    # Remove complete parenthetical groups while keeping the surrounding address.
+    previous = None
+    while cleaned != previous:
+        previous = cleaned
+        cleaned = re.sub(r"\([^()]*\)", " ", cleaned)
+    cleaned = " ".join(cleaned.split())
+    return cleaned.strip(" .,:;-") or None
 
 
 def extract_number_of_courts(text: str) -> int | None:
@@ -229,25 +264,52 @@ def scrape_court(
     number_of_courts = subcourt_count or description_count
     code = urlparse(url).path.rstrip("/").rsplit("/", 1)[-1] or None
 
-    address = _extract_labeled_value(
-        page_text,
-        "Địa chỉ",
-        stop_labels=(
-            "Phone",
-            "Số điện thoại",
-            "Sđt liên hệ",
-            "SĐT",
-            "Chủ sân",
-            "Khoảng giá",
-            "Giá tiền",
-            "Số lượng sân",
-            "Số lượng sân con",
-            "Quy mô",
-            "Thông tin sân",
-            "Các dịch vụ",
-            "Thời gian mở cửa",
-            "Các sân liên quan",
-        ),
+    address = _clean_address(
+        _extract_labeled_value(
+            page_text,
+            "Địa chỉ",
+            stop_labels=(
+                "Điểm nổi bật",
+                "Phone",
+                "Số điện thoại",
+                "Sđt liên hệ",
+                "SĐT",
+                "Chủ sân",
+                "Khoảng giá",
+                "Giá tiền",
+                "Số lượng sân",
+                "Số lượng sân con",
+                "Số sân con",
+                "Quy mô",
+                "Thông tin sân",
+                "Các dịch vụ",
+                "Thời gian mở cửa",
+                "Giới thiệu",
+                "Mô tả",
+                "Mô tả sân",
+                "Thông tin chi tiết",
+                "Đặc điểm",
+                "Sân có",
+                "Sân được",
+                "Sân gồm",
+                "Sân mang",
+                "Các sân liên quan",
+            ),
+            stop_patterns=(
+                r"Số\s+điện\s+thoại(?:\s+liên\s+hệ|\s+liên\s+lạc)?\s*:",
+                r"SĐT(?:\s+liên\s+hệ|\s+liên\s+lạc)?\s*:",
+                r"Số\s+sân\s+con\s*:",
+                r"Số\s+lượng\s+sân(?:\s+con)?\s*:",
+                r"Thời\s+gian\s+hoạt\s+động\s*:",
+                r"Giá\s+thuê\s+sân\s*:",
+                r"(?:Link\s+(?:Map|bản\s+đồ)|Bản\s+đồ\s+Google\s+Maps)\s*:",
+                r"https?://",
+                r"\b(?:Giới\s+thiệu|Mô\s+tả(?:\s+sân)?|Thông\s+tin\s+chi\s+tiết)\b",
+                r"\b(?:Các\s+dịch\s+vụ|Giá\s+tiền\s+chi\s+tiết|Danh\s+sách\s+sân\s+con)\b",
+                r"\b(?:Lịch\s+trống|Ưu\s+đãi\s+đặc\s+biệt|Dịch\s+vụ\s+đa\s+dạng|Hotline|Liên\s+hệ\s+ngay|Tập\s+máy)\b",
+                r"[⏰🔥🎾📞]",
+            ),
+        )
     )
     phone = _extract_labeled_value(
         page_text,
