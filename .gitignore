@@ -299,3 +299,6 @@ derby.log
 airflow.db
 airflow-webserver.pid
 standalone_admin_password.txt
+
+# Internal docs
+docs/data
