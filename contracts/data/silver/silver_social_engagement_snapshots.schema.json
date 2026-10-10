@@ -1,0 +1,196 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dsp391m.local/contracts/data/silver/silver_social_engagement_snapshots.schema.json",
+  "title": "silver_social_engagement_snapshots",
+  "description": "Threads research extension. Unavailable source facts remain null. Exploratory labels are unevaluated.",
+  "x-grain": [
+    "observation_id"
+  ],
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "content_id",
+    "content_type",
+    "platform",
+    "observed_at",
+    "observation_id",
+    "collection_run_id",
+    "artifact_sha256",
+    "engagement_rate_basis",
+    "snapshot_status",
+    "metric_availability_json",
+    "origin",
+    "query_id",
+    "fetch_batch_id",
+    "views",
+    "likes",
+    "comments",
+    "shares",
+    "reposts",
+    "quotes",
+    "engagement_total",
+    "content_age_hours",
+    "engagement_rate",
+    "metrics_available",
+    "views_delta",
+    "likes_delta",
+    "comments_delta",
+    "shares_delta",
+    "reposts_delta",
+    "quotes_delta",
+    "previous_observation_id",
+    "is_latest_eligible"
+  ],
+  "properties": {
+    "content_id": {
+      "type": "string"
+    },
+    "content_type": {
+      "type": "string"
+    },
+    "platform": {
+      "type": "string"
+    },
+    "observed_at": {
+      "type": "string"
+    },
+    "observation_id": {
+      "type": "string"
+    },
+    "collection_run_id": {
+      "type": "string"
+    },
+    "artifact_sha256": {
+      "type": "string"
+    },
+    "engagement_rate_basis": {
+      "type": "string"
+    },
+    "snapshot_status": {
+      "type": "string"
+    },
+    "metric_availability_json": {
+      "type": "string"
+    },
+    "origin": {
+      "type": "string"
+    },
+    "query_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "fetch_batch_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "views": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "likes": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "comments": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "shares": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "reposts": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "quotes": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "engagement_total": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "content_age_hours": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "engagement_rate": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "metrics_available": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "views_delta": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "likes_delta": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "comments_delta": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "shares_delta": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "reposts_delta": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "quotes_delta": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "previous_observation_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "is_latest_eligible": {
+      "type": "boolean"
+    }
+  }
+}

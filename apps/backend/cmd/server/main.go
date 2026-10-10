@@ -34,7 +34,12 @@ func main() {
 		panic(err)
 	}
 	marketSignalHandler := api.NewMarketSignalHandler(analytics.NewMarketSignalService(marketSignalRepo))
-	manager, err := dataops.NewManager(dataops.Options{Root: settings.RepoRoot, Directory: settings.CollectionState, Python: settings.CollectionPython, Config: settings.CollectionConfig, YouTubeConfigured: settings.YouTubeConfigured})
+	threadsResearchRepo, err := clickhouserepo.NewThreadsResearchRepository(settings.ClickHouse)
+	if err != nil {
+		panic(err)
+	}
+	threadsResearchHandler := &api.ThreadsResearchHandler{Reader: threadsResearchRepo}
+	manager, err := dataops.NewManager(dataops.Options{Root: settings.RepoRoot, Directory: settings.CollectionState, Python: settings.CollectionPython, Config: settings.CollectionConfig, YouTubeConfigured: settings.YouTubeConfigured, ThreadsConfigured: &settings.ThreadsConfigured})
 	if err != nil {
 		panic(err)
 	}
@@ -55,10 +60,14 @@ func main() {
 		gin.WrapH(systemStatusHandler),
 	)
 	router.GET("/api/v1/analytics/location-market-signals", gin.WrapH(marketSignalHandler))
+	router.GET("/api/v2/research/threads/eda", gin.WrapH(threadsResearchHandler))
+	router.GET("/api/v2/research/threads/generation", gin.WrapH(threadsResearchHandler))
+	router.GET("/api/v2/collection/threads/config", gin.WrapH(api.ThreadsCollectionConfig(manager)))
+	router.PATCH("/api/v2/collection/threads/config", gin.WrapH(api.ThreadsCollectionConfig(manager)))
 	for _, path := range []string{"data-ops/status", "data-ops/lakehouse", "data-ops/warehouse", "data-ops/runs", "collection/status"} {
 		router.GET("/api/v1/"+path, gin.WrapH(operations))
 	}
-	for _, path := range []string{"collection/start", "collection/stop", "collection/run", "collection/retry"} {
+	for _, path := range []string{"collection/start", "collection/stop", "collection/run", "collection/retry", "collection/resume"} {
 		router.POST("/api/v1/"+path, gin.WrapH(operations))
 	}
 	router.PATCH("/api/v1/collection/config", gin.WrapH(operations))

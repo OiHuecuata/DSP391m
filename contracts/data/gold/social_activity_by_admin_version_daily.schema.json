@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dsp391m.local/contracts/data/gold/social_activity_by_admin_version_daily.schema.json",
+  "title": "social_activity_by_admin_version_daily",
+  "description": "Threads research extension. Unavailable source facts remain null. Exploratory labels are unevaluated.",
+  "x-grain": [
+    "activity_date",
+    "admin_version",
+    "admin_unit_id"
+  ],
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "activity_date",
+    "admin_version",
+    "admin_unit_id",
+    "post_count",
+    "comment_count",
+    "unique_content_count",
+    "quality_status",
+    "input_snapshot_id"
+  ],
+  "properties": {
+    "activity_date": {
+      "type": "string"
+    },
+    "admin_version": {
+      "type": "string"
+    },
+    "admin_unit_id": {
+      "type": "string"
+    },
+    "post_count": {
+      "type": "integer"
+    },
+    "comment_count": {
+      "type": "integer"
+    },
+    "unique_content_count": {
+      "type": "integer"
+    },
+    "quality_status": {
+      "type": "string"
+    },
+    "input_snapshot_id": {
+      "type": "string"
+    }
+  }
+}

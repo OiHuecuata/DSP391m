@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dsp391m.local/contracts/data/gold/court_supply_by_admin_version_v2.schema.json",
+  "title": "court_supply_by_admin_version_v2",
+  "description": "Threads research extension. Unavailable source facts remain null. Exploratory labels are unevaluated.",
+  "x-grain": [
+    "snapshot_date",
+    "admin_version",
+    "admin_unit_id"
+  ],
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "snapshot_date",
+    "admin_version",
+    "admin_unit_id",
+    "generated_at",
+    "venue_count",
+    "known_court_count",
+    "known_count_venue_count",
+    "verified_venue_count",
+    "probable_venue_count",
+    "priced_venue_count",
+    "court_count_coverage_rate",
+    "price_min_vnd",
+    "price_median_vnd",
+    "venue_last_observed_at",
+    "quality_status",
+    "input_snapshot_id"
+  ],
+  "properties": {
+    "snapshot_date": {
+      "type": "string"
+    },
+    "admin_version": {
+      "type": "string"
+    },
+    "admin_unit_id": {
+      "type": "string"
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "venue_count": {
+      "type": "integer"
+    },
+    "known_court_count": {
+      "type": "integer"
+    },
+    "known_count_venue_count": {
+      "type": "integer"
+    },
+    "verified_venue_count": {
+      "type": "integer"
+    },
+    "probable_venue_count": {
+      "type": "integer"
+    },
+    "priced_venue_count": {
+      "type": "integer"
+    },
+    "court_count_coverage_rate": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "price_min_vnd": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "price_median_vnd": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "venue_last_observed_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "quality_status": {
+      "type": "string"
+    },
+    "input_snapshot_id": {
+      "type": "string"
+    }
+  }
+}

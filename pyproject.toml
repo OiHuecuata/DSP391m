@@ -18,7 +18,8 @@ dependencies = [
     "confluent-kafka (>=2.12.0,<3.0.0)",
     "jsonschema (>=4.25.0,<5.0.0)",
     "pyspark (==4.0.2)",
-    "delta-spark (==4.0.1)"
+    "delta-spark (==4.0.1)",
+    "boto3 (>=1.40.0,<2.0.0)"
 ]
 
 

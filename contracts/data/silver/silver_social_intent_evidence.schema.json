@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dsp391m.local/contracts/data/silver/silver_social_intent_evidence.schema.json",
+  "title": "silver_social_intent_evidence",
+  "description": "Threads research extension. Unavailable source facts remain null. Exploratory labels are unevaluated.",
+  "x-grain": [
+    "evidence_id"
+  ],
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "evidence_id",
+    "content_id",
+    "content_type",
+    "platform",
+    "intent_type",
+    "requested_time_precision",
+    "evidence_span",
+    "classifier_version",
+    "classification_status",
+    "observation_id",
+    "origin",
+    "requested_start_time",
+    "intent_location_id",
+    "evaluation_reference",
+    "published_date_vn",
+    "participant_count_mentioned",
+    "requested_duration_minutes",
+    "price_budget_min_vnd",
+    "price_budget_max_vnd",
+    "confidence"
+  ],
+  "properties": {
+    "evidence_id": {
+      "type": "string"
+    },
+    "content_id": {
+      "type": "string"
+    },
+    "content_type": {
+      "type": "string"
+    },
+    "platform": {
+      "type": "string"
+    },
+    "intent_type": {
+      "type": "string",
+      "enum": [
+        "SEEK_COURT",
+        "BOOKING_INTENT",
+        "SEEK_PLAYERS",
+        "SEEK_COACH",
+        "PRICE_INQUIRY",
+        "CAPACITY_COMPLAINT",
+        "VENUE_FEEDBACK",
+        "SUPPLY_ADVERTISEMENT",
+        "SUPPLY_OPENING",
+        "SUPPLY_CLOSURE",
+        "EVENT_TOURNAMENT",
+        "GENERAL_DISCUSSION",
+        "IRRELEVANT"
+      ]
+    },
+    "requested_time_precision": {
+      "type": "string"
+    },
+    "evidence_span": {
+      "type": "string"
+    },
+    "classifier_version": {
+      "type": "string"
+    },
+    "classification_status": {
+      "type": "string"
+    },
+    "observation_id": {
+      "type": "string"
+    },
+    "origin": {
+      "type": "string"
+    },
+    "requested_start_time": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "intent_location_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "evaluation_reference": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "published_date_vn": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "participant_count_mentioned": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "requested_duration_minutes": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "price_budget_min_vnd": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "price_budget_max_vnd": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "confidence": {
+      "type": [
+        "number",
+        "null"
+      ]
+    }
+  }
+}

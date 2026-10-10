@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dsp391m.local/contracts/data/gold/national_location_coverage_v1.schema.json",
+  "title": "national_location_coverage_v1",
+  "description": "Threads research extension. Unavailable source facts remain null. Exploratory labels are unevaluated.",
+  "x-grain": [
+    "admin_unit_id",
+    "source_platform",
+    "period_start",
+    "period_end"
+  ],
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "admin_unit_id",
+    "source_platform",
+    "period_start",
+    "period_end",
+    "collection_status",
+    "planned_queries",
+    "successful_queries",
+    "failed_queries",
+    "records_returned",
+    "records_accepted",
+    "resolved_records",
+    "last_success_at",
+    "quality_status",
+    "input_snapshot_id"
+  ],
+  "properties": {
+    "admin_unit_id": {
+      "type": "string"
+    },
+    "source_platform": {
+      "type": "string"
+    },
+    "period_start": {
+      "type": "string"
+    },
+    "period_end": {
+      "type": "string"
+    },
+    "collection_status": {
+      "type": "string"
+    },
+    "planned_queries": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "successful_queries": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "failed_queries": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "records_returned": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "records_accepted": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "resolved_records": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "last_success_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "quality_status": {
+      "type": "string"
+    },
+    "input_snapshot_id": {
+      "type": "string"
+    }
+  }
+}

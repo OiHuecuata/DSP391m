@@ -50,6 +50,7 @@ type Settings struct {
 	CollectionPython  string
 	LakehouseURI      string
 	YouTubeConfigured bool
+	ThreadsConfigured bool
 }
 
 // Load retains existing Viper defaults and explicitly binds the serving env vars.
@@ -133,5 +134,6 @@ func Load() (Settings, error) {
 	if settings.ServerPort < 1 || settings.ServerPort > 65535 {
 		return Settings{}, fmt.Errorf("invalid SERVER_PORT")
 	}
+	settings.ThreadsConfigured = threadsConfigured(settings.CollectionConfig)
 	return settings, settings.ClickHouse.Validate()
 }

@@ -14,6 +14,11 @@ from __future__ import annotations
 import json
 from typing import Any
 from urllib.parse import urlparse
+from .rich_fields import metrics as _native_metrics
+
+
+def _metric_availability(raw):
+    return _native_metrics(raw)[1]
 
 
 class ThreadsPostParserError(RuntimeError):
@@ -231,7 +236,7 @@ def _author(raw_post: dict[str, Any]) -> dict[str, Any]:
         "id": _string_id(user.get("pk") or user.get("id")),
         "username": user.get("username"),
         "full_name": user.get("full_name"),
-        "is_verified": bool(user.get("is_verified")),
+        "is_verified": user.get("is_verified"),
         "profile_pic_url": user.get("profile_pic_url"),
     }
 
@@ -352,14 +357,9 @@ def extract_media(raw_post: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def _engagement(raw_post: dict[str, Any]) -> dict[str, int]:
-    info = raw_post.get("text_post_app_info") or {}
+    from .rich_fields import metrics
 
-    return {
-        "like_count": int(raw_post.get("like_count") or 0),
-        "reply_count": int(info.get("direct_reply_count") or 0),
-        "repost_count": int(info.get("repost_count") or 0),
-        "quote_count": int(info.get("quote_count") or 0),
-    }
+    return metrics(raw_post)[0]
 
 
 def _compact_post(
@@ -380,6 +380,10 @@ def _compact_post(
         "is_reply": bool(info.get("is_reply")),
         "media_type": raw_post.get("media_type"),
         "media": extract_media(raw_post),
+        "raw_payload": raw_post,
+        "language": raw_post.get("language"),
+        "updated_at": raw_post.get("edited_at", raw_post.get("updated_at")),
+        "metric_availability": _metric_availability(raw_post),
     }
 
 
@@ -401,32 +405,37 @@ def _visible_replies(
     if main_id is None:
         return replies
 
-    for post in candidates:
-        post_id = _string_id(post.get("pk") or post.get("id"))
-
-        if post is main_post or post_id == main_id:
-            continue
-
-        info = post.get("text_post_app_info") or {}
-        if not bool(info.get("is_reply")):
-            continue
-
-        reply_to_id = _string_id(
-            info.get("reply_to_post_id")
-            or info.get("replied_to_post_id")
-            or info.get("parent_post_id")
-        )
-        if reply_to_id != main_id:
-            continue
-
-        if post_id is not None:
-            if post_id in seen_ids:
+    pending = list(candidates)
+    connected = {main_id}
+    while pending:
+        next_pending = []
+        for post in pending:
+            post_id = _string_id(post.get("pk") or post.get("id"))
+            if post_id is None or post_id in connected or post_id in seen_ids:
                 continue
+            info = post.get("text_post_app_info") or {}
+            if not info.get("is_reply"):
+                continue
+            parent = _string_id(
+                info.get("reply_to_post_id")
+                or info.get("replied_to_post_id")
+                or info.get("parent_post_id")
+            )
+            if parent not in connected:
+                next_pending.append(post)
+                continue
+            compact = _compact_post(post)
+            compact.update(
+                reply_to_post_id=parent,
+                root_post_id=main_id,
+                parent_comment_id=parent if parent != main_id else None,
+            )
+            replies.append(compact)
             seen_ids.add(post_id)
-
-        compact = _compact_post(post)
-        compact["reply_to_post_id"] = reply_to_id
-        replies.append(compact)
+            connected.add(post_id)
+        if len(next_pending) == len(pending):
+            break
+        pending = next_pending
 
     return replies
 
@@ -471,5 +480,6 @@ def parse_post_detail(
     )
 
     detail["visible_reply_count"] = len(detail["visible_replies"])
+    detail["reply_extraction_status"] = "VISIBLE_PARTIAL"
 
     return detail

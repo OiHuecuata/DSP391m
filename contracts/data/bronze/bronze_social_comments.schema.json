@@ -1,0 +1,596 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dsp391m.local/contracts/data/bronze/bronze_social_comments.schema.json",
+  "title": "bronze_social_comments",
+  "description": "R02A physical model v2: admitted S3 fetches, native fields and captured reply ancestry. v1 remains unchanged.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "observation_id",
+    "native_record_key",
+    "source_platform",
+    "source_record_id",
+    "record_type",
+    "source_url",
+    "collected_at",
+    "source_created_at",
+    "source_updated_at",
+    "collection_run_id",
+    "query_id",
+    "fetch_batch_id",
+    "provenance_scope",
+    "observed_at",
+    "observation_time_basis",
+    "origin",
+    "permission_reference",
+    "retention_policy_id",
+    "retention_expires_at",
+    "artifact_uri",
+    "artifact_sha256",
+    "source_payload_path",
+    "raw_payload",
+    "payload_hash",
+    "acquisition_provenance",
+    "query_provenance",
+    "legacy_record_id",
+    "source_venue_id",
+    "venue_name_raw",
+    "address_raw",
+    "court_count_raw",
+    "price_raw",
+    "amenities_raw",
+    "opening_hours_raw",
+    "venue_status_raw",
+    "description_raw",
+    "native_post_id",
+    "content_type",
+    "parent_content_id",
+    "title_raw",
+    "text_raw",
+    "language_raw",
+    "source_permalink",
+    "native_comment_id",
+    "parent_comment_id",
+    "comment_text_raw",
+    "native_content_id",
+    "metric_scope",
+    "latitude_raw",
+    "longitude_raw",
+    "published_at",
+    "updated_at",
+    "is_reply",
+    "view_count",
+    "like_count",
+    "comment_count",
+    "share_count",
+    "repost_count",
+    "quote_count",
+    "reply_count",
+    "metric_availability"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "2"
+    },
+    "observation_id": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "native_record_key": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "source_platform": {
+      "type": "string",
+      "enum": [
+        "pbplus",
+        "threads",
+        "youtube"
+      ]
+    },
+    "source_record_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "record_type": {
+      "type": "string",
+      "const": "Comment"
+    },
+    "source_url": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uri",
+      "pattern": "^https?://"
+    },
+    "collected_at": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{6}Z$"
+    },
+    "source_created_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{6}Z$"
+    },
+    "source_updated_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{6}Z$"
+    },
+    "collection_run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "query_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "fetch_batch_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "provenance_scope": {
+      "type": "string",
+      "enum": [
+        "RUN_ENVELOPE",
+        "FETCH_BATCH"
+      ]
+    },
+    "observed_at": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{6}Z$"
+    },
+    "observation_time_basis": {
+      "type": "string",
+      "enum": [
+        "RUN_COMPLETION",
+        "FETCH_COMPLETION"
+      ]
+    },
+    "origin": {
+      "type": "string",
+      "enum": [
+        "SYNTHETIC",
+        "PERMITTED_COLLECTION"
+      ]
+    },
+    "permission_reference": {
+      "type": "string",
+      "minLength": 1
+    },
+    "retention_policy_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "retention_expires_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{6}Z$"
+    },
+    "artifact_uri": {
+      "type": "string",
+      "format": "uri"
+    },
+    "artifact_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "source_payload_path": {
+      "type": "string",
+      "pattern": "^/"
+    },
+    "raw_payload": {
+      "type": "string",
+      "minLength": 2
+    },
+    "payload_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "acquisition_provenance": {
+      "type": "string",
+      "minLength": 2
+    },
+    "query_provenance": {
+      "type": "string",
+      "minLength": 2
+    },
+    "legacy_record_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source_venue_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "venue_name_raw": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "address_raw": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "court_count_raw": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "price_raw": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "amenities_raw": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "opening_hours_raw": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "venue_status_raw": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "description_raw": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "native_post_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "content_type": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "parent_content_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "title_raw": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "text_raw": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "language_raw": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source_permalink": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "native_comment_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "parent_comment_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "comment_text_raw": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "native_content_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "metric_scope": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "latitude_raw": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": -90,
+      "maximum": 90
+    },
+    "longitude_raw": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": -180,
+      "maximum": 180
+    },
+    "published_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{6}Z$"
+    },
+    "updated_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{6}Z$"
+    },
+    "is_reply": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "view_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 9223372036854775807
+    },
+    "like_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 9223372036854775807
+    },
+    "comment_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 9223372036854775807
+    },
+    "share_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 9223372036854775807
+    },
+    "repost_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 9223372036854775807
+    },
+    "quote_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 9223372036854775807
+    },
+    "reply_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 9223372036854775807
+    },
+    "metric_availability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "view_count",
+        "like_count",
+        "comment_count",
+        "share_count",
+        "repost_count",
+        "quote_count",
+        "reply_count"
+      ],
+      "properties": {
+        "view_count": {
+          "type": "string",
+          "enum": [
+            "AVAILABLE",
+            "NOT_PROVIDED",
+            "UNAVAILABLE",
+            "UNKNOWN",
+            "INVALID"
+          ]
+        },
+        "like_count": {
+          "type": "string",
+          "enum": [
+            "AVAILABLE",
+            "NOT_PROVIDED",
+            "UNAVAILABLE",
+            "UNKNOWN",
+            "INVALID"
+          ]
+        },
+        "comment_count": {
+          "type": "string",
+          "enum": [
+            "AVAILABLE",
+            "NOT_PROVIDED",
+            "UNAVAILABLE",
+            "UNKNOWN",
+            "INVALID"
+          ]
+        },
+        "share_count": {
+          "type": "string",
+          "enum": [
+            "AVAILABLE",
+            "NOT_PROVIDED",
+            "UNAVAILABLE",
+            "UNKNOWN",
+            "INVALID"
+          ]
+        },
+        "repost_count": {
+          "type": "string",
+          "enum": [
+            "AVAILABLE",
+            "NOT_PROVIDED",
+            "UNAVAILABLE",
+            "UNKNOWN",
+            "INVALID"
+          ]
+        },
+        "quote_count": {
+          "type": "string",
+          "enum": [
+            "AVAILABLE",
+            "NOT_PROVIDED",
+            "UNAVAILABLE",
+            "UNKNOWN",
+            "INVALID"
+          ]
+        },
+        "reply_count": {
+          "type": "string",
+          "enum": [
+            "AVAILABLE",
+            "NOT_PROVIDED",
+            "UNAVAILABLE",
+            "UNKNOWN",
+            "INVALID"
+          ]
+        }
+      }
+    }
+  },
+  "$defs": {
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "origin",
+        "permission_reference",
+        "retention_policy_id",
+        "retention_expires_at",
+        "provenance_scope",
+        "fetch_batch_id",
+        "query_id",
+        "observed_at"
+      ],
+      "properties": {
+        "origin": {
+          "type": "string",
+          "enum": [
+            "SYNTHETIC",
+            "PERMITTED_COLLECTION"
+          ]
+        },
+        "permission_reference": {
+          "type": "string",
+          "minLength": 1
+        },
+        "retention_policy_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "retention_expires_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{6}Z$"
+        },
+        "provenance_scope": {
+          "type": "string",
+          "enum": [
+            "RUN_ENVELOPE",
+            "FETCH_BATCH"
+          ]
+        },
+        "fetch_batch_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "query_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "observed_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{6}Z$"
+        }
+      }
+    }
+  },
+  "x-grain": [
+    "observation_id"
+  ],
+  "x-projection-source": "record_observations_v1 (schema_version=2)"
+}

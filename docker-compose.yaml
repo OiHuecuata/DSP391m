@@ -26,6 +26,8 @@ x-airflow-common: &airflow-common
     AIRFLOW__LOGGING__BASE_LOG_FOLDER: /opt/airflow/logs
     DSP_AIRFLOW_REPO_ROOT: ${DSP_AIRFLOW_REPO_ROOT:-${PWD}}
     DSP_AIRFLOW_SCHEDULE: ${DSP_AIRFLOW_SCHEDULE:-}
+    DSP_THREADS_AIRFLOW_SCHEDULE: ${DSP_THREADS_AIRFLOW_SCHEDULE:-}
+    DSP_THREADS_PROCESSING_CONFIG_PATH: ${DSP_THREADS_PROCESSING_CONFIG_PATH:-}
     DSP_AIRFLOW_PBPLUS_MODE: ${DSP_AIRFLOW_PBPLUS_MODE:-replay}
     DSP_AIRFLOW_PBPLUS_REPLAY: ${DSP_AIRFLOW_PBPLUS_REPLAY:-}
     DSP_AIRFLOW_PBPLUS_GEOGRAPHY: ${DSP_AIRFLOW_PBPLUS_GEOGRAPHY:-}
@@ -44,6 +46,7 @@ x-airflow-common: &airflow-common
     - ./.local/airflow/logs:/opt/airflow/logs
     - ./.local/airflow/runs:${DSP_AIRFLOW_REPO_ROOT:-${PWD}}/.local/airflow/runs
     - ./pipelines/spark/.local:${DSP_AIRFLOW_REPO_ROOT:-${PWD}}/pipelines/spark/.local
+    - /tmp/dsp391m-analytical-ownership-${AIRFLOW_UID:-1000}:/tmp/dsp391m-analytical-ownership-${AIRFLOW_UID:-1000}
   depends_on: &airflow-dependencies
     airflow-db:
       condition: service_healthy

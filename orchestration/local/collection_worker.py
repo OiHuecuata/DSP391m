@@ -47,6 +47,17 @@ def cycle_status(collection_status, error_count):
 
 
 def execute(source, run_id, directory, policy, report, update, *, ownership=None):
+    if source == "threads":
+        from orchestration.local.threads_vertical import acquire
+        config = policy.get("threads_vertical")
+        if not config:
+            raise PermissionError("Threads vertical source policy and storage must be configured")
+        report["stage"] = "threads_acquisition_ingestion_handoff"
+        result = acquire(config, run_id=run_id, directory=directory, progress=update,
+                         retry=(directory / "fetch-checkpoint.json").is_file() and not report.get("resume_acquisition"))
+        report.update(result)
+        report["stages"]["handoff"] = {"manifest_id": result["manifest_id"], "artifact_uri": result["handoff"]["artifact_uri"]}
+        return result
     config = pipeline.resolve_config()
     with pipeline.lakehouse_lock(config, ownership=ownership):
         return _execute_locked(
@@ -389,6 +400,7 @@ def main(argv=None):
     )
     parser.add_argument("--run-id", required=True)
     parser.add_argument("--state", type=Path, required=True)
+    parser.add_argument("--resume-acquisition", action="store_true")
     parser.add_argument(
         "--config", type=Path, default=ROOT / "configs/collection/data_ops.v1.json"
     )
@@ -403,6 +415,7 @@ def main(argv=None):
         "status": "RUNNING",
         "stages": {},
         "metrics": {},
+        "resume_acquisition": args.resume_acquisition,
     }
     current_progress = {}
 

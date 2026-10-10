@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dsp391m.local/contracts/data/gold/social_intent_daily_v2.schema.json",
+  "title": "social_intent_daily_v2",
+  "description": "Threads research extension. Unavailable source facts remain null. Exploratory labels are unevaluated.",
+  "x-grain": [
+    "activity_date",
+    "admin_version",
+    "admin_unit_id",
+    "platform",
+    "intent_type"
+  ],
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "activity_date",
+    "admin_version",
+    "admin_unit_id",
+    "platform",
+    "intent_type",
+    "post_count",
+    "comment_count",
+    "reply_count",
+    "evidence_count",
+    "resolved_content_count",
+    "high_confidence_count",
+    "generated_at",
+    "quality_status",
+    "input_snapshot_id"
+  ],
+  "properties": {
+    "activity_date": {
+      "type": "string"
+    },
+    "admin_version": {
+      "type": "string"
+    },
+    "admin_unit_id": {
+      "type": "string"
+    },
+    "platform": {
+      "type": "string"
+    },
+    "intent_type": {
+      "type": "string"
+    },
+    "post_count": {
+      "type": "integer"
+    },
+    "comment_count": {
+      "type": "integer"
+    },
+    "reply_count": {
+      "type": "integer"
+    },
+    "evidence_count": {
+      "type": "integer"
+    },
+    "resolved_content_count": {
+      "type": "integer"
+    },
+    "high_confidence_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "quality_status": {
+      "type": "string"
+    },
+    "input_snapshot_id": {
+      "type": "string"
+    }
+  }
+}

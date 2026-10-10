@@ -1,0 +1,23 @@
+{
+  "mode": "live",
+  "source_policy": {
+    "source": "threads",
+    "status": "UNKNOWN",
+    "reference": "CONFIGURE_REVIEWED_SOURCE_POLICY",
+    "collection_enabled": false
+  },
+  "acquisition": {
+    "queries": ["pickleball", "pickleball tìm sân", "pickleball đặt sân", "pickleball giá thuê", "pickleball tiện ích", "pickleball ghép kèo"],
+    "unique_target": 100,
+    "request_budget": 250,
+    "concurrency": 1,
+    "pacing_seconds": 2,
+    "max_public_pages": 3,
+    "raw_base_uri": "s3a://CONFIGURE_APPROVED_BUCKET/threads/raw"
+  },
+  "lakehouse_base_uri": "s3a://CONFIGURE_APPROVED_BUCKET/lakehouse",
+  "control_base_uri": "s3a://CONFIGURE_APPROVED_BUCKET/threads/control",
+  "kafka_bootstrap_servers": "CONFIGURE_APPROVED_BROKERS:9092",
+  "clickhouse": {"host": "CONFIGURE_APPROVED_HOST", "port": 8123, "database": "dsp391m", "user": "dsp391m", "password": ""},
+  "admin_aliases": []
+}

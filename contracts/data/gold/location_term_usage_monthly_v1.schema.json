@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dsp391m.local/contracts/data/gold/location_term_usage_monthly_v1.schema.json",
+  "title": "location_term_usage_monthly_v1",
+  "description": "Threads research extension. Unavailable source facts remain null. Exploratory labels are unevaluated.",
+  "x-grain": [
+    "month",
+    "location_term_raw_normalized",
+    "canonical_location_id",
+    "term_admin_version",
+    "platform"
+  ],
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "month",
+    "location_term_raw_normalized",
+    "canonical_location_id",
+    "term_admin_version",
+    "platform",
+    "post_mention_count",
+    "comment_mention_count",
+    "unique_content_count",
+    "term_usage_share",
+    "resolution_coverage",
+    "quality_status",
+    "input_snapshot_id"
+  ],
+  "properties": {
+    "month": {
+      "type": "string"
+    },
+    "location_term_raw_normalized": {
+      "type": "string"
+    },
+    "canonical_location_id": {
+      "type": "string"
+    },
+    "term_admin_version": {
+      "type": "string"
+    },
+    "platform": {
+      "type": "string"
+    },
+    "post_mention_count": {
+      "type": "integer"
+    },
+    "comment_mention_count": {
+      "type": "integer"
+    },
+    "unique_content_count": {
+      "type": "integer"
+    },
+    "term_usage_share": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "resolution_coverage": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "quality_status": {
+      "type": "string"
+    },
+    "input_snapshot_id": {
+      "type": "string"
+    }
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dsp391m.local/contracts/data/gold/venue_discovery_trends_v1.schema.json",
+  "title": "venue_discovery_trends_v1",
+  "description": "Threads research extension. Unavailable source facts remain null. Exploratory labels are unevaluated.",
+  "x-grain": [
+    "admin_unit_id",
+    "month"
+  ],
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "admin_unit_id",
+    "month",
+    "newly_discovered_venue_count",
+    "quality_status",
+    "input_snapshot_id"
+  ],
+  "properties": {
+    "admin_unit_id": {
+      "type": "string"
+    },
+    "month": {
+      "type": "string"
+    },
+    "newly_discovered_venue_count": {
+      "type": "integer"
+    },
+    "quality_status": {
+      "type": "string"
+    },
+    "input_snapshot_id": {
+      "type": "string"
+    }
+  }
+}

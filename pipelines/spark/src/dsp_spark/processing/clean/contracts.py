@@ -19,6 +19,8 @@ from pyspark.sql import types as T
 from referencing import Registry, Resource
 
 CONTRACT_FILES = {
+    "observation_v2": "data/bronze/record-observation.v2.schema.json",
+    "observation_artifact_v2": "data/bronze/observation-artifact.v2.schema.json",
     "observation_artifact": "data/bronze/observation-artifact.v1.schema.json",
     "observation": "data/bronze/record-observation.v1.schema.json",
     "youtube_bronze": "data/bronze/youtube-api.v1.schema.json",
@@ -33,6 +35,18 @@ CONTRACT_FILES = {
     "threads_bronze": "data/bronze/threads-crawl.v1.schema.json",
     "pbplus_bronze": "data/bronze/pbplus-crawl.v1.schema.json",
 }
+
+# Register extensions centrally so executor processes resolve the same contracts.
+for _name in (
+    "silver_social_posts", "silver_social_comments", "silver_social_engagement_snapshots",
+    "silver_social_geo_mentions", "silver_social_intent_evidence",
+    "court_supply_by_admin_version_v2", "social_engagement_daily_v1", "social_intent_daily_v2",
+    "social_comment_analytics_daily_v1", "social_activity_by_admin_version_daily",
+    "national_location_coverage_v1", "venue_community_feedback_weekly_v1",
+    "location_term_usage_monthly_v1", "venue_discovery_trends_v1",
+    "location_market_research_monthly_v1", "threads_content_eda_v1", "threads_collection_eda_v1",
+):
+    CONTRACT_FILES[_name] = f"data/{'silver' if _name.startswith('silver_') else 'gold'}/{_name}.schema.json"
 
 
 @lru_cache(maxsize=1)

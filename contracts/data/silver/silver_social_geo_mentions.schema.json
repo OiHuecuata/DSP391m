@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dsp391m.local/contracts/data/silver/silver_social_geo_mentions.schema.json",
+  "title": "silver_social_geo_mentions",
+  "description": "Threads research extension. Unavailable source facts remain null. Exploratory labels are unevaluated.",
+  "x-grain": [
+    "mention_id"
+  ],
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "mention_id",
+    "content_id",
+    "content_type",
+    "platform",
+    "location_text_raw",
+    "location_role",
+    "resolution_precision",
+    "resolution_status",
+    "evidence_span",
+    "extraction_method",
+    "observation_id",
+    "origin",
+    "address_text_raw",
+    "old_province_id",
+    "old_district_id",
+    "old_ward_id",
+    "new_province_id",
+    "new_ward_id",
+    "admin_version",
+    "admin_unit_id",
+    "reference_version",
+    "published_date_vn",
+    "legacy_alias_key",
+    "latitude",
+    "longitude",
+    "confidence",
+    "span_start",
+    "span_end"
+  ],
+  "properties": {
+    "mention_id": {
+      "type": "string"
+    },
+    "content_id": {
+      "type": "string"
+    },
+    "content_type": {
+      "type": "string"
+    },
+    "platform": {
+      "type": "string"
+    },
+    "location_text_raw": {
+      "type": "string"
+    },
+    "location_role": {
+      "type": "string"
+    },
+    "resolution_precision": {
+      "type": "string"
+    },
+    "resolution_status": {
+      "type": "string"
+    },
+    "evidence_span": {
+      "type": "string"
+    },
+    "extraction_method": {
+      "type": "string"
+    },
+    "observation_id": {
+      "type": "string"
+    },
+    "origin": {
+      "type": "string"
+    },
+    "address_text_raw": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "old_province_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "old_district_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "old_ward_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "new_province_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "new_ward_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "admin_version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "admin_unit_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reference_version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "published_date_vn": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "legacy_alias_key": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "latitude": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "longitude": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "confidence": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "span_start": {
+      "type": "integer"
+    },
+    "span_end": {
+      "type": "integer"
+    }
+  }
+}

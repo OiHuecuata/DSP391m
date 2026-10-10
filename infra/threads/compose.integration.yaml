@@ -1,0 +1,64 @@
+services:
+  airflow-test:
+    image: dsp391m-airflow:3.3.2
+    profiles: [airflow-test]
+    network_mode: host
+    user: "${DSP_THREADS_UID:-1000}:0"
+    command: ["python", "orchestration/airflow/threads_test_runtime.py"]
+    working_dir: ${DSP_THREADS_REPO_ROOT:-${PWD}}
+    volumes:
+      - ${DSP_THREADS_REPO_ROOT:-${PWD}}:${DSP_THREADS_REPO_ROOT:-${PWD}}:ro
+      - ${DSP_THREADS_REPO_ROOT:-${PWD}}/.local/threads-vertical:${DSP_THREADS_REPO_ROOT:-${PWD}}/.local/threads-vertical:rw
+      - /tmp/dsp391m-analytical-ownership-${DSP_THREADS_UID:-1000}:/tmp/dsp391m-analytical-ownership-${DSP_THREADS_UID:-1000}:rw
+    environment:
+      AIRFLOW_HOME: /tmp/threads-airflow
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: sqlite:////tmp/threads-airflow/airflow.db
+      AIRFLOW__CORE__DAGS_FOLDER: ${DSP_THREADS_REPO_ROOT:-${PWD}}/orchestration/airflow/dags
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__AUTH_MANAGER: airflow.api_fastapi.auth.managers.simple.simple_auth_manager.SimpleAuthManager
+      AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_ALL_ADMINS: "true"
+      DSP_AIRFLOW_REPO_ROOT: ${DSP_THREADS_REPO_ROOT:-${PWD}}
+      DSP_THREADS_PROCESSING_PYTHON: /opt/dsp-python/bin/python
+      DSP_THREADS_FIXTURE_CONF: ${DSP_THREADS_FIXTURE_CONF:-}
+      JAVA_HOME: /opt/java17
+      PYSPARK_PYTHON: /opt/dsp-python/bin/python
+      PYSPARK_DRIVER_PYTHON: /opt/dsp-python/bin/python
+      SPARK_LOCAL_IP: 127.0.0.1
+      DSP_SPARK_JARS: ${DSP_SPARK_JARS:-}
+      PYTHONPATH: ${DSP_THREADS_REPO_ROOT:-${PWD}}:${DSP_THREADS_REPO_ROOT:-${PWD}}/apps/collector/src:${DSP_THREADS_REPO_ROOT:-${PWD}}/pipelines/spark/src:/home/airflow/.local/lib/python3.12/site-packages
+  kafka:
+    image: apache/kafka:4.1.1
+    hostname: kafka
+    ports: ["127.0.0.1:19092:19092"]
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,HOST:PLAINTEXT
+      KAFKA_LISTENERS: CONTROLLER://:9093,HOST://:19092
+      KAFKA_ADVERTISED_LISTENERS: HOST://127.0.0.1:19092
+      KAFKA_INTER_BROKER_LISTENER_NAME: HOST
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      CLUSTER_ID: T6fGsOPfQ5S1gTo2lO2DgA
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+    healthcheck:
+      test: ["CMD", "/opt/kafka/bin/kafka-topics.sh", "--bootstrap-server", "127.0.0.1:19092", "--list"]
+      interval: 5s
+      retries: 15
+  clickhouse:
+    image: clickhouse/clickhouse-server:25.8.16.34
+    ports: ["127.0.0.1:18123:8123"]
+    environment:
+      CLICKHOUSE_DB: threads_fixture
+      CLICKHOUSE_USER: threads_fixture
+      CLICKHOUSE_PASSWORD: isolated-fixture-only
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+    healthcheck:
+      test: ["CMD", "clickhouse-client", "--host", "127.0.0.1", "--user", "threads_fixture", "--password", "isolated-fixture-only", "--query", "SELECT 1"]
+      interval: 3s
+      retries: 15

@@ -209,7 +209,7 @@ class AnalyticalOwnershipTests(unittest.TestCase):
 
             def nested(*args):
                 return worker.execute(
-                    "threads",
+                    "pbplus",  # Legacy full-cycle ownership; Threads now hands off.
                     "run",
                     self.root,
                     {},
@@ -241,7 +241,7 @@ class AnalyticalOwnershipTests(unittest.TestCase):
             patch.object(worker, "_execute_locked", side_effect=operation),
         ):
             self.assertEqual(
-                worker.execute("threads", "run", self.root, {}, {}, lambda _: None),
+                worker.execute("pbplus", "run", self.root, {}, {}, lambda _: None),
                 "completed",
             )
         with refresh.analytical_ownership(config):

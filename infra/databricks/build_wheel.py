@@ -29,21 +29,26 @@ def build_wheel(output: Path | None = None):
             ROOT / "orchestration/local/processing_manifest.py",
             ownership / "processing_manifest.py",
         )
+        for name in ("threads_manifest", "threads_vertical"):
+            shutil.copyfile(ROOT / f"orchestration/local/{name}.py", ownership / f"{name}.py")
         platform = stage / "dsp_databricks"
         platform.mkdir()
         shutil.copyfile(
             Path(__file__).with_name("run_social_activity_daily.py"),
             platform / "run_social_activity_daily.py",
         )
+        shutil.copyfile(Path(__file__).with_name("run_threads_vertical.py"), platform / "run_threads_vertical.py")
         collector = stage / "dsp_collector/runtime"
         collector.mkdir(parents=True)
         shutil.copyfile(
             ROOT / "apps/collector/src/dsp_collector/runtime/config.py",
             collector / "config.py",
         )
+        for name in ("durable", "source_policy"):
+            shutil.copyfile(ROOT / f"apps/collector/src/dsp_collector/runtime/{name}.py", collector / f"{name}.py")
         normalizers = collector.parent / "normalizers"
         normalizers.mkdir()
-        for name in ("observation", "court", "social_post", "youtube"):
+        for name in ("observation", "observation_v2", "court", "social_post", "youtube"):
             shutil.copyfile(
                 ROOT / f"apps/collector/src/dsp_collector/normalizers/{name}.py",
                 normalizers / f"{name}.py",
@@ -56,6 +61,10 @@ def build_wheel(output: Path | None = None):
             / "apps/collector/src/dsp_collector/sources/crawler/threads/vietnam_terms.py",
             terms / "vietnam_terms.py",
         )
+        shutil.copyfile(ROOT / "apps/collector/src/dsp_collector/sources/crawler/threads/rich_fields.py", terms / "rich_fields.py")
+        publishers = collector.parent / "publishers"
+        publishers.mkdir()
+        shutil.copyfile(ROOT / "apps/collector/src/dsp_collector/publishers/observation.py", publishers / "observation.py")
         contracts = stage / "dsp_contracts"
         for path in (ROOT / "contracts").rglob("*.schema.json"):
             target = contracts / path.relative_to(ROOT / "contracts")
@@ -79,7 +88,7 @@ name = "dsp391-spark-jobs"
 version = "0.3.0"
 description = "Portable DSP391 Spark jobs with canonical contract resources"
 requires-python = ">=3.12"
-dependencies = ["jsonschema (>=4.25.0,<5.0.0)"]
+dependencies = ["jsonschema (>=4.25.0,<5.0.0)", "boto3 (>=1.40.0,<2.0.0)", "httpx (>=0.28.1,<0.29.0)"]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
@@ -89,6 +98,7 @@ build-backend = "poetry.core.masonry.api"
 social_activity_daily = "dsp_databricks.run_social_activity_daily:main"
 court_supply_by_location = "dsp_databricks.run_social_activity_daily:court_supply_main"
 location_market_signal_snapshot = "dsp_databricks.run_social_activity_daily:market_signal_main"
+threads_vertical = "dsp_databricks.run_threads_vertical:main"
 
 [tool.poetry]
 packages = [{include = "dsp_spark"}, {include = "dsp_databricks"}, {include = "dsp_collector"}, {include = "dsp_contracts"}, {include = "orchestration"}]

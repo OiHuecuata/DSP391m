@@ -249,7 +249,7 @@ class AnalyticalEntrypointTests(unittest.TestCase):
         ):
             self.assert_blocked(
                 lambda: worker.execute(
-                    "threads", "run", self.root, {}, {}, lambda _: None
+                    "pbplus", "run", self.root, {}, {}, lambda _: None
                 )
             )
             self.assert_blocked(lambda: pipeline.execute(self.config, {}, self.root))

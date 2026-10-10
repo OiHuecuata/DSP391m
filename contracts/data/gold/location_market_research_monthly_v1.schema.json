@@ -1,0 +1,154 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dsp391m.local/contracts/data/gold/location_market_research_monthly_v1.schema.json",
+  "title": "location_market_research_monthly_v1",
+  "description": "Threads research extension. Unavailable source facts remain null. Exploratory labels are unevaluated.",
+  "x-grain": [
+    "month",
+    "admin_unit_id",
+    "admin_version"
+  ],
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "month",
+    "admin_unit_id",
+    "admin_version",
+    "social_coverage_status",
+    "supply_coverage_status",
+    "generated_at",
+    "venue_count",
+    "known_court_count",
+    "relevant_post_count",
+    "relevant_comment_count",
+    "total_views",
+    "total_likes",
+    "total_shares",
+    "court_seeking_post_count",
+    "court_seeking_comment_count",
+    "booking_intent_content_count",
+    "capacity_complaint_count",
+    "newly_discovered_venue_count",
+    "source_count",
+    "court_count_coverage_rate",
+    "supply_as_of",
+    "quality_status",
+    "input_snapshot_id"
+  ],
+  "properties": {
+    "month": {
+      "type": "string"
+    },
+    "admin_unit_id": {
+      "type": "string"
+    },
+    "admin_version": {
+      "type": "string"
+    },
+    "social_coverage_status": {
+      "type": "string"
+    },
+    "supply_coverage_status": {
+      "type": "string"
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "venue_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "known_court_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "relevant_post_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "relevant_comment_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "total_views": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "total_likes": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "total_shares": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "court_seeking_post_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "court_seeking_comment_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "booking_intent_content_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "capacity_complaint_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "newly_discovered_venue_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "source_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "court_count_coverage_rate": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "supply_as_of": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "quality_status": {
+      "type": "string"
+    },
+    "input_snapshot_id": {
+      "type": "string"
+    }
+  }
+}

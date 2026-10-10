@@ -33,17 +33,18 @@ type Source struct {
 	Metrics    map[string]any `json:"metrics,omitempty"`
 }
 type Run struct {
-	ID        string         `json:"run_id"`
-	Source    string         `json:"source"`
-	Status    string         `json:"status"`
-	Started   time.Time      `json:"started_at"`
-	Completed *time.Time     `json:"completed_at,omitempty"`
-	Duration  float64        `json:"duration_seconds"`
-	Error     string         `json:"error,omitempty"`
-	Metrics   map[string]any `json:"metrics,omitempty"`
-	Stages    map[string]any `json:"stages,omitempty"`
-	PID       int            `json:"pid,omitempty"`
-	Attempt   int            `json:"attempt"`
+	ID                string         `json:"run_id"`
+	Source            string         `json:"source"`
+	Status            string         `json:"status"`
+	Started           time.Time      `json:"started_at"`
+	Completed         *time.Time     `json:"completed_at,omitempty"`
+	Duration          float64        `json:"duration_seconds"`
+	Error             string         `json:"error,omitempty"`
+	Metrics           map[string]any `json:"metrics,omitempty"`
+	Stages            map[string]any `json:"stages,omitempty"`
+	PID               int            `json:"pid,omitempty"`
+	Attempt           int            `json:"attempt"`
+	ResumeAcquisition bool           `json:"resume_acquisition,omitempty"`
 }
 type State struct {
 	StopRequested bool               `json:"stop_requested"`
@@ -57,6 +58,7 @@ type State struct {
 type Options struct {
 	Root, Directory, Python, Config string
 	YouTubeConfigured               bool
+	ThreadsConfigured               *bool
 	Runner                          func(string, string) (*exec.Cmd, error)
 }
 type Manager struct {
@@ -106,6 +108,12 @@ func NewManager(o Options) (*Manager, error) {
 			m.state.Sources[name] = s
 		}
 		s.Configured = name != "youtube" || o.YouTubeConfigured
+		if name == "threads" && o.ThreadsConfigured != nil {
+			s.Configured = *o.ThreadsConfigured
+			if !s.Configured {
+				s.Enabled = false
+			}
+		}
 		if s.Status == "RUNNING" || s.Status == "STOPPING" || s.Status == "RECOVERING" {
 			s.Status = "INTERRUPTED"
 			s.Error = "Controller restarted; reconciling worker outcome"
@@ -329,6 +337,14 @@ func (m *Manager) Configure(config map[string]SourceConfig) error {
 
 // Retry reuses immutable artifacts and observation identity; no source re-fetch.
 func (m *Manager) Retry(id string) error {
+	return m.retry(id, false)
+}
+
+// ResumeThreads continues bounded acquisition from the retained query checkpoint.
+// Retry keeps its existing no-source-fetch behavior.
+func (m *Manager) ResumeThreads(id string) error { return m.retry(id, true) }
+
+func (m *Manager) retry(id string, resume bool) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	r := m.findRun(id)
@@ -336,6 +352,12 @@ func (m *Manager) Retry(id string) error {
 		return errors.New("unknown run")
 	}
 	s := m.state.Sources[r.Source]
+	if resume && r.Source != "threads" {
+		return errors.New("resume is supported for Threads only")
+	}
+	if r.Source == "threads" && !s.Configured {
+		return errors.New("Threads source review is not configured")
+	}
 	if m.closing || s.Pending || s.Status == "RUNNING" || s.Status == "STOPPING" || s.Status == "RECOVERING" {
 		return ErrConflict
 	}
@@ -344,9 +366,16 @@ func (m *Manager) Retry(id string) error {
 	}
 	if _, err := os.Stat(filepath.Join(m.options.Directory, "runs", id, "collection.json")); err != nil {
 		if _, rawErr := os.Stat(filepath.Join(m.options.Directory, "runs", id, "bronze", r.Source, id+".json")); rawErr != nil {
+			if r.Source == "threads" {
+				if _, checkpointErr := os.Stat(filepath.Join(m.options.Directory, "runs", id, "fetch-checkpoint.json")); checkpointErr == nil {
+					goto retained
+				}
+			}
 			return errors.New("no saved collection available; use Run Now")
 		}
 	}
+retained:
+	r.ResumeAcquisition = resume
 	s.Pending = true
 	s.RetryRun = id
 	m.refreshStatusLocked()
@@ -491,6 +520,9 @@ func (m *Manager) run(r *Run) {
 		cmd, err = m.options.Runner(r.Source, r.ID)
 	} else {
 		cmd = exec.Command(m.options.Python, filepath.Join(m.options.Root, "orchestration/local/collection_worker.py"), "--source", r.Source, "--run-id", r.ID, "--state", m.options.Directory, "--config", m.options.Config)
+		if r.ResumeAcquisition {
+			cmd.Args = append(cmd.Args, "--resume-acquisition")
+		}
 		cmd.Dir = m.options.Root
 		cmd.Env = append(os.Environ(), "PYTHONUNBUFFERED=1")
 		// Terminal interrupts target the backend; its shutdown waits for this job.

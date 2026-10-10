@@ -1,0 +1,182 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dsp391m.local/contracts/kafka/social-observation-event.v2.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "source_platform",
+    "source_record_id",
+    "record_type",
+    "collection_run_id",
+    "query_id",
+    "fetch_batch_id",
+    "artifact_uri",
+    "artifact_sha256",
+    "payload_hash",
+    "observation_id",
+    "schema_version",
+    "event_id",
+    "event_type",
+    "emitted_at",
+    "record_path",
+    "record_version",
+    "artifact_path",
+    "artifact_version",
+    "artifact_id"
+  ],
+  "properties": {
+    "source_platform": {
+      "type": "string",
+      "enum": [
+        "pbplus",
+        "threads",
+        "youtube"
+      ]
+    },
+    "source_record_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "record_type": {
+      "type": "string",
+      "enum": [
+        "Venue",
+        "Post",
+        "Video",
+        "Comment"
+      ]
+    },
+    "collection_run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "query_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "fetch_batch_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "artifact_uri": {
+      "type": "string",
+      "format": "uri"
+    },
+    "artifact_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "payload_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "observation_id": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "2"
+    },
+    "event_id": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "event_type": {
+      "type": "string",
+      "const": "social.observation.verified"
+    },
+    "emitted_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "record_path": {
+      "type": "string",
+      "format": "uri"
+    },
+    "record_version": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "artifact_path": {
+      "type": "string",
+      "format": "uri"
+    },
+    "artifact_version": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "artifact_id": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    }
+  },
+  "$defs": {
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "origin",
+        "permission_reference",
+        "retention_policy_id",
+        "retention_expires_at",
+        "provenance_scope",
+        "fetch_batch_id",
+        "query_id",
+        "observed_at"
+      ],
+      "properties": {
+        "origin": {
+          "type": "string",
+          "enum": [
+            "SYNTHETIC",
+            "PERMITTED_COLLECTION"
+          ]
+        },
+        "permission_reference": {
+          "type": "string",
+          "minLength": 1
+        },
+        "retention_policy_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "retention_expires_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{6}Z$"
+        },
+        "provenance_scope": {
+          "type": "string",
+          "enum": [
+            "RUN_ENVELOPE",
+            "FETCH_BATCH"
+          ]
+        },
+        "fetch_batch_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "query_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "observed_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{6}Z$"
+        }
+      }
+    }
+  }
+}

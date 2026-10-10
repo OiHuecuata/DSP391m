@@ -1,0 +1,224 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dsp391m.local/contracts/data/silver/silver_social_posts.schema.json",
+  "title": "silver_social_posts",
+  "description": "Threads research extension. Unavailable source facts remain null. Exploratory labels are unevaluated.",
+  "x-grain": [
+    "content_id"
+  ],
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "content_id",
+    "platform",
+    "content_type",
+    "text_normalized",
+    "classification_status",
+    "classifier_version",
+    "text_hash",
+    "reply_extraction_status",
+    "observation_id",
+    "collection_run_id",
+    "observed_at",
+    "artifact_sha256",
+    "origin",
+    "post_id",
+    "comment_id",
+    "parent_comment_id",
+    "parent_content_id",
+    "comment_text_normalized",
+    "published_at",
+    "published_date_vn",
+    "language",
+    "sentiment",
+    "source_url",
+    "query_id",
+    "fetch_batch_id",
+    "is_reply",
+    "is_pickleball_related",
+    "is_commercial",
+    "is_duplicate",
+    "relevance_confidence",
+    "classification_confidence",
+    "intent_labels",
+    "topic_labels",
+    "hashtags",
+    "mentioned_venue_ids",
+    "character_count",
+    "word_count",
+    "publication_hour_vn"
+  ],
+  "properties": {
+    "content_id": {
+      "type": "string"
+    },
+    "platform": {
+      "type": "string"
+    },
+    "content_type": {
+      "type": "string"
+    },
+    "text_normalized": {
+      "type": "string"
+    },
+    "classification_status": {
+      "type": "string"
+    },
+    "classifier_version": {
+      "type": "string"
+    },
+    "text_hash": {
+      "type": "string"
+    },
+    "reply_extraction_status": {
+      "type": "string"
+    },
+    "observation_id": {
+      "type": "string"
+    },
+    "collection_run_id": {
+      "type": "string"
+    },
+    "observed_at": {
+      "type": "string"
+    },
+    "artifact_sha256": {
+      "type": "string"
+    },
+    "origin": {
+      "type": "string"
+    },
+    "post_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "comment_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "parent_comment_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "parent_content_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "comment_text_normalized": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "published_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "published_date_vn": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "language": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "sentiment": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source_url": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "query_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "fetch_batch_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "is_reply": {
+      "type": "boolean"
+    },
+    "is_pickleball_related": {
+      "type": "boolean"
+    },
+    "is_commercial": {
+      "type": "boolean"
+    },
+    "is_duplicate": {
+      "type": "boolean"
+    },
+    "relevance_confidence": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "classification_confidence": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "intent_labels": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "topic_labels": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "hashtags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "mentioned_venue_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "character_count": {
+      "type": "integer"
+    },
+    "word_count": {
+      "type": "integer"
+    },
+    "publication_hour_vn": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    }
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dsp391m.local/contracts/data/gold/venue_community_feedback_weekly_v1.schema.json",
+  "title": "venue_community_feedback_weekly_v1",
+  "description": "Threads research extension. Unavailable source facts remain null. Exploratory labels are unevaluated.",
+  "x-grain": [
+    "venue_id",
+    "week_start"
+  ],
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "venue_id",
+    "week_start",
+    "mentioning_post_count",
+    "mentioning_comment_count",
+    "positive_feedback_count",
+    "negative_feedback_count",
+    "price_complaint_count",
+    "facility_complaint_count",
+    "booking_difficulty_count",
+    "service_complaint_count",
+    "source_count",
+    "classified_evidence_count",
+    "quality_status",
+    "input_snapshot_id"
+  ],
+  "properties": {
+    "venue_id": {
+      "type": "string"
+    },
+    "week_start": {
+      "type": "string"
+    },
+    "mentioning_post_count": {
+      "type": "integer"
+    },
+    "mentioning_comment_count": {
+      "type": "integer"
+    },
+    "positive_feedback_count": {
+      "type": "integer"
+    },
+    "negative_feedback_count": {
+      "type": "integer"
+    },
+    "price_complaint_count": {
+      "type": "integer"
+    },
+    "facility_complaint_count": {
+      "type": "integer"
+    },
+    "booking_difficulty_count": {
+      "type": "integer"
+    },
+    "service_complaint_count": {
+      "type": "integer"
+    },
+    "source_count": {
+      "type": "integer"
+    },
+    "classified_evidence_count": {
+      "type": "integer"
+    },
+    "quality_status": {
+      "type": "string"
+    },
+    "input_snapshot_id": {
+      "type": "string"
+    }
+  }
+}

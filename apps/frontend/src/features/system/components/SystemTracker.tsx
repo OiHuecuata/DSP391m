@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ComingSoon } from "./ComingSoon";
 import { CrawlerTracker } from "./CrawlerTracker";
 import { TrackerTabs } from "./TrackerTabs";
+import { ThreadsEDA } from "@/features/research/ThreadsEDA";
 
 const mainTabs = [{ id: "analysis", name: "Analysis" }, { id: "system", name: "System" }];
 const systemTabs = [{ id: "api", name: "API" }, { id: "crawler", name: "Crawler" }];
@@ -18,7 +19,7 @@ export function SystemTracker() {
       <div className="page-heading"><span className="eyebrow">Platform operations</span><h1>Tracker</h1><p>Follow your data collection, from query to completion.</p></div>
       <TrackerTabs id="main" label="Tracker sections" options={mainTabs} selected={mainTab} onSelect={setMainTab} />
       <div role="tabpanel" id={`main-panel-${mainTab}`} aria-labelledby={`main-tab-${mainTab}`} tabIndex={0}>
-        {mainTab === "analysis" ? <ComingSoon title="Analysis" description="Explore collected data and insights here in a future release." /> : <>
+        {mainTab === "analysis" ? <ThreadsEDA /> : <>
           <div className="section-heading"><h2>System</h2><p>Runtime visibility for your data platform.</p></div>
           <TrackerTabs id="system" label="System trackers" options={systemTabs} selected={systemTab} onSelect={setSystemTab} variant="secondary" />
           <div role="tabpanel" id={`system-panel-${systemTab}`} aria-labelledby={`system-tab-${systemTab}`} tabIndex={0}>

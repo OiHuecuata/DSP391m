@@ -388,3 +388,15 @@ collect-live-eda:
 
 report-live-eda:
 	@$(SPARK_PYTHON) scripts/report_live_dataset.py --export
+threads-unit:
+	PYTHONPATH=apps/collector/src:pipelines/spark/src:. .venv/bin/python -m unittest discover -v -s tests/threads_vertical -p 'test_*.py'
+
+threads-faults:
+	.venv/bin/python scripts/verify_threads_vertical.py faults
+
+threads-legacy-regression:
+	.venv/bin/python scripts/verify_threads_vertical.py legacy-regression
+
+threads-integration:
+	.venv/bin/python scripts/verify_threads_vertical.py integration $(THREADS_INTEGRATION_ARGS)
+
