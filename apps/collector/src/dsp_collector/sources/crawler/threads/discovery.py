@@ -18,13 +18,12 @@ from urllib.parse import parse_qs, urljoin, urlsplit
 from ....runtime.bronze import check_secrets
 from .vietnam_terms import (
     COUNTRY_SCOPE,
-    LOCAL_AREA_ALIASES,
     PICKLEBALL_TERMS,
     QuerySpec,
     assess_post,
 )
 
-PLANNER_VERSION = "2"
+PLANNER_VERSION = "3"
 MARKET_QUERIES = {
     "venues": ("sân {seed}", "khai trương sân {seed}"),
     "pricing": ("giá thuê sân {seed}", "đặt sân {seed}"),
@@ -64,117 +63,208 @@ def geography_registry():
     return json.loads(path.read_text())["locations"]
 
 
+def reference_resource(name):
+    root = next(
+        (
+            p
+            for p in Path(__file__).resolve().parents
+            if (p / "configs/reference" / name).is_file()
+        ),
+        None,
+    )
+    path = (
+        root / "configs/reference" / name
+        if root
+        else files("dsp_contracts") / "reference" / name
+    )
+    return json.loads(path.read_text())
+
+
+@lru_cache(maxsize=1)
+def semantic_vocabulary():
+    return reference_resource("threads_vocabulary.v1.json")["categories"]
+
+
+@lru_cache(maxsize=1)
+def national_geography():
+    rows = reference_resource("threads_geography.v1.json")["locations"]
+    for row in rows:
+        if not row.get("source_url") or not row.get("geo_id"):
+            raise ValueError("Geographic reference requires identity and provenance")
+    return rows
+
+
+def ascii_variant(value):
+    value = value.replace("đ", "d").replace("Đ", "D")
+    return "".join(
+        c for c in unicodedata.normalize("NFD", value) if not unicodedata.combining(c)
+    )
+
+
+class DiscoveryPlan(list):
+    """A normal list with composition counts for discovery diagnostics."""
+
+    def __init__(self, items, composed):
+        super().__init__(items)
+        self.candidates_before_phrase_dedup = composed
+
+
 def build_discovery_plan(
     seeds,
     *,
     categories=None,
     geo_keys=None,
     include_local=False,
-    max_geo_aliases=2,
+    max_geo_aliases=None,
     expand_subject_variants=True,
 ):
-    """Interleave subject, intent and geographic scopes; budgets govern execution.
+    """Compose traceable phrases, deduplicate strings while merging provenance.
 
-    Geographic terms come from the existing registry, not a invented national
-    list. Case/spacing/Unicode variants deduplicate; distinct accented search
-    spellings remain separate. Query intent is discovery context, not an NLP label.
+    max_geo_aliases is accepted for old callers but never discards validated
+    aliases. Query budgets apply to execution, never candidate generation.
+    Diagonal scheduling rotates geography for each semantic family.
     """
+    from collections import deque
+    from dataclasses import replace
+
     if (
         not isinstance(seeds, list)
         or not seeds
         or any(not isinstance(s, str) or not s.strip() for s in seeds)
     ):
         raise ValueError("query_seeds must be nonempty strings")
-    categories = list(MARKET_QUERIES) if categories is None else categories
-    if not isinstance(categories, list) or any(
-        c not in MARKET_QUERIES for c in categories
-    ):
+    vocab = semantic_vocabulary()
+    categories = list(vocab) if categories is None else categories
+    if not isinstance(categories, list) or set(categories) - set(vocab):
         raise ValueError("unknown discovery category")
-    if max_geo_aliases is not None and (
-        type(max_geo_aliases) is not int or max_geo_aliases < 1
-    ):
-        raise ValueError("max_geo_aliases must be positive or null")
-    registry = geography_registry()
-    known = {r["location_id"] for r in registry}
-    if geo_keys is not None and (
-        not isinstance(geo_keys, list) or set(geo_keys) - known
-    ):
-        raise ValueError("geo_keys must refer to the existing geographic registry")
-    scopes = [
-        (None, None, "fallback", [""]),
-        (
-            COUNTRY_SCOPE.key,
-            COUNTRY_SCOPE.name,
-            "country",
-            list(COUNTRY_SCOPE.search_terms),
-        ),
+    rows = national_geography()
+    if geo_keys is not None:
+        known = {r["geo_id"] for r in rows}
+        legacy = {
+            r["location_id"]: r["canonical_name"].replace("TP. ", "")
+            for r in geography_registry()
+        }
+        if not isinstance(geo_keys, list) or set(geo_keys) - known - set(legacy):
+            raise ValueError("geo_keys must refer to the existing geographic registry")
+        names = {legacy[k] for k in geo_keys if k in legacy}
+        rows = [
+            r for r in rows if r["geo_id"] in geo_keys or r["canonical_name"] in names
+        ]
+    rows = [
+        r
+        for r in rows
+        if include_local or r["level"] == "province" or geo_keys is not None
     ]
-    for row in registry:
-        if geo_keys is not None and row["location_id"] not in geo_keys:
-            continue
-        terms = []
-        seen = set()
-        for term in [row["canonical_name"], *row["aliases"]]:
-            if normalized(term) not in seen:
-                terms.append(term)
-                seen.add(normalized(term))
+    scopes = [
+        (None, None, "fallback", [""], ()),
+        ("vietnam", "Vietnam", "country", list(COUNTRY_SCOPE.search_terms), ()),
+    ]
+    # Merge equivalent historical/current names at the search boundary only.
+    by_name = {}
+    for row in rows:
+        key = normalized(row["canonical_name"])
+        group = by_name.setdefault(key, {"row": row, "aliases": [], "provenance": []})
+        group["provenance"].append(
+            {
+                k: row[k]
+                for k in (
+                    "geo_id",
+                    "canonical_name",
+                    "admin_version",
+                    "level",
+                    "source_url",
+                )
+            }
+        )
+        preferred = row.get("preferred_search_aliases", [])
+        for term in [*preferred, row["canonical_name"], *row["aliases"]]:
+            for spelling in [term, ascii_variant(term)]:
+                if normalized(spelling) not in {
+                    normalized(t) for t in group["aliases"]
+                }:
+                    group["aliases"].append(spelling)
+    for key, group in sorted(by_name.items()):
+        row = group["row"]
         scopes.append(
             (
-                row["location_id"],
+                row["geo_id"],
                 row["canonical_name"],
                 "city",
-                terms[:max_geo_aliases] if max_geo_aliases else terms,
+                group["aliases"],
+                tuple(group["provenance"]),
             )
         )
-    if include_local:
-        for name, aliases in LOCAL_AREA_ALIASES.items():
-            terms = list(dict.fromkeys([name, *aliases]))
-            scopes.append(
-                (
-                    "local:" + normalized(name),
-                    name,
-                    "city",
-                    terms[:max_geo_aliases] if max_geo_aliases else terms,
-                )
-            )
-    if expand_subject_variants:
-        seeds = list(seeds) + [
-            variant
-            for seed in seeds
-            if normalized(seed) == "pickleball"
-            for variant in PICKLEBALL_TERMS
-        ]
-    families = []
-    seed_seen = set()
-    for seed in seeds:
-        seed = " ".join(unicodedata.normalize("NFKC", seed).split())
-        if normalized(seed) in seed_seen:
-            continue
-        seed_seen.add(normalized(seed))
-        families.append((seed, seed, "subject"))
-        for category in categories:
-            for template in MARKET_QUERIES[category]:
-                # An already-specific custom seed stays intact.
-                families.append((template.format(seed=seed), seed, category))
+    subjects = list(seeds)
+    if expand_subject_variants and any(normalized(s) == "pickleball" for s in seeds):
+        subjects += list(PICKLEBALL_TERMS)
+    subjects = list(dict.fromkeys(normalized(s) for s in subjects))
+    families = {"subject": [("{seed}", "subject")]}
+    for category in categories:
+        families[category] = []
+        for concept in vocab[category]:
+            for template in concept["templates"]:
+                for phrase in (
+                    [template, ascii_variant(template)]
+                    if concept.get("ascii_variant")
+                    else [template]
+                ):
+                    if phrase not in [p for p, _ in families[category]]:
+                        families[category].append((phrase, concept["concept"]))
+    family_keys = list(families)
+    candidates = {}
+    composed = 0
+    n = len(scopes)
+    for variant in range(max(len(v) for v in families.values())):
+        for geo_step in range(n):
+            for category_index, category in enumerate(family_keys):
+                if variant >= len(families[category]):
+                    continue
+                template, concept = families[category][variant]
+                scope = scopes[
+                    (geo_step + category_index * max(1, n // len(family_keys))) % n
+                ]
+                geo_key, geo_name, kind, terms, provenance = scope
+                for seed in subjects:
+                    for term in terms:
+                        composed += 1
+                        phrase = (template.format(seed=seed) + " " + term).strip()
+                        key = normalized(phrase)
+                        if key in candidates:
+                            old = candidates[key]
+                            merged = list(old.geo_provenance)
+                            merged.extend(p for p in provenance if p not in merged)
+                            semantics = tuple(
+                                dict.fromkeys((*old.semantic_provenance, category))
+                            )
+                            candidates[key] = replace(
+                                old,
+                                geo_provenance=tuple(merged),
+                                semantic_provenance=semantics,
+                            )
+                        else:
+                            candidates[key] = QuerySpec(
+                                phrase,
+                                seed,
+                                geo_key,
+                                geo_name,
+                                len(candidates),
+                                kind,
+                                category,
+                                provenance,
+                                (category,),
+                            )
+    # Alias variants are fairly mixed by round across geography/category queues.
+    buckets = {}
+    for spec in candidates.values():
+        key = (spec.geo_name, spec.query_category)
+        buckets.setdefault(key, deque()).append(spec)
     plan = []
-    seen = set()
-    max_aliases = max(len(s[3]) for s in scopes)
-    for alias_index in range(max_aliases):
-        for text, seed, category in families:
-            for geo_key, geo_name, kind, terms in scopes:
-                if alias_index >= len(terms):
-                    continue
-                phrase = (text + " " + terms[alias_index]).strip()
-                key = normalized(phrase)
-                if key in seen:
-                    continue
-                seen.add(key)
-                plan.append(
-                    QuerySpec(
-                        phrase, seed, geo_key, geo_name, len(plan), kind, category
-                    )
-                )
-    return plan
+    while buckets:
+        for key in list(buckets):
+            plan.append(replace(buckets[key].popleft(), priority=len(plan)))
+            if not buckets[key]:
+                del buckets[key]
+    return DiscoveryPlan(plan, composed)
 
 
 def rejection_reasons(post, spec, *, published_after=None, published_before=None):
@@ -201,7 +291,7 @@ def rejection_reasons(post, spec, *, published_after=None, published_before=None
             and when >= published_before
         ):
             return ["outside_time_window"]
-    assessment = assess_post(post, query_spec=spec)
+    assessment = assess_post(post, query_spec=spec, expanded_topics=True)
     reasons = []
     if not any(s.startswith("subject:") for s in assessment.signals):
         reasons.append("missing_pickleball_subject")
@@ -250,13 +340,24 @@ class RequestBudget:
         self.started = time.monotonic()
 
     def check(self):
+        self.check_duration()
+        if self.used >= self.maximum:
+            raise BudgetExhausted("request_budget")
+
+    def check_duration(self):
         if (
             self.duration is not None
             and time.monotonic() - self.started >= self.duration
         ):
             raise BudgetExhausted("duration_budget")
-        if self.used >= self.maximum:
-            raise BudgetExhausted("request_budget")
+
+    def remaining_ms(self):
+        self.check_duration()
+        return (
+            None
+            if self.duration is None
+            else max(1, int((self.duration - (time.monotonic() - self.started)) * 1000))
+        )
 
     def consume(self):
         self.check()
@@ -274,11 +375,31 @@ class PublicPage:
 
     def goto(self, *args, **kwargs):
         self.budget.consume()
-        return self.page.goto(*args, **kwargs)
+        remaining = self.budget.remaining_ms()
+        if remaining is not None:
+            kwargs["timeout"] = min(kwargs.get("timeout", remaining), remaining)
+        try:
+            return self.page.goto(*args, **kwargs)
+        except Exception:
+            self.budget.check_duration()
+            raise
 
     def reload(self, *args, **kwargs):
         self.budget.consume()
-        return self.page.reload(*args, **kwargs)
+        remaining = self.budget.remaining_ms()
+        if remaining is not None:
+            kwargs["timeout"] = min(kwargs.get("timeout", remaining), remaining)
+        try:
+            return self.page.reload(*args, **kwargs)
+        except Exception:
+            self.budget.check_duration()
+            raise
+
+    def wait_for_timeout(self, milliseconds):
+        remaining = self.budget.remaining_ms()
+        return self.page.wait_for_timeout(
+            milliseconds if remaining is None else min(milliseconds, remaining)
+        )
 
 
 def public_next_url(page, query):
@@ -291,8 +412,13 @@ def public_next_url(page, query):
         return None
     target = urljoin(page.url, href)
     parts = urlsplit(target)
+    try:
+        port = parts.port
+    except ValueError:
+        return None
     if (
         parts.scheme != "https"
+        or port not in (None, 443)
         or parts.hostname not in ("threads.com", "www.threads.com")
         or parts.username
         or parts.password

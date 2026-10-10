@@ -1,0 +1,721 @@
+{
+  "schema_version": "1",
+  "source": "User task Part III §10; discovery phrases only, not intent classifications",
+  "categories": {
+    "playing": [
+      {
+        "concept": "chơi",
+        "templates": [
+          "chơi {seed}",
+          "{seed} chơi",
+          "chơi {seed} tối nay",
+          "chơi {seed} ngày mai",
+          "chơi {seed} cuối tuần"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "đánh",
+        "templates": [
+          "đánh {seed}",
+          "{seed} đánh"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "rủ nhau chơi",
+        "templates": [
+          "rủ nhau chơi {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "đi đánh",
+        "templates": [
+          "đi đánh {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "người mới chơi",
+        "templates": [
+          "người mới chơi {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "chơi cuối tuần",
+        "templates": [
+          "chơi cuối tuần {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "hội chơi",
+        "templates": [
+          "hội chơi {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "cộng đồng",
+        "templates": [
+          "cộng đồng {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "nhóm chơi",
+        "templates": [
+          "nhóm chơi {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "chơi giao lưu",
+        "templates": [
+          "chơi giao lưu {seed}"
+        ],
+        "ascii_variant": true
+      }
+    ],
+    "players": [
+      {
+        "concept": "tìm kèo",
+        "templates": [
+          "tìm kèo {seed}",
+          "{seed} tìm kèo",
+          "tìm kèo {seed} tối nay",
+          "tìm kèo {seed} ngày mai",
+          "tìm kèo {seed} cuối tuần"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "kiếm kèo",
+        "templates": [
+          "kiếm kèo {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "ghép kèo",
+        "templates": [
+          "ghép kèo {seed}",
+          "{seed} ghép kèo"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "tìm người chơi",
+        "templates": [
+          "tìm người chơi {seed}",
+          "{seed} tìm người chơi"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "tìm đối",
+        "templates": [
+          "tìm đối {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "tìm đồng đội",
+        "templates": [
+          "tìm đồng đội {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "cần thêm người",
+        "templates": [
+          "cần thêm người {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "thiếu người",
+        "templates": [
+          "thiếu người {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "lập nhóm",
+        "templates": [
+          "lập nhóm {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "tìm bạn đánh",
+        "templates": [
+          "tìm bạn đánh {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "rủ đánh",
+        "templates": [
+          "rủ đánh {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "tìm nhóm giao lưu",
+        "templates": [
+          "tìm nhóm giao lưu {seed}"
+        ],
+        "ascii_variant": true
+      }
+    ],
+    "training": [
+      {
+        "concept": "tập",
+        "templates": [
+          "tập {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "học",
+        "templates": [
+          "học {seed}",
+          "{seed} học"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "người mới bắt đầu",
+        "templates": [
+          "người mới bắt đầu {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "lớp cơ bản",
+        "templates": [
+          "lớp cơ bản {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "lớp nâng cao",
+        "templates": [
+          "lớp nâng cao {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "huấn luyện",
+        "templates": [
+          "huấn luyện {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "hlv",
+        "templates": [
+          "hlv {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "coach",
+        "templates": [
+          "coach {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "lớp",
+        "templates": [
+          "lớp {seed}",
+          "{seed} lớp"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "tập luyện",
+        "templates": [
+          "tập luyện {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "lớp học",
+        "templates": [
+          "lớp học {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "dạy",
+        "templates": [
+          "dạy {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "hlv pickleball",
+        "templates": [
+          "tìm hlv {seed}"
+        ],
+        "ascii_variant": true
+      }
+    ],
+    "competitions": [
+      {
+        "concept": "giải",
+        "templates": [
+          "giải {seed}",
+          "{seed} giải"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "giải đấu",
+        "templates": [
+          "giải đấu {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "thi đấu",
+        "templates": [
+          "thi đấu {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "tournament",
+        "templates": [
+          "tournament {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "thi đấu đôi",
+        "templates": [
+          "thi đấu đôi {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "thi đấu đơn",
+        "templates": [
+          "thi đấu đơn {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "giao hữu",
+        "templates": [
+          "giao hữu {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "giao lưu câu lạc bộ",
+        "templates": [
+          "giao lưu câu lạc bộ {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "tổ chức giải",
+        "templates": [
+          "tổ chức giải {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "giải nội bộ",
+        "templates": [
+          "giải nội bộ {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "giao lưu clb",
+        "templates": [
+          "giao lưu clb {seed}"
+        ],
+        "ascii_variant": true
+      }
+    ],
+    "venues": [
+      {
+        "concept": "sân",
+        "templates": [
+          "sân {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "tìm sân",
+        "templates": [
+          "tìm sân {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "kiếm sân",
+        "templates": [
+          "kiếm sân {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "thuê sân",
+        "templates": [
+          "thuê sân {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "book sân",
+        "templates": [
+          "book sân {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "sân gần đây",
+        "templates": [
+          "sân gần đây {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "sân trong nhà",
+        "templates": [
+          "sân trong nhà {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "sân ngoài trời",
+        "templates": [
+          "sân ngoài trời {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "sân mới",
+        "templates": [
+          "sân mới {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "sân sắp mở",
+        "templates": [
+          "sân sắp mở {seed}"
+        ],
+        "ascii_variant": true
+      }
+    ],
+    "booking": [
+      {
+        "concept": "đặt sân",
+        "templates": [
+          "đặt sân {seed}",
+          "{seed} đặt sân",
+          "đặt sân {seed} tối nay",
+          "đặt sân {seed} ngày mai",
+          "đặt sân {seed} cuối tuần"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "đặt lịch",
+        "templates": [
+          "đặt lịch {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "giữ lịch",
+        "templates": [
+          "giữ lịch {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "cần sân gấp",
+        "templates": [
+          "cần sân gấp {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "thuê sân dài hạn",
+        "templates": [
+          "thuê sân dài hạn {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "ưu đãi đặt sân",
+        "templates": [
+          "ưu đãi đặt sân {seed}"
+        ],
+        "ascii_variant": true
+      }
+    ],
+    "pricing": [
+      {
+        "concept": "giá sân",
+        "templates": [
+          "giá sân {seed}",
+          "{seed} giá sân"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "giá thuê sân",
+        "templates": [
+          "giá thuê sân {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "giá thuê theo giờ",
+        "templates": [
+          "giá thuê theo giờ {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "bảng giá",
+        "templates": [
+          "bảng giá {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "giá giờ cao điểm",
+        "templates": [
+          "giá giờ cao điểm {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "giá cuối tuần",
+        "templates": [
+          "giá cuối tuần {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "hỏi giá",
+        "templates": [
+          "hỏi giá {seed}"
+        ],
+        "ascii_variant": true
+      }
+    ],
+    "availability": [
+      {
+        "concept": "sân trống",
+        "templates": [
+          "sân trống {seed}",
+          "sân trống {seed} tối nay",
+          "sân trống {seed} ngày mai",
+          "sân trống {seed} cuối tuần"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "sân còn giờ",
+        "templates": [
+          "sân còn giờ {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "sân kín lịch",
+        "templates": [
+          "sân kín lịch {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "sân full",
+        "templates": [
+          "sân full {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "thiếu sân",
+        "templates": [
+          "thiếu sân {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "khó đặt sân",
+        "templates": [
+          "khó đặt sân {seed}"
+        ],
+        "ascii_variant": true
+      }
+    ],
+    "supply": [
+      {
+        "concept": "khai trương sân",
+        "templates": [
+          "khai trương sân {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "mở sân mới",
+        "templates": [
+          "mở sân mới {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "đầu tư sân",
+        "templates": [
+          "đầu tư sân {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "kinh doanh sân",
+        "templates": [
+          "kinh doanh sân {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "cụm sân",
+        "templates": [
+          "cụm sân {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "cho thuê sân",
+        "templates": [
+          "cho thuê sân {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "quảng cáo sân",
+        "templates": [
+          "quảng cáo sân {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "sang nhượng sân",
+        "templates": [
+          "sang nhượng sân {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "đóng cửa sân",
+        "templates": [
+          "đóng cửa sân {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "nâng cấp sân",
+        "templates": [
+          "nâng cấp sân {seed}"
+        ],
+        "ascii_variant": true
+      }
+    ],
+    "feedback": [
+      {
+        "concept": "review sân",
+        "templates": [
+          "review sân {seed}",
+          "{seed} review sân"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "đánh giá sân",
+        "templates": [
+          "đánh giá sân {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "sân đẹp",
+        "templates": [
+          "sân đẹp {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "sân đông",
+        "templates": [
+          "sân đông {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "sân vắng",
+        "templates": [
+          "sân vắng {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "mặt sân",
+        "templates": [
+          "mặt sân {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "ánh sáng",
+        "templates": [
+          "ánh sáng {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "chất lượng sân",
+        "templates": [
+          "chất lượng sân {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "dịch vụ",
+        "templates": [
+          "dịch vụ {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "phản ánh sân",
+        "templates": [
+          "phản ánh sân {seed}"
+        ],
+        "ascii_variant": true
+      },
+      {
+        "concept": "giá quá cao",
+        "templates": [
+          "giá quá cao {seed}"
+        ],
+        "ascii_variant": true
+      }
+    ]
+  }
+}

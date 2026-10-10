@@ -21,7 +21,9 @@
       "description": "Timezone-aware crawler completion time, retained verbatim for replay and passed unchanged to each normalizer call."
     },
     "discovery": {"type": "object", "additionalProperties": true, "description": "Planner budgets and query coverage; exposures are not unique entities."},
-    "query_plan": {"type": "array", "items": {"type": "object"}},
+    "query_plan": {"type": "array", "items": {"type": "object"}, "description": "Legacy envelopes contain the entire candidate plan. Planner v3 stores attempted queries here and retains the reconstructable universe in query_universe."},
+    "query_universe": {"type": "object", "additionalProperties": true, "description": "Versioned geography/vocabulary snapshots and plan identity; candidate counts are not executed searches."},
+    "acquisition": {"type": "object", "additionalProperties": true, "description": "Acquisition lifecycle and survey completeness, independent of processing/ingestion outcomes."},
     "search_evidence": {"type": "array", "items": {"type": "object"}, "description": "Public source data and admission decisions with query/run/page/capture-time lineage, including rejected and deferred records."},
     "count": {
       "type": "integer",

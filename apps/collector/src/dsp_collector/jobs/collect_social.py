@@ -90,6 +90,13 @@ def _validate_envelope(envelope: Mapping[str, Any]) -> None:
         raise ValueError("unsupported Bronze schema_version")
 
 
+def _capture_time(post, fallback):
+    from ..normalizers.social_post import _eligible_detail
+
+    detail = _eligible_detail(post, str(post.get("id")))
+    return detail.get("_observed_at") or post.get("_observed_at") or fallback
+
+
 def process_threads_envelope(
     envelope: Mapping[str, Any],
     *,
@@ -143,7 +150,7 @@ def process_threads_envelope(
                 normalize_social_post(
                     post,
                     run_id=selected_run_id,
-                    collected_at=post.get("_observed_at", bronze["collected_at"]),
+                    collected_at=_capture_time(post, bronze["collected_at"]),
                 )
             )
         except (ValueError, TypeError) as exc:
@@ -159,6 +166,52 @@ def process_threads_envelope(
                 }
             )
 
+        # Accessible, identity-checked replies use the existing SocialPost
+        # transport and its comment routing flag. They never inherit the
+        # parent's inferred geography or analytical labels.
+        from ..normalizers.social_post import _eligible_detail
+        from ..sources.crawler.threads.vietnam_terms import (
+            _detect_locations,
+            _detect_topics,
+        )
+
+        source_id = str(post.get("id"))
+        detail = _eligible_detail(post, source_id)
+        for reply in detail.get("visible_replies", []):
+            try:
+                native = reply.get("raw_payload") or {}
+                text = reply.get("text")
+                projection = {
+                    **reply,
+                    **reply.get("engagement", {}),
+                    "user": native.get("user"),
+                    "is_reply": True,
+                    "matched_queries": post.get("matched_queries"),
+                    "query_contexts": post.get("query_contexts"),
+                    "detected_locations": _detect_locations(text or ""),
+                    "categories": _detect_topics(text or "")[0],
+                    "detail": None,
+                    "detail_status": None,
+                }
+                normalized = normalize_social_post(
+                    projection,
+                    run_id=selected_run_id,
+                    collected_at=reply.get("_observed_at")
+                    or detail.get("_observed_at")
+                    or post.get("_observed_at", bronze["collected_at"]),
+                )
+                normalized["parent_record_id"] = "threads:" + source_id
+                if not any(r["record_id"] == normalized["record_id"] for r in records):
+                    records.append(normalized)
+            except (ValueError, TypeError) as exc:
+                errors.append(
+                    {
+                        "parent_source_id": source_id,
+                        "source_record_id": reply.get("id"),
+                        "error": str(exc),
+                    }
+                )
+
     collection_errors = [
         copy.deepcopy(q)
         for q in bronze["query_runs"]
@@ -169,20 +222,15 @@ def process_threads_envelope(
         for p in bronze["posts"]
         if p.get("detail_status") == "error"
     )
-    discovery = bronze.get("discovery", {})
-    if discovery.get("has_more") and bronze.get("collection_stopping_reason") not in (
-        "result_limit",
-    ):
-        collection_errors.append(
-            {
-                "reason": bronze.get("collection_stopping_reason"),
-                "remaining_queries": discovery["remaining_queries"],
-            }
-        )
-    has_errors = bool(errors or collection_errors)
+    from ..runtime.acquisition import threads_outcome
+
+    acquisition = threads_outcome(bronze)
+    has_errors = bool(errors)
     status: Literal["success", "partial", "failed"] = (
         "partial" if has_errors and records else "failed" if has_errors else "success"
     )
+    if not has_errors:
+        status = acquisition["status"]
     silver = {
         "schema_version": "1",
         "source": "threads",
@@ -198,6 +246,10 @@ def process_threads_envelope(
         "rejected_count": len(errors),
         "normalization_errors": errors,
         "collection_errors": collection_errors,
+        "acquisition": acquisition,
+        "processing_status": (
+            "partial" if errors and records else "failed" if errors else "success"
+        ),
         "records": records,
     }
     _write_json_atomic(silver_path, silver)
@@ -312,6 +364,16 @@ def collect_threads(
             if result.status == "success":
                 status_tracker.succeed(
                     collected_count=result.count, output_path=result.silver_path
+                )
+            elif result.status == "partial":
+                status_tracker.partial(
+                    collected_count=result.count,
+                    output_path=result.silver_path,
+                    error=(
+                        f"{result.rejected_count} records rejected"
+                        if result.rejected_count
+                        else None
+                    ),
                 )
             else:
                 _report_failure(

@@ -132,6 +132,12 @@ def _execute_locked(source, run_id, directory, policy, report, update):
             )
 
     manifest = directory / "collection.json"
+    if (
+        report.get("operation") == "processing_replay"
+        and not manifest.is_file()
+        and not (directory / "bronze" / source / f"{run_id}.json").is_file()
+    ):
+        raise RuntimeError("processing replay requires saved acquisition evidence")
     if manifest.is_file():
         result = json.loads(manifest.read_text())
         result["reused_collection"] = True
@@ -201,6 +207,10 @@ def _execute_locked(source, run_id, directory, policy, report, update):
                 tracker.succeed(
                     collected_count=collected.count, output_path=collected.silver_path
                 )
+            elif collected.status == "partial":
+                tracker.partial(
+                    collected_count=collected.count, output_path=collected.silver_path
+                )
             else:
                 tracker.fail("Collection partially normalized; see saved batch")
         result = json.loads(json.dumps(asdict(collected), default=str))
@@ -222,7 +232,18 @@ def _execute_locked(source, run_id, directory, policy, report, update):
                 acknowledge_checkpoint(checkpoint, run_id)
     report["collection"] = result
     bronze = json.loads(Path(result["bronze_path"]).read_text())
-    records = json.loads(Path(result["silver_path"]).read_text())["records"]
+    batch = json.loads(Path(result["silver_path"]).read_text())
+    records = batch["records"]
+    acquisition = None
+    if source == "threads":
+        from dsp_collector.runtime.acquisition import threads_outcome
+
+        acquisition = threads_outcome(bronze)
+        if (
+            not batch.get("normalization_errors")
+            and not acquisition["technical_failures"]
+        ):
+            result["status"] = acquisition["status"]
     errors = (
         len(bronze.get("errors", [])) + result["rejected_count"]
         if source == "youtube"
@@ -230,6 +251,8 @@ def _execute_locked(source, run_id, directory, policy, report, update):
         + sum(p.get("detail_status") == "error" for p in bronze.get("posts", []))
         + result["rejected_count"]
     )
+    if source == "threads":
+        errors = acquisition["technical_failures"] + result["rejected_count"]
     report["metrics"] = {
         "accepted": len(records),
         "errors": errors,
@@ -241,11 +264,29 @@ def _execute_locked(source, run_id, directory, policy, report, update):
         "comments": len(bronze.get("comments", [])),
         "queries": len(bronze.get("query_runs", [])),
         "discovery": bronze.get("discovery"),
+        "acquisition": acquisition,
+        "operation": (
+            "processing_replay"
+            if result.get("reused_collection")
+            else (
+                "interrupted_recovery"
+                if bronze.get("operation") == "interrupted_recovery"
+                else "discovery_continuation"
+            )
+        ),
+        "processing_status": batch.get(
+            "processing_status",
+            "success" if not batch.get("normalization_errors") else "partial",
+        ),
         "requests": bronze.get("requests"),
         "api_requests_this_attempt": (
             0
             if result.get("reused_collection")
-            else bronze.get("requests", {}).get("used", 0)
+            else (
+                bronze.get("discovery", {}).get("requests_this_invocation", 0)
+                if source == "threads"
+                else bronze.get("requests", {}).get("used", 0)
+            )
         ),
         "stopping_reason": bronze.get(
             "stopping_reason", bronze.get("collection_stopping_reason")
@@ -287,6 +328,9 @@ def _execute_locked(source, run_id, directory, policy, report, update):
                 spark, result["bronze_path"], config.spark, source=source
             ),
         )
+        report["metrics"]["bronze_ingestion_status"] = "success"
+        if report["stages"]["bronze"]["result"].get("rejected_count"):
+            report["metrics"]["bronze_ingestion_status"] = "partial"
         if source == "pbplus":
             stage(
                 "court_silver",
@@ -424,6 +468,16 @@ def main(argv=None):
         "--source", choices=("threads", "youtube", "pbplus"), required=True
     )
     parser.add_argument("--run-id", required=True)
+    parser.add_argument(
+        "--operation",
+        choices=(
+            "auto",
+            "processing_replay",
+            "interrupted_recovery",
+            "discovery_continuation",
+        ),
+        default="auto",
+    )
     parser.add_argument("--state", type=Path, required=True)
     parser.add_argument(
         "--config", type=Path, default=ROOT / "configs/collection/data_ops.v1.json"
@@ -439,6 +493,7 @@ def main(argv=None):
         "status": "RUNNING",
         "stages": {},
         "metrics": {},
+        "operation": args.operation,
     }
     current_progress = {}
 

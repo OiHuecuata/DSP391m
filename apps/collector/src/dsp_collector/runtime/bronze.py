@@ -120,6 +120,8 @@ def identity(value):
 
 
 def counter(value):
+    if type(value) is float and value.is_integer() and 0 <= value < 2**63:
+        value = int(value)
     if isinstance(value, str) and value.isascii() and value.isdecimal():
         value = int(value)
     if value is None:
@@ -369,7 +371,7 @@ def extract_observations(envelope, *, artifact_uri=None, policies=None):
         seen[key] = row
         result[dataset].append(row)
 
-    def metrics(entity, values):
+    def metrics(entity, values, observed_at=None):
         dataset = "bronze_engagement_snapshots"
         row = base(
             dataset,
@@ -378,12 +380,14 @@ def extract_observations(envelope, *, artifact_uri=None, policies=None):
             "Metric",
             queries=json.loads(entity["query_metadata"]),
             url=entity["source_url"],
-            observed_at=entity["collected_at"],
+            created=entity["source_created_at"],
+            updated=entity["source_updated_at"],
+            observed_at=observed_at or entity["collected_at"],
         )
         row.update(
             native_content_id=entity["source_record_id"],
             content_type=entity["record_type"].lower(),
-            observed_at=entity["collected_at"],
+            observed_at=row["collected_at"],
             metric_scope="cumulative",
             metric_availability=encode({k: values.get(k) is not None for k in METRICS}),
         )
@@ -393,6 +397,8 @@ def extract_observations(envelope, *, artifact_uri=None, policies=None):
     def social(payload, *, parent=None, parent_comment=None, queries=None):
         native = payload.get("raw_payload") or payload
         detail = payload.get("detail") or {}
+        if not isinstance(native, dict) or not isinstance(detail, dict):
+            raise TypeError("invalid native source object or detail object")
         if detail.get("raw_payload"):
             supplied = detail["raw_payload"]
             detail_id = supplied.get("pk") or supplied.get("id")
@@ -421,6 +427,9 @@ def extract_observations(envelope, *, artifact_uri=None, policies=None):
                     "detail_status",
                     "detail_error",
                     "_observed_at",
+                    "_metrics_observed_at",
+                    "capture_run_id",
+                    "detail_coverage",
                 }
             }
         source_id = payload.get("id") or native.get("pk") or native.get("id")
@@ -481,8 +490,16 @@ def extract_observations(envelope, *, artifact_uri=None, policies=None):
             parent = (
                 parent
                 or payload.get("native_post_id")
-                or info.get("reply_to_post_id")
-                or payload.get("reply_to_post_id")
+                or (
+                    info.get("reply_to_post_id")
+                    if str(info.get("reply_to_post_id")) in known_roots
+                    else None
+                )
+                or (
+                    payload.get("reply_to_post_id")
+                    if str(payload.get("reply_to_post_id")) in known_roots
+                    else None
+                )
             )
             if (
                 "engagement" in payload
@@ -496,11 +513,17 @@ def extract_observations(envelope, *, artifact_uri=None, policies=None):
             native,
             source_id,
             "Comment" if is_comment else "Video" if source == "youtube" else "Post",
-            queries=queries or payload.get("matched_queries"),
+            queries=queries
+            or payload.get("query_contexts")
+            or payload.get("matched_queries"),
             url=url,
             created=created,
             updated=updated,
-            observed_at=payload.get("_observed_at"),
+            observed_at=(
+                (detail.get("_observed_at") or payload.get("_observed_at"))
+                if detail.get("raw_payload")
+                else payload.get("_observed_at")
+            ),
         )
         if is_comment:
             parent_comment = (
@@ -521,24 +544,84 @@ def extract_observations(envelope, *, artifact_uri=None, policies=None):
             row.update(
                 native_post_id=identity(source_id),
                 content_type="video" if source == "youtube" else "post",
-                parent_content_id=payload.get("parent_content_id"),
-                title_raw=snippet.get("title"),
+                parent_content_id=payload.get("parent_content_id")
+                or info.get("quoted_post_id"),
+                title_raw=(
+                    snippet.get("title") if source == "youtube" else native.get("title")
+                ),
                 text_raw=text if source != "youtube" else None,
-                description_raw=snippet.get("description"),
+                description_raw=(
+                    snippet.get("description")
+                    if source == "youtube"
+                    else native.get("description")
+                ),
                 published_at=row["source_created_at"],
-                language_raw=snippet.get("defaultLanguage"),
+                language_raw=(
+                    snippet.get("defaultLanguage")
+                    if source == "youtube"
+                    else native.get("language")
+                ),
                 source_permalink=url,
             )
-        # Validate metrics before committing this source record.
-        for v in values.values():
-            counter(v)
+        # Malformed optional counters must not erase valid source text. Keep
+        # the native value in raw_payload and report its unusable measurement.
+        for key, value in list(values.items()):
+            try:
+                values[key] = counter(value)
+            except (ValueError, TypeError) as exc:
+                errors.append(
+                    {"source_record_id": source_id, "field": key, "error": str(exc)}
+                )
+                values[key] = None
         add(dataset, row)
-        metrics(row, values)
+        metrics(row, values, payload.get("_metrics_observed_at"))
+        search_native = payload.get("raw_payload")
+        search_time = payload.get("_observed_at")
+        if (
+            source == "threads"
+            and search_native
+            and detail.get("_observed_at")
+            and search_time
+            and timestamp(search_time) != row["collected_at"]
+        ):
+            search_values = {key: search_native.get(key) for key in METRICS}
+            search_info = search_native.get("text_post_app_info") or {}
+            for key, native_key in (
+                ("reply_count", "direct_reply_count"),
+                ("repost_count", "repost_count"),
+                ("quote_count", "quote_count"),
+            ):
+                search_values[key] = search_info.get(native_key)
+            for key, value in list(search_values.items()):
+                try:
+                    search_values[key] = counter(value)
+                except (ValueError, TypeError) as exc:
+                    errors.append(
+                        {
+                            "source_record_id": source_id,
+                            "field": key,
+                            "error": str(exc),
+                            "capture": "search",
+                        }
+                    )
+                    search_values[key] = None
+            metrics(
+                {**row, "raw_payload": encode(search_native)},
+                search_values,
+                search_time,
+            )
         for reply in detail.get("visible_replies", []):
             try:
                 social(
-                    reply,
+                    {
+                        **reply,
+                        "_observed_at": reply.get(
+                            "_observed_at",
+                            detail.get("_observed_at", payload.get("_observed_at")),
+                        ),
+                    },
                     parent=source_id,
+                    parent_comment=reply.get("parent_comment_id"),
                     queries=queries or payload.get("matched_queries"),
                 )
             except (
@@ -550,6 +633,25 @@ def extract_observations(envelope, *, artifact_uri=None, policies=None):
             ) as exc:
                 errors.append({"parent_id": source_id, "error": str(exc)})
 
+    known_roots = set()
+    root_candidates = list(envelope.get("posts", []))
+    for evidence in envelope.get("search_evidence", []):
+        root_candidates.extend(evidence.get("native", {}).get("all_posts", []))
+    for candidate in root_candidates:
+        if not isinstance(candidate, dict):
+            continue
+        raw = candidate.get("raw_payload") or candidate
+        if not isinstance(raw, dict):
+            continue
+        info = raw.get("text_post_app_info") or {}
+        if not isinstance(info, dict):
+            continue
+        if (
+            info.get("is_reply") is False
+            or not candidate.get("raw_payload")
+            and candidate.get("is_reply") is False
+        ):
+            known_roots.add(str(candidate.get("id") or raw.get("pk")))
     inputs = (
         [(v, None) for v in envelope.get("videos", [])]
         + [(c.get("payload", {}), c) for c in envelope.get("comments", [])]
@@ -674,7 +776,10 @@ def extract_observations(envelope, *, artifact_uri=None, policies=None):
     source_errors.extend(
         q
         for q in envelope.get("query_runs", [])
-        if q.get("status") in ("error", "partial") or q.get("detail_failed_count", 0)
+        if q.get("status") == "error"
+        or source != "threads"
+        and q.get("status") == "partial"
+        or q.get("detail_failed_count", 0)
     )
     source_errors.extend(
         {"source_record_id": p.get("id"), "error": p.get("detail_error")}
@@ -718,6 +823,18 @@ def extract_observations(envelope, *, artifact_uri=None, policies=None):
             {"policy_status": "configured" if policy else "unreviewed"}
         ),
     )
+    if source == "threads":
+        from .acquisition import threads_outcome
+
+        outcome = threads_outcome(envelope)
+        row["execution_status"] = (
+            "partial"
+            if accepted and errors
+            else "failed" if errors else outcome["status"]
+        )
+        metadata["acquisition"] = outcome
+        row["raw_payload"] = encode(metadata)
+        row["payload_hash"] = digest(metadata)
     add("bronze_collection_runs", row)
     return result, errors
 

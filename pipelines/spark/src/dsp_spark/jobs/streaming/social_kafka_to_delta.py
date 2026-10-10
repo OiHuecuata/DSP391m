@@ -2,7 +2,7 @@
 
 import argparse
 import os
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from functools import partial
 
 from jsonschema import ValidationError
@@ -197,6 +197,9 @@ def persist_social_batch(frame, batch_id: int, *, settings: SparkSettings):
     policies = load_policies(os.getenv("DSP_SOURCE_POLICY_REGISTRY"))
     datasets = {name: [] for name in DATASETS}
     failures = []
+    # Driver Row timestamps use local wall time. Serialize the UTC SQL value
+    # before iteration, matching the source-record replay adapter.
+    bronze = bronze.withColumn("_timestamp_micros", F.unix_micros("timestamp"))
     for message in bronze.toLocalIterator():
         try:
             event = decode(bytes(message.value).decode("utf-8"))
@@ -209,7 +212,10 @@ def persist_social_batch(frame, batch_id: int, *, settings: SparkSettings):
                     "kafka_partition": message.partition,
                     "kafka_offset": message.offset,
                     "kafka_timestamp": (
-                        timestamp(message.timestamp.replace(tzinfo=UTC))
+                        timestamp(
+                            datetime(1970, 1, 1, tzinfo=UTC)
+                            + timedelta(microseconds=message._timestamp_micros)
+                        )
                         if message.timestamp
                         else None
                     ),

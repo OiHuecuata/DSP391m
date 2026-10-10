@@ -1,7 +1,7 @@
 """Contract-driven Delta Bronze persistence and evidence-based source changes."""
 
 import os
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 from delta.tables import DeltaTable
 from dsp_collector.runtime.bronze import (
@@ -96,14 +96,15 @@ def _source_changes(spark, frame, path):
         F.col("_previous_hash").isNull()
         | (F.col("payload_hash") != F.col("_previous_hash"))
     )
-    # Python Row timestamps follow the driver's local TZ, independently of the
-    # SQL session. Serialize technical timestamps in the UTC SQL session first.
+    # Epoch microseconds preserve instants independently of both the SQL
+    # session timezone and the Python driver's local timezone.
+    timestamp_fields = {
+        f.name for f in changed.schema if isinstance(f.dataType, T.TimestampType)
+    }
     changed = changed.select(
         *(
             (
-                F.date_format(F.col(f.name), "yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'").alias(
-                    f.name
-                )
+                F.unix_micros(F.col(f.name)).alias(f.name)
                 if isinstance(f.dataType, T.TimestampType)
                 else F.col(f.name)
             )
@@ -113,7 +114,11 @@ def _source_changes(spark, frame, path):
     result = []
     for r in changed.toLocalIterator():
         row = {
-            k: timestamp(v.replace(tzinfo=UTC)) if isinstance(v, datetime) else v
+            k: (
+                timestamp(datetime(1970, 1, 1, tzinfo=UTC) + timedelta(microseconds=v))
+                if k in timestamp_fields and v is not None
+                else v
+            )
             for k, v in r.asDict().items()
         }
         previous_hash, previous_id = row.pop("_previous_hash"), row.pop("_previous_id")

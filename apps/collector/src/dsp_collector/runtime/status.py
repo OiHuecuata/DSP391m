@@ -25,7 +25,7 @@ from pathlib import Path
 from typing import Any, Literal
 from uuid import uuid4
 
-CrawlerRunState = Literal["idle", "running", "success", "failed"]
+CrawlerRunState = Literal["idle", "running", "success", "partial", "failed"]
 QueryRunState = Literal["running", "ok", "error"]
 
 
@@ -321,6 +321,15 @@ class CrawlerStatusTracker:
         self._status.error = str(error)
         self._status.updated_at = now
         self._status.finished_at = now
+        self._persist()
+
+    def partial(
+        self, *, collected_count: int, output_path: str | Path, error: str | None = None
+    ) -> None:
+        self.succeed(collected_count=collected_count, output_path=output_path)
+        self._status.status = "partial"
+        self._status.metadata["resumable"] = True
+        self._status.error = error
         self._persist()
 
     def reset(self) -> None:

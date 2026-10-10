@@ -37,6 +37,11 @@
     },
     "record_json": {
       "type": "string"
+    },
+    "record_encoding": {
+      "type": "string",
+      "enum": ["json", "zlib-base64"],
+      "description": "Optional lossless transport compression for large observations. Absent means legacy plain JSON. Identities and decoded payloads are unchanged."
     }
   }
 }

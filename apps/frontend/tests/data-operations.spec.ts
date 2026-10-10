@@ -45,8 +45,8 @@ test("Save settings uses PATCH without starting collection", async ({ page }) =>
 test("Retry saved run sends the original observation ID", async ({ page }) => {
   const data=snapshot("FAILED");data.collection.sources.threads.last_run_id="saved-failed-run";
   await show(page,data);let body;
-  await page.route("**/api/v1/collection/retry", (route) => {body=route.request().postDataJSON();return route.fulfill({status:202,json:snapshot("RUNNING").collection});});
-  await page.getByRole("button",{name:"Retry saved Threads run",exact:true}).click();
+  await page.route("**/api/v1/collection/replay", (route) => {body=route.request().postDataJSON();return route.fulfill({status:202,json:snapshot("RUNNING").collection});});
+  await page.getByRole("button",{name:"Replay saved Threads processing",exact:true}).click();
   await expect(page.getByRole("status")).toContainText("source data will not be fetched again");
   expect(body).toEqual({run_id:"saved-failed-run"});
 });
@@ -58,4 +58,24 @@ test("active source metrics come from current structured progress", async ({ pag
  await expect(page.getByRole("article",{name:"Threads collection"})).not.toContainText("999");
  await expect(page.getByRole("status")).toContainText("Kafka acknowledged 3");
  await expect(page.getByRole("status")).toContainText("Spark consumed 3");
+});
+
+test("Threads continuation exposes incomplete discovery and queues a new acquisition",async({page})=>{
+ const data=snapshot("PARTIAL");const source=data.collection.sources.threads;
+ source.last_run_id="committed";
+ source.metrics={accepted:0,errors:0,stopping_reason:"request_budget",acquisition:{status:"partial"},processing_status:"success",bronze_ingestion_status:"success",discovery:{planned_queries:10000,attempted_queries:32,remaining_queries:9968,has_more:true,requests_this_invocation:32,max_requests:32}};
+ await show(page,data);let body;
+ await page.route("**/api/v1/collection/continue",route=>{body=route.request().postDataJSON();return route.fulfill({status:202,json:snapshot("RUNNING").collection});});
+ const card=page.getByRole("article",{name:"Threads collection"});
+ await expect(card).toContainText("request_budget");await expect(card).toContainText("9968");
+ await page.getByRole("button",{name:"Continue Threads discovery",exact:true}).click();
+ expect(body).toEqual({run_id:"committed"});await expect(page.getByRole("status")).toContainText("new acquisition run ID");
+});
+
+test("checkpoint-only Threads recovery is distinct from processing replay",async({page})=>{
+ const data=snapshot("INTERRUPTED");data.collection.sources.threads.pending_acquisition_run_id="pending";
+ await show(page,data);let body;
+ await page.route("**/api/v1/collection/recover",route=>{body=route.request().postDataJSON();return route.fulfill({status:202,json:snapshot("RUNNING").collection});});
+ await page.getByRole("button",{name:"Recover interrupted Threads acquisition",exact:true}).click();
+ expect(body).toEqual({run_id:"pending"});await expect(page.getByRole("status")).toContainText("original run ID");
 });

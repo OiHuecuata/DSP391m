@@ -8,7 +8,7 @@ export async function getOperations(signal: AbortSignal): Promise<Operations> {
   return value;
 }
 
-export async function controlCollection(action: "start" | "stop" | "run" | "config" | "retry", body?: { sources: SourceConfig | SourceName[] } | { run_id: string }): Promise<Collection> {
+export async function controlCollection(action: "start" | "stop" | "run" | "config" | "retry" | "replay" | "continue" | "recover", body?: { sources: SourceConfig | SourceName[] } | { run_id: string }): Promise<Collection> {
   const response = await fetch(`/api/v1/collection/${action}`, { method: action === "config" ? "PATCH" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body ?? {}), signal: AbortSignal.timeout(10_000) });
   if (!response.ok) {
     const value = await response.json().catch(() => null);

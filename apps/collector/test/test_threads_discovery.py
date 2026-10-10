@@ -69,7 +69,19 @@ class ThreadsDiscoveryTests(unittest.TestCase):
         self.assertEqual(len({s.geo_name for s in subject if s.kind == "city"}), 10)
         self.assertEqual(
             {s.query_category for s in plan},
-            {"subject", "venues", "pricing", "players", "training"},
+            {
+                "subject",
+                "venues",
+                "pricing",
+                "players",
+                "training",
+                "playing",
+                "competitions",
+                "booking",
+                "availability",
+                "supply",
+                "feedback",
+            },
         )
 
     def test_planner_deduplicates_unicode_case_and_seed_variants(self):
@@ -92,7 +104,7 @@ class ThreadsDiscoveryTests(unittest.TestCase):
             max_geo_aliases=1,
             expand_subject_variants=False,
         )
-        self.assertEqual(len(plan), 4)  # unqualified, two country spellings, Hanoi
+        self.assertEqual(len(plan), 6)  # all validated Hanoi spellings remain available
         with self.assertRaises(ValueError):
             build_discovery_plan(["pickleball"], geo_keys=["invented-province"])
         with self.assertRaises(ValueError):
@@ -128,12 +140,10 @@ class ThreadsDiscoveryTests(unittest.TestCase):
 
     def crawl(self, pages, **options):
         manager, _page, _browser, search = self.fixture(pages)
-        with patch.object(
-            crawler, "sync_playwright", return_value=manager
-        ), patch.object(
-            crawler, "expanded_query_plan", return_value=PLAN
-        ), patch.object(
-            crawler, "_collect_for_query", side_effect=search
+        with (
+            patch.object(crawler, "sync_playwright", return_value=manager),
+            patch.object(crawler, "expanded_query_plan", return_value=PLAN),
+            patch.object(crawler, "_collect_for_query", side_effect=search),
         ):
             return crawler.crawl_threads_posts(detail_limit=0, query_delay=0, **options)
 
@@ -239,17 +249,15 @@ class ThreadsDiscoveryTests(unittest.TestCase):
             p.goto(kw["url"])
             return [post(2)], {"has_next_page": True}, p.url
 
-        with patch.object(
-            crawler, "sync_playwright", return_value=manager
-        ), patch.object(
-            crawler, "expanded_query_plan", return_value=PLAN[:1]
-        ), patch.object(
-            crawler, "_collect_for_query", side_effect=search
-        ), patch(
-            "dsp_collector.sources.crawler.threads.discovery.public_next_url",
-            return_value=target,
-        ), patch.object(
-            crawler, "_collect_public_page", side_effect=following
+        with (
+            patch.object(crawler, "sync_playwright", return_value=manager),
+            patch.object(crawler, "expanded_query_plan", return_value=PLAN[:1]),
+            patch.object(crawler, "_collect_for_query", side_effect=search),
+            patch(
+                "dsp_collector.sources.crawler.threads.discovery.public_next_url",
+                return_value=target,
+            ),
+            patch.object(crawler, "_collect_public_page", side_effect=following),
         ):
             result = crawler.crawl_threads_posts(
                 detail_limit=0, query_delay=0, max_pages_per_query=2
@@ -295,9 +303,9 @@ class ThreadsDiscoveryTests(unittest.TestCase):
                 run_id="second",
             )
             self.assertEqual(first["count"], 1)
-            self.assertEqual([p["id"] for p in second["posts"]], ["2"])
+            self.assertEqual([p["id"] for p in second["posts"]], ["1", "2"])
             self.assertEqual(second["query_runs"][0]["query"], PLAN[1].query)
-            self.assertEqual(second["discovery"]["accepted_duplicates_count"], 1)
+            self.assertEqual(second["discovery"]["accepted_duplicates_count"], 0)
             self.assertEqual(
                 first["discovery"]["survey_id"], second["discovery"]["survey_id"]
             )
@@ -368,15 +376,14 @@ class ThreadsDiscoveryTests(unittest.TestCase):
                 [([post(1)], {"has_next_page": True})]
             )
             target = crawler.build_search_url(PLAN[0].query) + "&page=2"
-            with patch.object(
-                crawler, "sync_playwright", return_value=manager
-            ), patch.object(
-                crawler, "expanded_query_plan", return_value=PLAN[:1]
-            ), patch.object(
-                crawler, "_collect_for_query", side_effect=search
-            ), patch(
-                "dsp_collector.sources.crawler.threads.discovery.public_next_url",
-                return_value=target,
+            with (
+                patch.object(crawler, "sync_playwright", return_value=manager),
+                patch.object(crawler, "expanded_query_plan", return_value=PLAN[:1]),
+                patch.object(crawler, "_collect_for_query", side_effect=search),
+                patch(
+                    "dsp_collector.sources.crawler.threads.discovery.public_next_url",
+                    return_value=target,
+                ),
             ):
                 first = crawler.crawl_threads_posts(
                     detail_limit=0,
@@ -388,7 +395,12 @@ class ThreadsDiscoveryTests(unittest.TestCase):
                 )
             self.assertEqual(first["collection_stopping_reason"], "request_budget")
             self.assertEqual(
-                json.loads(path.read_text())["query_progress"]["next_url"], target
+                next(
+                    v["progress"]["next_url"]
+                    for v in json.loads(path.read_text())["ledger"].values()
+                    if v.get("progress", {}).get("next_url")
+                ),
+                target,
             )
 
             acknowledge_checkpoint(path, "page-one")
@@ -398,16 +410,15 @@ class ThreadsDiscoveryTests(unittest.TestCase):
                 p.goto(kw["url"])
                 return [post(2)], {"has_next_page": False}, p.url
 
-            with patch.object(
-                crawler, "sync_playwright", return_value=manager
-            ), patch.object(
-                crawler, "expanded_query_plan", return_value=PLAN[:1]
-            ), patch.object(
-                crawler,
-                "_collect_for_query",
-                side_effect=AssertionError("restarted at page one"),
-            ), patch.object(
-                crawler, "_collect_public_page", side_effect=next_page
+            with (
+                patch.object(crawler, "sync_playwright", return_value=manager),
+                patch.object(crawler, "expanded_query_plan", return_value=PLAN[:1]),
+                patch.object(
+                    crawler,
+                    "_collect_for_query",
+                    side_effect=AssertionError("restarted at page one"),
+                ),
+                patch.object(crawler, "_collect_public_page", side_effect=next_page),
             ):
                 second = crawler.crawl_threads_posts(
                     detail_limit=0,
@@ -473,11 +484,14 @@ class ThreadsDiscoveryTests(unittest.TestCase):
                 checkpoint_path=path,
                 run_id="prepared",
             )
-            with patch.object(
-                crawler,
-                "sync_playwright",
-                side_effect=AssertionError("recrawled uncommitted source"),
-            ), patch.object(crawler, "expanded_query_plan", return_value=PLAN):
+            with (
+                patch.object(
+                    crawler,
+                    "sync_playwright",
+                    side_effect=AssertionError("recrawled uncommitted source"),
+                ),
+                patch.object(crawler, "expanded_query_plan", return_value=PLAN),
+            ):
                 replay = crawler.crawl_threads_posts(
                     detail_limit=0,
                     query_delay=0,
@@ -498,5 +512,6 @@ class ThreadsDiscoveryTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "checkpoint.json"
             self.crawl([([post(1)], {})], checkpoint_path=path, max_queries=1)
-            with self.assertRaisesRegex(ValueError, "configuration changed"):
-                self.crawl([], checkpoint_path=path, max_pages_per_query=2)
+            acknowledge_checkpoint(path, json.loads(path.read_text())["run_id"])
+            with self.assertRaisesRegex(ValueError, "Publication window"):
+                self.crawl([], checkpoint_path=path, published_after=AT)

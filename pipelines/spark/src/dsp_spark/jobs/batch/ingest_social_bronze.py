@@ -7,7 +7,7 @@ Kafka events. Transport metadata stays null for this direct batch path.
 
 import argparse
 import json
-from datetime import UTC
+from datetime import UTC, datetime, timedelta
 
 from delta.tables import DeltaTable
 from dsp_collector.normalizers.social_post import normalize_social_post
@@ -18,6 +18,7 @@ from dsp_collector.sources.crawler.threads.vietnam_terms import (
     _detect_locations,
     _detect_topics,
 )
+from pyspark.sql import functions as F
 from pyspark.sql import types as T
 
 from ...io.delta import read_delta
@@ -53,10 +54,34 @@ def ingest_social_bronze(spark, settings, *, run_id=None):
         records = read_delta(spark, path)
         if run_id:
             records = records.filter(records.collection_run_id == run_id)
+        timestamp_fields = {
+            field.name
+            for field in records.schema
+            if isinstance(field.dataType, T.TimestampType)
+        }
+        records = records.select(
+            *(
+                (
+                    F.unix_micros(F.col(field.name)).alias(field.name)
+                    if isinstance(field.dataType, T.TimestampType)
+                    else F.col(field.name)
+                )
+                for field in records.schema
+            )
+        )
         batch = []
         for observation in records.toLocalIterator():
             row = observation.asDict()
-            collected = timestamp(row["collected_at"].replace(tzinfo=UTC))
+            for field in timestamp_fields:
+                row[field] = (
+                    (
+                        datetime(1970, 1, 1, tzinfo=UTC)
+                        + timedelta(microseconds=row[field])
+                    )
+                    if row[field] is not None
+                    else None
+                )
+            collected = timestamp(row["collected_at"])
             try:
                 payload = json.loads(row["raw_payload"])
                 queries = json.loads(row["query_metadata"])
@@ -80,14 +105,13 @@ def ingest_social_bronze(spark, settings, *, run_id=None):
                         **payload,
                         "id": row["source_record_id"],
                         "text": text,
-                        "taken_at": (
-                            publication.replace(tzinfo=UTC).timestamp()
-                            if publication
-                            else None
-                        ),
+                        "taken_at": (publication.timestamp() if publication else None),
                         "is_reply": dataset == "bronze_social_comments",
                         "url": row["source_url"],
-                        "matched_queries": queries,
+                        "matched_queries": [
+                            q["query"] if isinstance(q, dict) else q for q in queries
+                        ],
+                        "query_contexts": [q for q in queries if isinstance(q, dict)],
                         "detected_locations": _detect_locations(text),
                         "categories": _detect_topics(text)[0],
                     }

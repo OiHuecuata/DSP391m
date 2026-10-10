@@ -1,7 +1,9 @@
 """Real Delta record tables, lifecycle evidence, backfill and mixed Kafka batches."""
 
 import json
+import os
 import tempfile
+import time
 import unittest
 from datetime import UTC, datetime
 from pathlib import Path
@@ -372,6 +374,207 @@ class BronzeDeltaTests(unittest.TestCase):
         self.assertEqual(
             json.loads(run.raw_payload)["search_evidence"], raw["search_evidence"]
         )
+
+    def test_threads_replay_preserves_utc_instants_in_driver_and_sql_timezones(self):
+        from dsp_spark.jobs.batch.ingest_social_bronze import ingest_social_bronze
+        from pyspark.sql import functions as F
+
+        previous = os.environ.get("TZ")
+        try:
+            for index, zone in enumerate(
+                ["UTC", "Asia/Bangkok", "America/Los_Angeles"]
+            ):
+                with self.subTest(zone=zone):
+                    os.environ["TZ"] = zone
+                    time.tzset()
+                    self.spark.conf.set("spark.sql.session.timeZone", "UTC")
+                    raw = {
+                        "schema_version": "1",
+                        "source": "threads",
+                        "run_id": f"tz-{index}",
+                        "seed_query": "pickleball",
+                        "sort": "recent",
+                        "collected_at": AT,
+                        "count": 1,
+                        "query_runs": [],
+                        "posts": [
+                            {
+                                "id": "123",
+                                "text": "Sân pickleball Hà Nội",
+                                "taken_at": 1791590400 if index != 2 else None,
+                                "like_count": None,
+                                "_observed_at": AT,
+                            }
+                        ],
+                    }
+                    self.ingest(raw)
+                    self.spark.conf.set("spark.sql.session.timeZone", zone)
+                    for _ in range(2):
+                        ingest_social_bronze(
+                            self.spark, self.settings, run_id=raw["run_id"]
+                        )
+                    records = (
+                        self.table("social_posts")
+                        .filter(F.col("run_id") == raw["run_id"])
+                        .collect()
+                    )
+                    self.assertEqual(len(records), 1)
+                    self.assertEqual(
+                        records[0].collected_at, "2026-10-10T00:00:00.000000Z"
+                    )
+                    self.assertEqual(
+                        records[0].published_at,
+                        None if index == 2 else "2026-10-10T00:00:00.000000Z",
+                    )
+        finally:
+            if previous is None:
+                os.environ.pop("TZ", None)
+            else:
+                os.environ["TZ"] = previous
+            time.tzset()
+            self.spark.conf.set("spark.sql.session.timeZone", "UTC")
+
+    def test_threads_posts_and_replies_match_direct_kafka_and_silver_grains(self):
+        from unittest.mock import patch
+
+        from dsp_collector.jobs.collect_social import process_threads_envelope
+        from dsp_collector.publishers.kafka import build_bronze_event
+
+        native = {
+            "pk": "123",
+            "caption": {"text": "Sân pickleball Hà Nội"},
+            "taken_at": 1791590400,
+            "like_count": 0,
+        }
+        reply_native = {
+            "pk": "456",
+            "caption": {"text": "Hỏi giá sân"},
+            "taken_at": 1791590400,
+            "like_count": None,
+            "text_post_app_info": {"is_reply": True, "reply_to_post_id": "123"},
+        }
+        raw = {
+            "schema_version": "1",
+            "source": "threads",
+            "run_id": "threads-replies",
+            "seed_query": "pickleball",
+            "sort": "recent",
+            "collected_at": AT,
+            "count": 1,
+            "query_runs": [],
+            "posts": [
+                {
+                    "id": "123",
+                    "text": native["caption"]["text"],
+                    "taken_at": native["taken_at"],
+                    "raw_payload": native,
+                    "_observed_at": AT,
+                    "detail_status": "ok",
+                    "detail": {
+                        "id": "123",
+                        "raw_payload": native,
+                        "_observed_at": AT,
+                        "visible_replies": [
+                            {
+                                "id": "456",
+                                "text": "Hỏi giá sân",
+                                "raw_payload": reply_native,
+                                "taken_at": 1791590400,
+                                "is_reply": True,
+                                "native_post_id": "123",
+                                "_observed_at": AT,
+                                "engagement": {"like_count": None},
+                            }
+                        ],
+                    },
+                }
+            ],
+        }
+        batch = process_threads_envelope(raw, artifact_root=self.root / "artifacts")
+        self.ingest(raw)
+        datasets, errors = extract_observations(raw)
+        self.assertFalse(errors)
+        with patch.dict(os.environ, {"DSP_BRONZE_COMPRESSION_THRESHOLD": "1"}):
+            events = [
+                build_bronze_event(n, r) for n, rows in datasets.items() for r in rows
+            ]
+        events.extend(
+            build_social_post_event(r)
+            for r in json.loads(batch.silver_path.read_text())["records"]
+        )
+        for _ in range(2):
+            persist_social_batch(self.kafka(events), 0, settings=self.settings)
+        self.assertEqual(self.table("bronze_social_posts").count(), 1)
+        self.assertEqual(self.table("bronze_social_comments").count(), 1)
+        self.assertEqual(self.table("bronze_engagement_snapshots").count(), 2)
+        self.assertEqual(self.table("social_posts").count(), 1)
+        self.assertEqual(self.table("social_comments").count(), 1)
+        self.assertEqual(
+            self.table("social_comments").first().parent_record_id, "threads:123"
+        )
+        self.assertEqual(self.table("bronze_source_changes").count(), 2)
+        for n, rows in datasets.items():
+            if n == "bronze_source_changes":
+                continue
+            stored = {r.observation_id: r for r in self.table(n).collect()}
+            for row in rows:
+                self.assertEqual(
+                    stored[row["observation_id"]].payload_hash, row["payload_hash"]
+                )
+                self.assertEqual(
+                    stored[row["observation_id"]].raw_payload, row["raw_payload"]
+                )
+
+    def test_bronze_kafka_and_change_timestamps_are_independent_of_sql_timezone(self):
+        from dsp_collector.publishers.kafka import build_bronze_event
+
+        raw = {
+            "source": "threads",
+            "run_id": "kafka-clock",
+            "seed_query": "pickleball",
+            "sort": "recent",
+            "collected_at": AT,
+            "query_runs": [],
+            "posts": [
+                {"id": "123", "text": "Sân pickleball Hà Nội", "_observed_at": AT}
+            ],
+            "count": 1,
+        }
+        rows, _ = extract_observations(raw)
+        event = build_bronze_event(
+            "bronze_social_posts", rows["bronze_social_posts"][0]
+        )
+        frame = self.spark.createDataFrame(
+            [
+                (
+                    event["event_id"].encode(),
+                    json.dumps(event).encode(),
+                    "fixture",
+                    0,
+                    0,
+                    datetime.fromisoformat(AT),
+                )
+            ],
+            KAFKA_SCHEMA,
+        )
+        self.spark.conf.set("spark.sql.session.timeZone", "America/Los_Angeles")
+        try:
+            persist_social_batch(frame, 0, settings=self.settings)
+            stored = self.table("bronze_social_posts").first()
+            self.assertEqual(
+                json.loads(stored.ingestion_metadata)["kafka_timestamp"],
+                "2026-10-10T00:00:00.000000Z",
+            )
+            from pyspark.sql import functions as F
+
+            observed = (
+                self.table("bronze_source_changes")
+                .select(F.unix_micros("collected_at"))
+                .first()[0]
+            )
+            self.assertEqual(observed, 1791590400000000)
+        finally:
+            self.spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     def test_failed_collection_run_recovery_keeps_one_run_and_delta_history(self):
         from delta.tables import DeltaTable

@@ -378,8 +378,8 @@ class CollectSocialTests(unittest.TestCase):
         self.assertEqual(result.run_id, tracker.status.run_id)
         self.assertEqual(bronze["run_id"], tracker.status.run_id)
         self.assertEqual(silver["run_id"], tracker.status.run_id)
-        self.assertEqual(tracker.status.status, "failed")
-        self.assertIsNone(tracker.status.output_path)
+        self.assertEqual(tracker.status.status, "partial")
+        self.assertIsNotNone(tracker.status.output_path)
 
     def test_without_tracker_run_id_generated_once(self):
         crawler = Mock(return_value=self.envelope)
@@ -449,7 +449,7 @@ class CollectSocialTests(unittest.TestCase):
             artifact_root=self.root,
         )
         self.assertEqual(result.status, "partial")
-        self.assertEqual(tracker.status.status, "failed")
+        self.assertEqual(tracker.status.status, "partial")
         self.assertIn("1 records rejected", tracker.status.error)
         self.assertTrue(result.bronze_path.exists())
         self.assertTrue(result.silver_path.exists())
@@ -667,7 +667,7 @@ class CollectSocialTests(unittest.TestCase):
         result, tracker = self.kafka_collect(producer)
         self.assertEqual(result.status, "partial")
         self.assertEqual(result.publication.published_count, 2)
-        self.assertEqual(tracker.status.status, "failed")
+        self.assertEqual(tracker.status.status, "partial")
         self.assertEqual(len(producer.messages), 2)
 
     def test_kafka_failure_keeps_bronze_and_silver_without_crawler_retry(self):
@@ -688,7 +688,7 @@ class CollectSocialTests(unittest.TestCase):
         self.assertEqual(result.status, "partial")
         self.assertEqual(result.publication.published_count, 1)
         self.assertEqual(result.publication.failed_count, 1)
-        self.assertEqual(tracker.status.status, "failed")
+        self.assertEqual(tracker.status.status, "partial")
         self.assertTrue(result.bronze_path.exists())
         self.assertTrue(result.silver_path.exists())
 

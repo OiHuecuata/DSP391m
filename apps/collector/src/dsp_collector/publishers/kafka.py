@@ -345,18 +345,73 @@ def publish_social_batch(
     )
 
 
+def build_bronze_event(dataset, row):
+    """Bound wire volume without truncating source evidence or changing identity."""
+    import base64
+    import os
+    import zlib
+
+    from ..runtime.bronze import encode
+
+    raw = encode(row)
+    event = {
+        "schema_version": "1",
+        "event_type": "bronze.observed",
+        "event_id": row["observation_id"],
+        "dataset": dataset,
+        "record_json": raw,
+    }
+    if len(raw.encode()) >= int(
+        os.getenv("DSP_BRONZE_COMPRESSION_THRESHOLD", "262144")
+    ):
+        event.update(
+            record_json=base64.b64encode(zlib.compress(raw.encode())).decode(),
+            record_encoding="zlib-base64",
+        )
+    return event
+
+
 def validate_bronze_event(event):
     from ..runtime.bronze import DATASETS, decode, validate_observation
 
     if (
-        set(event)
+        set(event) - {"record_encoding"}
         != {"schema_version", "event_type", "event_id", "dataset", "record_json"}
         or event["schema_version"] != "1"
         or event["event_type"] != "bronze.observed"
         or event["dataset"] not in DATASETS
     ):
         raise ValueError("invalid Bronze event envelope")
-    row = decode(event["record_json"])
+    encoding = event.get("record_encoding", "json")
+    if encoding == "zlib-base64":
+        import base64
+        import os
+        import zlib
+
+        try:
+            limit = int(os.getenv("DSP_BRONZE_MAX_DECODE_BYTES", "134217728"))
+            if limit <= 0:
+                raise ValueError("Invalid decoded observation byte limit")
+            decompressor = zlib.decompressobj()
+            raw = decompressor.decompress(
+                base64.b64decode(event["record_json"], validate=True), limit + 1
+            )
+            if (
+                len(raw) > limit
+                or decompressor.unconsumed_tail
+                or decompressor.unused_data
+                or not decompressor.eof
+            ):
+                raise ValueError(
+                    "Compressed observation exceeds bounds or is incomplete"
+                )
+            row = decode(raw.decode())
+        except (ValueError, zlib.error) as exc:
+            raise ValueError("Invalid compressed Bronze observation") from exc
+    elif encoding == "json":
+        row = decode(event["record_json"])
+    else:
+        raise ValueError("Unsupported Bronze record encoding")
     validate_observation(event["dataset"], row)
     if row["observation_id"] != event["event_id"]:
         raise ValueError("Bronze event identity conflicts with observation")
@@ -372,7 +427,6 @@ def publish_bronze_batch(artifact, *, settings=None, publisher_factory=None):
     import os
 
     from ..runtime.bronze import (
-        encode,
         extract_collection_status,
         extract_observations,
         load_policies,
@@ -405,13 +459,7 @@ def publish_bronze_batch(artifact, *, settings=None, publisher_factory=None):
     try:
         for dataset, rows in datasets.items():
             for row in rows:
-                event = {
-                    "schema_version": "1",
-                    "event_type": "bronze.observed",
-                    "event_id": row["observation_id"],
-                    "dataset": dataset,
-                    "record_json": encode(row),
-                }
+                event = build_bronze_event(dataset, row)
                 try:
                     receipts.append(publisher.publish_bronze_observation(event))
                 except (ValueError, TypeError, PublicationError) as exc:
