@@ -48,6 +48,22 @@ TABLES = (
     "court_supply_by_location",
     "location_market_signal_snapshot",
 )
+# This fixture pins the original v1 contract set. Companion schemas get their
+# own tests; adding one must neither rewrite the frozen fixture nor remove any
+# original contract/hash from its comparison.
+LEGACY_CONTRACTS = (
+    "youtube_bronze",
+    "social_source_activity_daily",
+    "location_market_signal_snapshot",
+    "location_reference",
+    "court_supply_by_location",
+    "social",
+    "social_activity_daily",
+    "court",
+    "event",
+    "threads_bronze",
+    "pbplus_bronze",
+)
 KAFKA_SCHEMA = T.StructType(
     [
         T.StructField("key", T.BinaryType()),
@@ -88,6 +104,7 @@ def pins():
         "apps/collector/test/test_youtube.py",
         "configs/reference/vietnam_locations.v1.json",
     )
+    documents = json.loads(contract_documents())
     return {
         "generation_time": AT,
         "normalization_time": AT,
@@ -102,8 +119,7 @@ def pins():
             for name in files
         },
         "contract_sha256": {
-            name: fingerprint(document)
-            for name, document in json.loads(contract_documents()).items()
+            name: fingerprint(documents[name]) for name in LEGACY_CONTRACTS
         },
     }
 

@@ -119,6 +119,9 @@ def _persist_bronze(
         raise FileExistsError(f"Silver artifact already exists: {silver_path}")
     bronze = copy.deepcopy(dict(envelope))
     bronze.update(schema_version="1", run_id=selected)
+    from ..normalizers.observation import validate_native_input
+
+    validate_native_input(bronze, bronze_path)
     if bronze_path.exists():
         if json.loads(bronze_path.read_text(encoding="utf-8")) != bronze:
             raise FileExistsError(
@@ -159,6 +162,7 @@ def process_pbplus_envelope(
     run_id: str | None = None,
     artifact_root: str | Path | None = None,
     enriched_envelope: Mapping[str, Any] | None = None,
+    observation_context: Mapping[str, Any] | None = None,
 ) -> CollectionResult:
     """Write/reuse Bronze and normalize offline, optionally using supplied geo.
 
@@ -167,6 +171,9 @@ def process_pbplus_envelope(
     geo fields are overlaid; acquisition fields always come from raw Bronze.
     No crawler or geocoder is invoked or imported by this processing boundary.
     """
+    from ..normalizers.observation import native_batch_metadata, prepare_envelope
+
+    envelope = prepare_envelope(envelope, observation_context)
     bronze, bronze_path, silver_path = _persist_bronze(envelope, run_id, artifact_root)
     payload = _normalization_input(bronze, enriched_envelope)
     selected = bronze["run_id"]
@@ -214,6 +221,7 @@ def process_pbplus_envelope(
         "partial" if has_errors and records else "failed" if has_errors else "success"
     )
     silver = {
+        **native_batch_metadata(bronze, bronze_path),
         "schema_version": "1",
         "source": "pbplus",
         "run_id": selected,

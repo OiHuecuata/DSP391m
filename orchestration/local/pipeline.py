@@ -537,7 +537,6 @@ def execute(config, summary, directory, *, ownership=None):
 
 
 def _execute_locked(config, summary, directory):
-    from dsp_collector.publishers.kafka import publish_social_batch
     from dsp_spark.io.clickhouse import (
         ClickHouseClient,
         read_gold_rows,
@@ -553,6 +552,7 @@ def _execute_locked(config, summary, directory):
         build_social_activity_daily,
     )
     from dsp_spark.jobs.batch.ingest_bronze import ingest_bronze
+    from dsp_spark.jobs.batch.ingest_observations import publish_verified_social
     from dsp_spark.jobs.batch.ingest_pbplus import ingest_pbplus
     from dsp_spark.jobs.streaming.social_kafka_to_delta import start_social_stream
     from dsp_spark.runtime.spark import create_spark
@@ -590,8 +590,11 @@ def _execute_locked(config, summary, directory):
         # normalized events. A failed startup/archive must leave Kafka untouched.
         publication = stage(
             "kafka_publish",
-            lambda: publish_social_batch(
-                collections["threads"]["silver_path"], settings=config.kafka
+            lambda: publish_verified_social(
+                spark,
+                collections["threads"]["silver_path"],
+                config.spark,
+                kafka_settings=config.kafka,
             ),
         )
         summary["publication"] = asdict(publication)

@@ -25,6 +25,10 @@ def build_wheel(output: Path | None = None):
             ROOT / "orchestration/local/analytical_refresh.py",
             ownership / "analytical_refresh.py",
         )
+        shutil.copyfile(
+            ROOT / "orchestration/local/processing_manifest.py",
+            ownership / "processing_manifest.py",
+        )
         platform = stage / "dsp_databricks"
         platform.mkdir()
         shutil.copyfile(
@@ -36,6 +40,21 @@ def build_wheel(output: Path | None = None):
         shutil.copyfile(
             ROOT / "apps/collector/src/dsp_collector/runtime/config.py",
             collector / "config.py",
+        )
+        normalizers = collector.parent / "normalizers"
+        normalizers.mkdir()
+        for name in ("observation", "court", "social_post", "youtube"):
+            shutil.copyfile(
+                ROOT / f"apps/collector/src/dsp_collector/normalizers/{name}.py",
+                normalizers / f"{name}.py",
+            )
+        # The YouTube adapter reuses existing pure location/topic rules.
+        terms = collector.parent / "sources/crawler/threads"
+        terms.mkdir(parents=True)
+        shutil.copyfile(
+            ROOT
+            / "apps/collector/src/dsp_collector/sources/crawler/threads/vietnam_terms.py",
+            terms / "vietnam_terms.py",
         )
         contracts = stage / "dsp_contracts"
         for path in (ROOT / "contracts").rglob("*.schema.json"):

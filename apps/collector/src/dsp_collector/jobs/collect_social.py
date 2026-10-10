@@ -95,6 +95,7 @@ def process_threads_envelope(
     *,
     run_id: str | None = None,
     artifact_root: str | Path | None = None,
+    observation_context: Mapping[str, Any] | None = None,
 ) -> CollectionResult:
     """Process a crawler result or a saved Bronze envelope, entirely offline.
 
@@ -124,8 +125,15 @@ def process_threads_envelope(
     if silver_path.exists():
         raise FileExistsError(f"Silver artifact already exists: {silver_path}")
 
-    bronze = copy.deepcopy(dict(envelope))
+    from ..normalizers.observation import (
+        native_batch_metadata,
+        prepare_envelope,
+        validate_native_input,
+    )
+
+    bronze = prepare_envelope(envelope, observation_context)
     bronze.update(schema_version="1", run_id=selected_run_id)
+    validate_native_input(bronze, bronze_path)
     if bronze_path.exists():
         existing = json.loads(bronze_path.read_text(encoding="utf-8"))
         if existing != bronze:
@@ -165,6 +173,7 @@ def process_threads_envelope(
         "partial" if has_errors and records else "failed" if has_errors else "success"
     )
     silver = {
+        **native_batch_metadata(bronze, bronze_path),
         "schema_version": "1",
         "source": "threads",
         "run_id": selected_run_id,

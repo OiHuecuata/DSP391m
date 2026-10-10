@@ -1,0 +1,22 @@
+{
+  "pbplus": {
+    "schema_version": "1", "source": "pbplus", "run_id": "native-fixture-pbplus-v1",
+    "seed_query": "pickleball courts", "sort": "directory", "collected_at": "2026-10-05T12:00:00Z",
+    "count": 1, "query_runs": [],
+    "posts": [{"id": "https://pickleballplus.vn/san-tap/native-fixture", "url": "https://pickleballplus.vn/san-tap/native-fixture", "court_name": "Synthetic venue", "address": "Synthetic street, Hà Nội", "number_of_courts": 6, "price": "100k–150k/giờ", "description": "Synthetic: six outdoor courts", "services": ["Đèn", "Bãi xe"], "opening_hours": ["06:00–22:00"], "venue_status": "Active", "latitude": 21.01, "longitude": 105.81}]
+  },
+  "threads": {
+    "schema_version": "1", "source": "threads", "run_id": "native-fixture-threads-v1",
+    "seed_query": "pickleball", "sort": "recent", "collected_at": "2026-10-05T12:00:00Z",
+    "count": 1, "query_runs": [{"query": "pickleball Hà Nội", "kind": "city", "geo_name": "Hà Nội", "status": "ok", "raw_count": 1, "accepted_count": 1}],
+    "posts": [{"id": "123", "text": "Synthetic: sân Hà Nội có 6 sân", "taken_at": 1791158400, "like_count": 0, "reply_count": 1, "matched_queries": ["pickleball Hà Nội", "pickleball"], "query_contexts": [{"query": "pickleball Hà Nội", "kind": "city", "geo_key": "hanoi", "geo_name": "Hà Nội"}], "raw_payload": {"pk": "123", "caption": {"text": "Synthetic: sân Hà Nội có 6 sân"}, "like_count": 0, "like_and_view_counts_disabled": true, "text_post_app_info": {"direct_reply_count": 1}}, "detail": {"id": "123", "text": "Synthetic: sân Hà Nội có 6 sân", "taken_at": 1791158400, "visible_replies": [{"id": "124", "text": "Synthetic: tìm sân ở Huế", "taken_at": 1791158401, "is_reply": true, "reply_to_post_id": "123", "engagement": {"like_count": 0}}]}}]
+  },
+  "youtube": {
+    "schema_version": "1", "source": "youtube", "run_id": "native-fixture-youtube-v1", "collected_at": "2026-10-05T12:00:00Z",
+    "query_runs": [{"query": "pickleball Hà Nội", "pages": 1, "exposures": 1, "stopping_reason": "exhausted"}],
+    "responses": [], "errors": [], "requests": {"used": 3, "by_endpoint": {"search": 1, "videos": 1, "commentThreads": 1}},
+    "video_queries": {"native_video_1": ["pickleball Hà Nội"]},
+    "videos": [{"id": "native_video_1", "snippet": {"title": "Synthetic Hà Nội venue", "description": "Synthetic: 6 courts and price information", "publishedAt": "2026-10-05T00:00:00Z", "defaultLanguage": "vi", "tags": ["pickleball"]}, "statistics": {"viewCount": "0", "commentCount": "2"}, "contentDetails": {"duration": "PT90S"}}],
+    "comments": [{"video_id": "native_video_1", "payload": {"id": "native_comment_1", "snippet": {"textOriginal": "Synthetic: tìm sân ở Huế", "publishedAt": "2026-10-05T01:00:00Z", "updatedAt": "2026-10-05T01:01:00Z", "likeCount": 0}}}]
+  }
+}

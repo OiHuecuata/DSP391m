@@ -29,6 +29,27 @@ class BronzePublicationBoundaryTests(unittest.TestCase):
             for source in ("threads", "pbplus")
         }
         self.events = []
+        # The publication adapter now inspects saved native-admission metadata.
+        # Keep the original mocked Kafka delivery boundary with an actual v1 file.
+        from dsp_collector.normalizers.social_post import normalize_social_post
+        from dsp_collector.runtime.artifacts import write_json_atomic
+
+        write_json_atomic(
+            self.collections["threads"]["silver_path"],
+            {
+                "schema_version": "1",
+                "source": "threads",
+                "run_id": self.collections["threads"]["run_id"],
+                "count": 1,
+                "records": [
+                    normalize_social_post(
+                        {"id": "123"},
+                        run_id=self.collections["threads"]["run_id"],
+                        collected_at="2026-10-05T12:00:00Z",
+                    )
+                ],
+            },
+        )
         self.spark = MagicMock()
         self.summary = {}
         self.stack = ExitStack()

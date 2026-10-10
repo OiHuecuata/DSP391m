@@ -62,7 +62,6 @@ def _execute_locked(source, run_id, directory, policy, report, update, *, config
     from dsp_collector.jobs.collect_youtube import process_youtube_envelope
     from dsp_collector.publishers.kafka import (
         build_social_post_event,
-        publish_social_batch,
     )
     from dsp_collector.runtime.status import CrawlerStatusTracker
     from dsp_collector.sources.api.youtube import YouTubeConfig
@@ -91,6 +90,7 @@ def _execute_locked(source, run_id, directory, policy, report, update, *, config
         build_social_activity_daily,
     )
     from dsp_spark.jobs.batch.ingest_bronze import ingest_bronze
+    from dsp_spark.jobs.batch.ingest_observations import publish_verified_social
     from dsp_spark.jobs.batch.ingest_pbplus import ingest_pbplus
     from dsp_spark.jobs.streaming.social_kafka_to_delta import (
         initialize_social_silver,
@@ -275,7 +275,12 @@ def _execute_locked(source, run_id, directory, policy, report, update, *, config
             pub = stage(
                 "kafka",
                 lambda: asdict(
-                    publish_social_batch(result["silver_path"], settings=config.kafka)
+                    publish_verified_social(
+                        spark,
+                        result["silver_path"],
+                        config.spark,
+                        kafka_settings=config.kafka,
+                    )
                 ),
             )
             report["metrics"].update(

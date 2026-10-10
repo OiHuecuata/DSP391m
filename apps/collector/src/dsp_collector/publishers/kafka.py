@@ -240,6 +240,7 @@ def publish_social_batch(
     *,
     settings: KafkaSettings | None = None,
     publisher_factory: Callable[[KafkaSettings], KafkaPublisher] | None = None,
+    bronze_verifier: Callable[[Mapping[str, Any]], None] | None = None,
 ) -> PublicationResult:
     """Publish accepted records from saved Silver, without crawling or rewriting it.
 
@@ -266,6 +267,12 @@ def publish_social_batch(
         raise ValueError("Silver batch requires run_id and records")
     if type(batch.get("count")) is not int or batch["count"] != len(records):
         raise ValueError("Silver batch count must equal len(records)")
+    if batch.get("native_bronze_required"):
+        if bronze_verifier is None:
+            raise ValueError(
+                "Native Silver publication requires verified durable Bronze"
+            )
+        bronze_verifier(batch)  # Before even constructing a Kafka producer.
     selected = settings if settings is not None else KafkaSettings.from_env()
     errors = []
     events = []

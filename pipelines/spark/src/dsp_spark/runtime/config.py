@@ -39,11 +39,15 @@ class LakehousePaths:
     court_supply_by_location: str = ""
     unresolved_court_locations: str = ""
     location_market_signal_snapshot: str = ""
+    record_observations: str = ""
+    observation_artifacts: str = ""
 
     def __post_init__(self):
         base = storage_uri(self.base)
         object.__setattr__(self, "base", base)
         for field, suffix in {
+            "observation_artifacts": "bronze/observation_artifacts_v1",
+            "record_observations": "bronze/record_observations_v1",
             "youtube_bronze": "bronze/youtube",
             "social_source_activity_daily": "gold/social_source_activity_daily",
             "threads_bronze": "bronze/threads",
@@ -70,6 +74,8 @@ class LakehousePaths:
     def from_env(cls):
         return cls(
             base=os.getenv("DSP_LAKEHOUSE_BASE_URI", default_base_uri()),
+            record_observations=os.getenv("DSP_DELTA_RECORD_OBSERVATIONS_PATH", ""),
+            observation_artifacts=os.getenv("DSP_DELTA_OBSERVATION_ARTIFACTS_PATH", ""),
             youtube_bronze=os.getenv("DSP_DELTA_YOUTUBE_BRONZE_PATH", ""),
             social_source_activity_daily=os.getenv(
                 "DSP_DELTA_SOCIAL_SOURCE_ACTIVITY_DAILY_PATH", ""

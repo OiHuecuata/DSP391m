@@ -19,6 +19,8 @@ from pyspark.sql import types as T
 from referencing import Registry, Resource
 
 CONTRACT_FILES = {
+    "observation_artifact": "data/bronze/observation-artifact.v1.schema.json",
+    "observation": "data/bronze/record-observation.v1.schema.json",
     "youtube_bronze": "data/bronze/youtube-api.v1.schema.json",
     "social_source_activity_daily": "data/gold/social-source-activity-daily.v1.schema.json",
     "location_market_signal_snapshot": "data/gold/location-market-signal-snapshot.v1.schema.json",
@@ -178,6 +180,12 @@ def _validators(serialized: str):
 
 def validate(value, kind: str, *, documents: str | None = None) -> None:
     _validators(documents or contract_documents())[kind].validate(value)
+    if kind == "observation":
+        from dsp_collector.normalizers.observation import validate_observation
+
+        validate_observation(
+            value, schema=json.loads(documents or contract_documents())[kind]
+        )
     if kind in ("threads_bronze", "pbplus_bronze") and value["count"] != len(
         value["posts"]
     ):

@@ -180,7 +180,6 @@ def process(config, collections, report):
 
 def _process_locked(config, collections, report):
     from delta.tables import DeltaTable
-    from dsp_collector.publishers.kafka import publish_social_batch
     from dsp_spark.io.clickhouse import (
         ClickHouseClient,
         read_gold_rows,
@@ -197,6 +196,7 @@ def _process_locked(config, collections, report):
         build_social_activity_daily,
     )
     from dsp_spark.jobs.batch.ingest_bronze import ingest_bronze
+    from dsp_spark.jobs.batch.ingest_observations import publish_verified_social
     from dsp_spark.jobs.batch.ingest_pbplus import ingest_pbplus
     from dsp_spark.jobs.streaming.social_kafka_to_delta import start_social_stream
     from dsp_spark.runtime.spark import create_spark
@@ -309,7 +309,11 @@ def _process_locked(config, collections, report):
             silver = Path(collections["threads"]["silver_path"])
             publication = stage(
                 "kafka_publish",
-                lambda: asdict(publish_social_batch(silver, settings=config.kafka)),
+                lambda: asdict(
+                    publish_verified_social(
+                        spark, silver, config.spark, kafka_settings=config.kafka
+                    )
+                ),
                 collections["threads"]["count"],
             )
             if publication["status"] != "success":

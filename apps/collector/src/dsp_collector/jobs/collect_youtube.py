@@ -10,12 +10,23 @@ from ..sources.api.youtube import collect_youtube
 from .collect_social import CollectionResult, _run_id
 
 
-def process_youtube_envelope(envelope, *, run_id=None, artifact_root):
+def process_youtube_envelope(
+    envelope, *, run_id=None, artifact_root, observation_context=None
+):
+    from ..normalizers.observation import (
+        native_batch_metadata,
+        prepare_envelope,
+        validate_native_input,
+    )
+
     identity = _run_id(run_id or envelope.get("run_id"))
-    bronze = {**envelope, "run_id": identity}
+    if envelope.get("run_id") is not None and envelope["run_id"] != identity:
+        raise ValueError("run_id conflicts with saved YouTube acquisition")
+    bronze = {**prepare_envelope(envelope, observation_context), "run_id": identity}
     root = Path(artifact_root)
     raw = root / "bronze/youtube" / f"{identity}.json"
     normalized = root / "silver/social_posts" / f"{identity}.json"
+    validate_native_input(bronze, raw)
     if raw.exists():
         if json.loads(raw.read_text()) != bronze:
             raise FileExistsError("Different YouTube Bronze exists")
@@ -23,6 +34,9 @@ def process_youtube_envelope(envelope, *, run_id=None, artifact_root):
         write_json_atomic(raw, bronze)
     if normalized.exists():
         batch = json.loads(normalized.read_text())
+        for name, value in native_batch_metadata(bronze, raw).items():
+            if batch.get(name) != value:
+                raise ValueError("Saved native YouTube lineage metadata disagrees")
         return CollectionResult(
             identity,
             batch["status"],
@@ -60,6 +74,7 @@ def process_youtube_envelope(envelope, *, run_id=None, artifact_root):
     write_json_atomic(
         normalized,
         {
+            **native_batch_metadata(bronze, raw),
             "schema_version": "1",
             "source": "youtube",
             "run_id": identity,

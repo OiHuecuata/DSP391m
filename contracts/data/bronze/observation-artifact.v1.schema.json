@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Native observation acquisition artifact v1",
+  "description": "Exact captured envelope bytes once per source/run/query/fetch scope, including empty batches. Versioned companion to the immutable legacy run envelopes; no source query ledger or policy-registry implementation is implied.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "artifact_id",
+    "source_platform",
+    "collection_run_id",
+    "query_id",
+    "fetch_batch_id",
+    "provenance_scope",
+    "collected_at",
+    "artifact_uri",
+    "artifact_sha256",
+    "payload_json",
+    "native_record_count",
+    "origin",
+    "permission_reference",
+    "retention_policy_id",
+    "retention_expires_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1"
+    },
+    "artifact_id": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "source_platform": {
+      "type": "string",
+      "enum": [
+        "pbplus",
+        "threads",
+        "youtube"
+      ]
+    },
+    "collection_run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "query_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "fetch_batch_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "provenance_scope": {
+      "type": "string",
+      "enum": [
+        "RUN_ENVELOPE",
+        "FETCH_BATCH"
+      ]
+    },
+    "collected_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "artifact_uri": {
+      "type": "string",
+      "format": "uri"
+    },
+    "artifact_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "payload_json": {
+      "type": "string",
+      "minLength": 2
+    },
+    "native_record_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "origin": {
+      "type": "string",
+      "enum": [
+        "SYNTHETIC",
+        "PERMITTED_REPLAY"
+      ]
+    },
+    "permission_reference": {
+      "type": "string",
+      "minLength": 1
+    },
+    "retention_policy_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "retention_expires_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    }
+  }
+}

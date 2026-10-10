@@ -27,6 +27,7 @@ from dsp_spark.jobs.batch import build_court_supply_by_location as court
 from dsp_spark.jobs.batch import build_location_market_signal_snapshot as market
 from dsp_spark.jobs.batch import build_social_activity_daily as social
 from dsp_spark.jobs.batch import ingest_bronze as bronze
+from dsp_spark.jobs.batch import ingest_observations as native
 from dsp_spark.jobs.batch import ingest_pbplus as silver
 from dsp_spark.jobs.batch import load_market_signals_clickhouse as loader
 from dsp_spark.jobs.batch import smoke_clickhouse as smoke
@@ -101,6 +102,52 @@ class AnalyticalEntrypointTests(unittest.TestCase):
                     )
                     runtime.assert_not_called()
                     write.assert_not_called()
+
+    def test_native_cli_reuses_shared_ownership_before_runtime(self):
+        artifact = self.root / "native-source.json"
+        artifact.write_text('{"source":"threads"}')
+        with (
+            pipeline.lakehouse_lock(self.config),
+            patch.object(native, "create_spark") as runtime,
+        ):
+            self.assert_blocked(
+                lambda: native.main(
+                    ["--artifact", str(artifact)], settings=self.settings
+                )
+            )
+            runtime.assert_not_called()
+        with (
+            pipeline.lakehouse_lock(self.config) as ownership,
+            patch.object(native, "create_spark", return_value=Mock()) as runtime,
+            patch.object(
+                native, "ingest_observations", return_value={"status": "fixture"}
+            ) as write,
+        ):
+            native.main(
+                ["--artifact", str(artifact)],
+                settings=self.settings,
+                ownership=ownership,
+            )
+            write.assert_called_once()
+            runtime.return_value.stop.assert_called_once()
+
+    def test_shared_native_path_conflicts_even_with_different_base(self):
+        other = SparkSettings(
+            LakehousePaths(
+                (self.root / "other").as_uri(),
+                record_observations=self.settings.paths.record_observations,
+            )
+        )
+        artifact = self.root / "native-source.json"
+        artifact.write_text('{"source":"pbplus"}')
+        with (
+            pipeline.lakehouse_lock(self.config),
+            patch.object(native, "create_spark") as runtime,
+        ):
+            self.assert_blocked(
+                lambda: native.main(["--artifact", str(artifact)], settings=other)
+            )
+            runtime.assert_not_called()
 
     def test_all_batch_cli_operations_hold_ownership_and_stop_owned_runtime(self):
         for module, name, argv in CASES[:-1]:
@@ -503,6 +550,18 @@ class AnalyticalEntrypointTests(unittest.TestCase):
             artifact = builder.build_wheel(output)
         unpacked = self.root / "installed"
         with zipfile.ZipFile(artifact) as wheel:
+            for relative in (
+                "dsp_collector/normalizers/observation.py",
+                "orchestration/local/processing_manifest.py",
+                "dsp_contracts/data/bronze/record-observation.v1.schema.json",
+                "dsp_contracts/data/bronze/observation-artifact.v1.schema.json",
+            ):
+                source = ROOT / (
+                    "apps/collector/src/" + relative
+                    if relative.startswith("dsp_collector/")
+                    else relative.replace("dsp_contracts/", "contracts/")
+                )
+                self.assertEqual(wheel.read(relative), source.read_bytes())
             self.assertEqual(
                 wheel.read("orchestration/local/analytical_refresh.py"),
                 (ROOT / "orchestration/local/analytical_refresh.py").read_bytes(),
@@ -519,6 +578,12 @@ with analytical_ownership(SimpleNamespace(spark=s)) as token:
     with job_ownership(s, outputs=('social_activity_daily',), ownership=token):
         pass
 print('portable guard OK')
+from dsp_collector.normalizers.observation import observation_schema
+from dsp_spark.processing.clean.contracts import contract_documents, spark_schema
+import json
+assert json.loads(contract_documents())['observation'] == observation_schema()
+assert len(spark_schema('observation').names) == 62
+print('portable observation contract OK')
 """
         result = subprocess.run(
             [sys.executable, "-c", probe, (self.root / "packaged-lake").as_uri()],

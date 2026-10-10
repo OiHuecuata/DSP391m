@@ -23,6 +23,10 @@ def ingest_pbplus(spark, artifact: str | Path, settings: SparkSettings):
     ):
         raise ValueError("expected a PBPlus Silver v1 batch")
     records = batch.get("records")
+    if batch.get("native_bronze_required"):
+        from .ingest_observations import verify_silver_lineage
+
+        verify_silver_lineage(spark, batch, settings)
     if (
         not isinstance(records, list)
         or type(batch.get("count")) is not int

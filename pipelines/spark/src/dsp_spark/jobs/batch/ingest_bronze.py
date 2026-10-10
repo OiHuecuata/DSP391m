@@ -35,6 +35,30 @@ def ingest_bronze(spark, artifact: str | Path, settings: SparkSettings, *, sourc
     raw = path.read_bytes().decode("utf-8")
     envelope = parse_json(raw)
     validate(envelope, source + "_bronze")
+    native = None
+    if "native_observation_context" in envelope:
+        from .ingest_observations import prepare_observations
+
+        native = prepare_observations(spark, path, raw, envelope, settings)
+        if envelope["native_observation_context"]["provenance_scope"] == "FETCH_BATCH":
+            from .ingest_observations import (
+                observation_references,
+                persist_artifact,
+                persist_observations,
+            )
+
+            result = {
+                "source": source,
+                "run_id": envelope["run_id"],
+                "input_count": 1,
+                "path": settings.paths.observation_artifacts,
+            }
+            result.update(
+                persist_artifact(spark, path, raw, envelope, native, settings)
+            )
+            result.update(persist_observations(spark, native, settings))
+            result["observation_references"] = observation_references(path, native)
+            return result
     row = (
         envelope["schema_version"],
         envelope["source"],
@@ -63,12 +87,23 @@ def ingest_bronze(spark, artifact: str | Path, settings: SparkSettings, *, sourc
         saved[0].payload_json,
     ) != (envelope["schema_version"], envelope["collected_at"], raw):
         raise ValueError("Bronze run/envelope verification failed")
-    return {
+    result = {
         "source": source,
         "run_id": envelope["run_id"],
         "input_count": 1,
         "path": target,
     }
+    if native is not None:
+        from .ingest_observations import (
+            observation_references,
+            persist_artifact,
+            persist_observations,
+        )
+
+        result.update(persist_artifact(spark, path, raw, envelope, native, settings))
+        result.update(persist_observations(spark, native, settings))
+        result["observation_references"] = observation_references(path, native)
+    return result
 
 
 def main(argv=None, *, settings=None, ownership=None):
@@ -80,7 +115,13 @@ def main(argv=None, *, settings=None, ownership=None):
     args = parser.parse_args(argv)
     settings = settings or SparkSettings.from_env()
     with job_ownership(
-        settings, outputs=(args.source + "_bronze",), ownership=ownership
+        settings,
+        outputs=(
+            args.source + "_bronze",
+            "record_observations",
+            "observation_artifacts",
+        ),
+        ownership=ownership,
     ):
         spark = create_spark(settings)
         try:
