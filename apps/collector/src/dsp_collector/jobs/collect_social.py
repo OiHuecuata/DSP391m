@@ -141,7 +141,9 @@ def process_threads_envelope(
         try:
             records.append(
                 normalize_social_post(
-                    post, run_id=selected_run_id, collected_at=bronze["collected_at"]
+                    post,
+                    run_id=selected_run_id,
+                    collected_at=post.get("_observed_at", bronze["collected_at"]),
                 )
             )
         except (ValueError, TypeError) as exc:
@@ -167,6 +169,16 @@ def process_threads_envelope(
         for p in bronze["posts"]
         if p.get("detail_status") == "error"
     )
+    discovery = bronze.get("discovery", {})
+    if discovery.get("has_more") and bronze.get("collection_stopping_reason") not in (
+        "result_limit",
+    ):
+        collection_errors.append(
+            {
+                "reason": bronze.get("collection_stopping_reason"),
+                "remaining_queries": discovery["remaining_queries"],
+            }
+        )
     has_errors = bool(errors or collection_errors)
     status: Literal["success", "partial", "failed"] = (
         "partial" if has_errors and records else "failed" if has_errors else "success"
@@ -260,6 +272,14 @@ def collect_threads(
     previous_run_id = status_tracker.status.run_id if status_tracker else None
     try:
         selected_run_id = uuid4().hex if status_tracker is None else None
+        options = dict(crawl_options or {})
+        if crawler is None and selected_run_id:
+            checkpoint = options.get("checkpoint_path")
+            if checkpoint and Path(checkpoint).exists() and options.get("resume", True):
+                saved = json.loads(Path(checkpoint).read_text())
+                if not saved.get("artifact_committed"):
+                    selected_run_id = saved["run_id"]
+            options.setdefault("run_id", selected_run_id)
         envelope = (crawler if crawler is not None else _crawl_threads)(
             query=query,
             limit=limit,
@@ -268,8 +288,9 @@ def collect_threads(
             timeout_ms=timeout_ms,
             per_query_cap=per_query_cap,
             status_tracker=status_tracker,
-            **(crawl_options or {}),
+            **options,
         )
+        selected_run_id = envelope.get("run_id") or selected_run_id
         if status_tracker is not None:
             selected_run_id = status_tracker.status.run_id
             if (
@@ -281,6 +302,10 @@ def collect_threads(
         result = process_threads_envelope(
             envelope, run_id=selected_run_id, artifact_root=artifact_root
         )
+        if options.get("checkpoint_path"):
+            from ..sources.crawler.threads.discovery import acknowledge_checkpoint
+
+            acknowledge_checkpoint(options["checkpoint_path"], result.run_id)
         if publish_kafka or (kafka_settings is not None and kafka_settings.enabled):
             result = _publish_silver(result, kafka_settings, publisher_factory)
         if status_tracker is not None:
@@ -329,6 +354,15 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--sort", choices=("recent", "top"), default="recent")
     parser.add_argument("--per-query-cap", type=int, default=3)
     parser.add_argument("--timeout-ms", type=int, default=60_000)
+    parser.add_argument("--discovery-config", type=Path)
+    parser.add_argument("--max-queries", type=int)
+    parser.add_argument("--max-requests", type=int)
+    parser.add_argument("--max-pages-per-query", type=int)
+    parser.add_argument("--published-after")
+    parser.add_argument("--published-before")
+    parser.add_argument("--lookback-days", type=int)
+    parser.add_argument("--checkpoint", type=Path)
+    parser.add_argument("--fresh", action="store_true")
     parser.add_argument("--headed", action="store_true")
     args = parser.parse_args(argv)
     if args.run_id is not None and args.replay is None:
@@ -356,7 +390,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "threads", args.artifact_root / "threads" / "status.json"
                 )
             )
+            from ..sources.crawler.threads.crawler import discovery_options
+
             result = collect_threads(
+                crawl_options=discovery_options(args),
                 query=args.query,
                 limit=args.limit,
                 sort=args.sort,

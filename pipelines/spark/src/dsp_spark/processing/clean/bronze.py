@@ -96,6 +96,20 @@ def _source_changes(spark, frame, path):
         F.col("_previous_hash").isNull()
         | (F.col("payload_hash") != F.col("_previous_hash"))
     )
+    # Python Row timestamps follow the driver's local TZ, independently of the
+    # SQL session. Serialize technical timestamps in the UTC SQL session first.
+    changed = changed.select(
+        *(
+            (
+                F.date_format(F.col(f.name), "yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'").alias(
+                    f.name
+                )
+                if isinstance(f.dataType, T.TimestampType)
+                else F.col(f.name)
+            )
+            for f in changed.schema
+        )
+    )
     result = []
     for r in changed.toLocalIterator():
         row = {

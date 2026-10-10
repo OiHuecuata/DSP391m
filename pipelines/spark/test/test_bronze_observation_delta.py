@@ -294,6 +294,85 @@ class BronzeDeltaTests(unittest.TestCase):
         self.assertEqual(self.table("social_posts").count(), 1)
         self.assertEqual(self.table("social_comments").count(), 1)
 
+    def test_threads_search_evidence_and_capture_times_survive_bronze_ingestion(self):
+        captured = "2026-10-10T00:00:00Z"
+        raw = {
+            "schema_version": "1",
+            "source": "threads",
+            "run_id": "threads-discovery",
+            "seed_query": "pickleball",
+            "sort": "recent",
+            "started_at": captured,
+            "collected_at": "2026-10-10T01:00:00Z",
+            "count": 1,
+            "posts": [
+                {
+                    "id": "123",
+                    "text": "Tìm sân pickleball Hà Nội",
+                    "taken_at": 1791590400,
+                    "like_count": 0,
+                    "_observed_at": captured,
+                }
+            ],
+            "query_runs": [
+                {
+                    "query": "pickleball Hà Nội",
+                    "kind": "city",
+                    "geo_name": "Hà Nội",
+                    "status": "partial",
+                    "raw_count": 2,
+                    "accepted_count": 1,
+                    "rejected_count": 1,
+                }
+            ],
+            "discovery": {
+                "planned_queries": 2,
+                "attempted_queries": 1,
+                "remaining_queries": 1,
+                "has_more": True,
+            },
+            "collection_stopping_reason": "request_budget",
+            "search_evidence": [
+                {
+                    "query_id": "query",
+                    "source_run_id": "threads-discovery",
+                    "observed_at": captured,
+                    "records": [
+                        {"id": "123", "text": "accepted"},
+                        {"id": "456", "text": "source rejection retained"},
+                    ],
+                    "decisions": [
+                        {
+                            "source_record_id": "456",
+                            "outcome": "rejected",
+                            "reason": "missing_market_topic",
+                        }
+                    ],
+                }
+            ],
+        }
+        result = self.ingest(raw)
+        self.assertEqual(result["status"], "partial")
+        for _ in range(2):
+            self.ingest(raw)
+        post = self.table("bronze_social_posts").first()
+        snapshot = self.table("bronze_engagement_snapshots").first()
+        from pyspark.sql import functions as F
+
+        actual = (
+            self.table("bronze_social_posts")
+            .select(F.date_format("collected_at", "yyyy-MM-dd'T'HH:mm:ss'Z'"))
+            .first()[0]
+        )
+        self.assertEqual(actual, captured)
+        self.assertEqual(snapshot.observed_at, post.collected_at)
+        self.assertEqual(snapshot.like_count, 0)
+        self.assertEqual(self.table("bronze_social_posts").count(), 1)
+        run = self.table("bronze_collection_runs").first()
+        self.assertEqual(
+            json.loads(run.raw_payload)["search_evidence"], raw["search_evidence"]
+        )
+
     def test_failed_collection_run_recovery_keeps_one_run_and_delta_history(self):
         from delta.tables import DeltaTable
         from dsp_collector.runtime.bronze import extract_collection_status

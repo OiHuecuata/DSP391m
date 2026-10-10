@@ -173,7 +173,13 @@ def _execute_locked(source, run_id, directory, policy, report, update):
                 envelope, run_id=run_id, artifact_root=directory
             )
         elif source == "threads":
-            envelope = crawl_threads_posts(status_tracker=tracker, **policy[source])
+            options = {**policy[source]}
+            options.setdefault(
+                "checkpoint_path",
+                directory.parent.parent / "discovery" / "threads.json",
+            )
+            options["run_id"] = run_id
+            envelope = crawl_threads_posts(status_tracker=tracker, **options)
             collected = process_threads_envelope(
                 envelope, run_id=run_id, artifact_root=directory
             )
@@ -201,6 +207,19 @@ def _execute_locked(source, run_id, directory, policy, report, update):
         result["collection_seconds"] = time.monotonic() - t
         result["reused_collection"] = replayed
         pipeline.write_report(manifest, result)
+    if source == "threads":
+        checkpoint = Path(
+            policy[source].get("checkpoint_path")
+            or directory.parent.parent / "discovery" / "threads.json"
+        )
+        if checkpoint.is_file():
+            saved_checkpoint = json.loads(checkpoint.read_text())
+            if saved_checkpoint.get("run_id") == run_id:
+                from dsp_collector.sources.crawler.threads.discovery import (
+                    acknowledge_checkpoint,
+                )
+
+                acknowledge_checkpoint(checkpoint, run_id)
     report["collection"] = result
     bronze = json.loads(Path(result["bronze_path"]).read_text())
     records = json.loads(Path(result["silver_path"]).read_text())["records"]
@@ -221,6 +240,7 @@ def _execute_locked(source, run_id, directory, policy, report, update):
         "videos": len(bronze.get("videos", [])),
         "comments": len(bronze.get("comments", [])),
         "queries": len(bronze.get("query_runs", [])),
+        "discovery": bronze.get("discovery"),
         "requests": bronze.get("requests"),
         "api_requests_this_attempt": (
             0

@@ -39,6 +39,7 @@ class QuerySpec:
     geo_name: str | None
     priority: int
     kind: str  # country | city | fallback
+    query_category: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -553,6 +554,7 @@ def adapt_post(
                 "kind": query_spec.kind,
                 "geo_key": query_spec.geo_key,
                 "geo_name": query_spec.geo_name,
+                "query_category": query_spec.query_category,
             }
         ],
         "categories": list(assessment.categories),

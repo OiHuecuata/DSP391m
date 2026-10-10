@@ -45,6 +45,16 @@ class CollectionWorkerTests(unittest.TestCase):
                 )
             )
             original = raw.read_bytes()
+            checkpoint = root / "discovery.json"
+            checkpoint.write_text(
+                json.dumps(
+                    {
+                        "run_id": run_id,
+                        "exported": True,
+                        "artifact_committed": False,
+                    }
+                )
+            )
             config = SimpleNamespace(
                 spark=SimpleNamespace(
                     paths=SimpleNamespace(base=(root / "lake").as_uri())
@@ -69,12 +79,13 @@ class CollectionWorkerTests(unittest.TestCase):
                         "threads",
                         run_id,
                         root,
-                        {"threads": {}},
+                        {"threads": {"checkpoint_path": str(checkpoint)}},
                         report,
                         lambda value: None,
                     )
                 self.assertTrue(report["collection"]["reused_collection"])
                 self.assertEqual(report["collection"]["count"], 1)
+                self.assertTrue(json.loads(checkpoint.read_text())["artifact_committed"])
 
             replay()
             normalized = root / "silver/social_posts" / (run_id + ".json")

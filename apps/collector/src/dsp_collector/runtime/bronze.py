@@ -315,16 +315,22 @@ def extract_observations(envelope, *, artifact_uri=None, policies=None):
         url=None,
         created=None,
         updated=None,
+        observed_at=None,
     ):
         source_id = identity(source_id)
+        when = (
+            timestamp(observed_at, required=True)
+            if observed_at is not None
+            else collected
+        )
         row = {
             "schema_version": "1",
-            "observation_id": digest([dataset, source, source_id, run, collected]),
+            "observation_id": digest([dataset, source, source_id, run, when]),
             "source_platform": source,
             "source_record_id": source_id,
             "record_type": kind,
             "source_url": url,
-            "collected_at": collected,
+            "collected_at": when,
             "source_created_at": timestamp(created),
             "source_updated_at": timestamp(updated),
             "collection_run_id": run,
@@ -372,11 +378,12 @@ def extract_observations(envelope, *, artifact_uri=None, policies=None):
             "Metric",
             queries=json.loads(entity["query_metadata"]),
             url=entity["source_url"],
+            observed_at=entity["collected_at"],
         )
         row.update(
             native_content_id=entity["source_record_id"],
             content_type=entity["record_type"].lower(),
-            observed_at=collected,
+            observed_at=entity["collected_at"],
             metric_scope="cumulative",
             metric_availability=encode({k: values.get(k) is not None for k in METRICS}),
         )
@@ -413,6 +420,7 @@ def extract_observations(envelope, *, artifact_uri=None, policies=None):
                     "detail",
                     "detail_status",
                     "detail_error",
+                    "_observed_at",
                 }
             }
         source_id = payload.get("id") or native.get("pk") or native.get("id")
@@ -492,6 +500,7 @@ def extract_observations(envelope, *, artifact_uri=None, policies=None):
             url=url,
             created=created,
             updated=updated,
+            observed_at=payload.get("_observed_at"),
         )
         if is_comment:
             parent_comment = (

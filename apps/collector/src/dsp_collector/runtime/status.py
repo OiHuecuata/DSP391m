@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import tempfile
 from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime
@@ -149,6 +150,7 @@ class CrawlerStatusTracker:
         target_count: int,
         query_plan_count: int | None = None,
         metadata: dict[str, Any] | None = None,
+        run_id: str | None = None,
     ) -> None:
         """Start a new crawler run and replace status from any previous run."""
         seed_query = seed_query.strip()
@@ -163,11 +165,16 @@ class CrawlerStatusTracker:
         if query_plan_count is not None and query_plan_count < 0:
             raise ValueError("query_plan_count must be >= 0")
 
+        if run_id is not None and (
+            not isinstance(run_id, str)
+            or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,127}", run_id)
+        ):
+            raise ValueError("run_id must be a safe collection identifier")
         now = _utc_now_iso()
 
         self._status = CrawlerStatus(
             source=self._status.source,
-            run_id=uuid4().hex,
+            run_id=run_id or uuid4().hex,
             status="running",
             pid=os.getpid(),
             seed_query=seed_query,

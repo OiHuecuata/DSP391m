@@ -14,13 +14,13 @@ from __future__ import annotations
 
 import argparse
 import json
-import random
+import re
 import sys
 import time
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
-from urllib.parse import urlencode, urlsplit
+from urllib.parse import parse_qs, urlencode, urlsplit
 
 from playwright.sync_api import Page, sync_playwright
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
@@ -29,7 +29,6 @@ try:
     from .vietnam_terms import (
         QuerySpec,
         adapt_post,
-        build_query_plan,
         merge_adapted_post,
     )
 except ImportError:
@@ -38,7 +37,6 @@ except ImportError:
     from vietnam_terms import (
         QuerySpec,
         adapt_post,
-        build_query_plan,
         merge_adapted_post,
     )
 
@@ -90,15 +88,10 @@ def ensure_public_access(page, response):
         )
 
 
-def expanded_query_plan(seeds):
-    plan, seen = [], set()
-    for seed in seeds:
-        for spec in build_query_plan(seed):
-            key = " ".join(spec.query.casefold().split())
-            if key not in seen:
-                seen.add(key)
-                plan.append(spec)
-    return plan
+def expanded_query_plan(seeds, **options):
+    from dsp_collector.sources.crawler.threads.discovery import build_discovery_plan
+
+    return build_discovery_plan(seeds, **options)
 
 
 def publication_range(posts):
@@ -255,6 +248,8 @@ def _candidate_post_count(search_results: dict[str, Any]) -> int:
 def parse_posts(
     html: str,
     limit: int,
+    *,
+    evidence: dict | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
     if limit < 1:
         raise ValueError("limit must be >= 1")
@@ -271,6 +266,7 @@ def parse_posts(
     posts: list[dict[str, Any]] = []
     seen_ids: set[str] = set()
 
+    source_posts = []
     for edge in search_results.get("edges") or []:
         if not isinstance(edge, dict):
             continue
@@ -279,6 +275,7 @@ def parse_posts(
         if post is None:
             continue
 
+        source_posts.append(post)
         post_id = post.get("id")
         if post_id is not None:
             post_id = str(post_id)
@@ -288,10 +285,17 @@ def parse_posts(
 
         posts.append(post)
 
-        if len(posts) >= limit:
-            break
-
-    return posts, search_results.get("page_info")
+    if evidence is not None:
+        evidence.update(
+            search_results=search_results,
+            source_exposure_count=len(source_posts),
+            within_page_duplicates_count=len(source_posts) - len(posts),
+            parser_deferred_count=max(0, len(posts) - limit),
+            source_record_ids=[
+                str(p["id"]) for p in source_posts if p.get("id") is not None
+            ],
+        )
+    return posts[:limit], search_results.get("page_info")
 
 
 def _fetch_search_html(
@@ -349,11 +353,21 @@ def _collect_for_query(
         sort=sort,
         timeout_ms=timeout_ms,
     )
-    posts, page_info = parse_posts(
-        html=html,
-        limit=raw_limit,
-    )
+    evidence = {}
+    posts, page_info = parse_posts(html=html, limit=raw_limit, evidence=evidence)
+    page.last_search_evidence = evidence
     return posts, page_info, landed_url
+
+
+def _collect_public_page(page, *, url, query_spec, sort, timeout_ms, raw_limit):
+    response = page.goto(url, wait_until="domcontentloaded", timeout=timeout_ms)
+    ensure_public_access(page, response)
+    page.wait_for_timeout(2000)
+    html = page.evaluate("document.documentElement.innerHTML")
+    evidence = {}
+    posts, page_info = parse_posts(html, raw_limit, evidence=evidence)
+    page.last_search_evidence = evidence
+    return posts, page_info, page.url
 
 
 def _fetch_post_detail(
@@ -457,302 +471,698 @@ def crawl_threads_posts(
     status_tracker: CrawlerStatusTracker | None = None,
     query_seeds: list[str] | None = None,
     max_results_per_query: int = 30,
-    detail_limit: int | None = None,
+    detail_limit: int | None = 2,
     query_delay: float = 0.75,
     retries: int = 1,
+    max_queries: int | None = None,
+    max_requests: int = 32,
+    max_pages_per_query: int = 1,
+    max_duration_seconds: float | None = 300,
+    query_categories: list[str] | None = None,
+    geo_keys: list[str] | None = None,
+    include_local: bool = False,
+    max_geo_aliases: int | None = 2,
+    expand_subject_variants: bool = True,
+    published_after: str | None = None,
+    published_before: str | None = None,
+    lookback_days: int | None = None,
+    checkpoint_path: str | Path | None = None,
+    resume: bool = True,
+    run_id: str | None = None,
 ) -> dict[str, Any]:
-    """Execute the domain query plan and collect adapted posts."""
-    if limit < 1:
-        raise ValueError("limit must be >= 1")
-    if per_query_cap < 1:
-        raise ValueError("per_query_cap must be >= 1")
+    """Discover through public pages with bounded requests and page checkpoints.
 
-    if (
-        max_results_per_query < 1
-        or query_delay < 0
-        or retries < 0
-        or (detail_limit is not None and detail_limit < 0)
-    ):
-        raise ValueError("Invalid collection bounds")
-    started_at = datetime.now(UTC).isoformat()
-    query_plan = expanded_query_plan(query_seeds or [query])
+    A checkpoint continues a finite survey across collection runs. Already
+    exported records are not re-labelled as fresh observations. An interrupted
+    unexported run resumes with its original identity and captured timestamps.
+    Complete surveys reset on the next run, allowing legitimate later snapshots.
+    """
+    import fcntl
+    from contextlib import nullcontext
+    from dataclasses import asdict
+    from uuid import uuid4
 
-    _status_update(
-        status_tracker,
-        "start",
-        seed_query=query,
-        sort=sort,
-        target_count=limit,
-        query_plan_count=len(query_plan),
-        metadata={
-            "per_query_cap": per_query_cap,
-            "headless": headless,
-        },
+    from dsp_collector.sources.crawler.threads.discovery import (
+        PLANNER_VERSION,
+        BudgetExhausted,
+        PublicPage,
+        RequestBudget,
+        fingerprint,
+        public_next_url,
+        query_id,
+        rejection_reasons,
+        save_checkpoint,
+        window_bounds,
     )
 
-    collected: dict[str, dict[str, Any]] = {}
-    query_runs: list[dict[str, Any]] = []
-    discovered_ids = set()
-    detail_attempts = 0
-    consecutive_errors = 0
-    stopping_reason = "query_plan_exhausted"
-
-    with sync_playwright() as playwright:
-        browser = playwright.chromium.launch(headless=headless)
-        search_page = browser.new_page(
-            viewport={"width": 1440, "height": 1000},
-            locale="vi-VN",
+    for name, value in (
+        ("limit", limit),
+        ("per_query_cap", per_query_cap),
+        ("timeout_ms", timeout_ms),
+        ("max_results_per_query", max_results_per_query),
+        ("max_requests", max_requests),
+        ("max_pages_per_query", max_pages_per_query),
+    ):
+        if type(value) is not int or value <= 0:
+            raise ValueError(f"{name} must be a positive integer")
+    if max_queries is not None and (type(max_queries) is not int or max_queries <= 0):
+        raise ValueError("max_queries must be positive or null")
+    if (
+        type(retries) is not int
+        or retries < 0
+        or query_delay < 0
+        or detail_limit is not None
+        and (type(detail_limit) is not int or detail_limit < 0)
+    ):
+        raise ValueError("invalid retry, pacing or detail bounds")
+    if max_duration_seconds is not None and max_duration_seconds <= 0:
+        raise ValueError("max_duration_seconds must be positive or null")
+    if sort not in VALID_SORTS:
+        raise ValueError("unsupported Threads sort")
+    if run_id is not None and (
+        not isinstance(run_id, str)
+        or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,127}", run_id)
+    ):
+        raise ValueError("run_id must be a safe collection identifier")
+    seeds = query_seeds if query_seeds is not None else [query]
+    planner_options = {
+        "categories": query_categories,
+        "geo_keys": geo_keys,
+        "include_local": include_local,
+        "max_geo_aliases": max_geo_aliases,
+        "expand_subject_variants": expand_subject_variants,
+    }
+    plan = expanded_query_plan(seeds, **planner_options)
+    config_key = fingerprint(
+        [
+            PLANNER_VERSION,
+            [asdict(p) for p in plan],
+            sort,
+            per_query_cap,
+            max_results_per_query,
+            max_pages_per_query,
+            published_after,
+            published_before,
+            lookback_days,
+        ]
+    )
+    path = Path(checkpoint_path) if checkpoint_path else None
+    if path:
+        path.parent.mkdir(parents=True, exist_ok=True)
+    lock = path.with_suffix(path.suffix + ".lock").open("a") if path else nullcontext()
+    with lock as held:
+        if path:
+            fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        state = (
+            json.loads(path.read_text()) if path and path.exists() and resume else None
         )
-        detail_page = browser.new_page(
-            viewport={"width": 1440, "height": 1000},
-            locale="vi-VN",
-        )
-
-        try:
-            for query_spec in query_plan:
-                if len(collected) >= limit:
-                    stopping_reason = "result_limit"
-                    break
-                query_started = time.monotonic()
-
-                _status_update(
-                    status_tracker,
-                    "query_started",
-                    query=query_spec.query,
-                    kind=query_spec.kind,
-                    geo_name=query_spec.geo_name,
+        if state and state.get("config_key") != config_key:
+            raise ValueError(
+                "discovery checkpoint configuration changed; use a new checkpoint"
+            )
+        if state and not state.get("exported") and run_id and run_id != state["run_id"]:
+            raise ValueError(
+                "pending discovery checkpoint belongs to a different collection run"
+            )
+        if (
+            state
+            and state.get("exported")
+            and (run_id == state["run_id"] or not state.get("artifact_committed"))
+        ):
+            if (
+                run_id
+                and run_id != state["run_id"]
+                and not state.get("artifact_committed")
+            ):
+                raise ValueError(
+                    "source artifact for the previous run has not been acknowledged"
                 )
+            _status_update(
+                status_tracker,
+                "start",
+                seed_query=query,
+                sort=sort,
+                target_count=limit,
+                query_plan_count=len(plan),
+                run_id=state["run_id"],
+                metadata={"source_checkpoint_replay": True},
+            )
+            return state["envelope"]
+        fresh_survey = (
+            not state or state.get("exported") and state["query_index"] >= len(plan)
+        )
+        now = datetime.now(UTC)
+        if fresh_survey:
+            lower, upper = window_bounds(
+                published_after, published_before, lookback_days, now
+            )
+            state = {
+                "schema_version": "1",
+                "planner_version": PLANNER_VERSION,
+                "config_key": config_key,
+                "survey_id": uuid4().hex,
+                "query_index": 0,
+                "query_progress": None,
+                "seen_ids": [],
+                "accepted_ids": [],
+                "bounds": [
+                    lower.isoformat() if lower else None,
+                    upper.isoformat() if upper else None,
+                ],
+                "exported": True,
+            }
+        if state.get("exported"):
+            state.update(
+                run_id=run_id or uuid4().hex,
+                started_at=now.isoformat(),
+                posts={},
+                query_runs=[],
+                search_evidence=[],
+                detail_attempts=0,
+                exported=False,
+                artifact_committed=False,
+            )
+            state.pop("envelope", None)
+        identity = state["run_id"]
+        lower, upper = (
+            datetime.fromisoformat(v) if v else None for v in state["bounds"]
+        )
+        _status_update(
+            status_tracker,
+            "start",
+            seed_query=query,
+            sort=sort,
+            target_count=limit,
+            query_plan_count=len(plan),
+            run_id=identity,
+            metadata={
+                "planner_version": PLANNER_VERSION,
+                "survey_id": state["survey_id"],
+                "max_queries": max_queries,
+                "max_requests": max_requests,
+                "per_query_cap": per_query_cap,
+                "max_pages_per_query": max_pages_per_query,
+            },
+        )
+        collected = state["posts"]
+        seen = set(state["seen_ids"])
+        accepted_ids = set(state["accepted_ids"])
+        budget = RequestBudget(max_requests, max_duration_seconds)
+        query_attempts = 0
+        consecutive_errors = 0
+        stopping_reason = "query_plan_exhausted"
 
-                try:
-                    for attempt in range(retries + 1):
-                        try:
-                            raw_posts, page_info, landed_url = _collect_for_query(
-                                search_page,
-                                query_spec=query_spec,
-                                sort=sort,
-                                timeout_ms=timeout_ms,
-                                raw_limit=max_results_per_query,
-                            )
-                            break
-                        except ThreadsAccessBlocked:
-                            raise
-                        except ThreadsCrawlerError:
-                            if attempt == retries:
-                                raise
-                            search_page.wait_for_timeout(
-                                int((2**attempt + random.uniform(0, 0.5)) * 1000)
-                            )
-                    consecutive_errors = 0
-                except ThreadsAccessBlocked as exc:
-                    query_runs.append(
-                        {
-                            "query": query_spec.query,
-                            "kind": query_spec.kind,
-                            "geo_name": query_spec.geo_name,
-                            "status": "error",
-                            "error": str(exc),
-                            "blocked": True,
-                        }
-                    )
-                    stopping_reason = "access_blocked"
-                    break
-                except ThreadsCrawlerError as exc:
-                    print(
-                        f"[threads-crawler] query failed "
-                        f"{query_spec.query!r}: {exc}",
-                        flush=True,
-                    )
-                    query_runs.append(
-                        {
-                            "query": query_spec.query,
-                            "kind": query_spec.kind,
-                            "geo_name": query_spec.geo_name,
-                            "status": "error",
-                            "error": str(exc),
-                        }
-                    )
+        def persist():
+            state.update(
+                posts=collected,
+                seen_ids=sorted(seen),
+                accepted_ids=sorted(accepted_ids),
+            )
+            if path:
+                save_checkpoint(path, state)
+
+        persist()
+        with sync_playwright() as playwright:
+            browser = playwright.chromium.launch(headless=headless)
+            search_page = PublicPage(
+                browser.new_page(
+                    viewport={"width": 1440, "height": 1000}, locale="vi-VN"
+                ),
+                budget,
+            )
+            detail_page = PublicPage(
+                browser.new_page(
+                    viewport={"width": 1440, "height": 1000}, locale="vi-VN"
+                ),
+                budget,
+            )
+            try:
+                while state["query_index"] < len(plan):
+                    if len(collected) >= limit:
+                        stopping_reason = "result_limit"
+                        break
+                    if max_queries is not None and query_attempts >= max_queries:
+                        stopping_reason = "query_budget"
+                        break
+                    try:
+                        budget.check()
+                    except BudgetExhausted as exc:
+                        stopping_reason = str(exc)
+                        break
+                    spec = plan[state["query_index"]]
+                    qid = query_id(spec.query)
+                    query_attempts += 1
+                    started = time.monotonic()
+                    requests_before = budget.used
+                    progress = state.get("query_progress") or {
+                        "page": 1,
+                        "next_url": None,
+                        "fingerprints": [],
+                        "returned": 0,
+                        "accepted": 0,
+                    }
+                    qrun = {
+                        "query": spec.query,
+                        "query_id": qid,
+                        "query_category": spec.query_category,
+                        "kind": spec.kind,
+                        "geo_name": spec.geo_name,
+                        "status": "ok",
+                        "blocked": False,
+                        "raw_count": 0,
+                        "source_exposure_count": 0,
+                        "accepted_count": 0,
+                        "accepted_duplicates_count": 0,
+                        "relevance_rejected_count": 0,
+                        "rejected_count": 0,
+                        "rejection_reasons": {},
+                        "rejection_reason_matches": {},
+                        "unique_discovered_count": 0,
+                        "duplicate_discovered_count": 0,
+                        "within_page_duplicates_count": 0,
+                        "parser_deferred_count": 0,
+                        "not_evaluated_count": 0,
+                        "detail_success_count": 0,
+                        "detail_failed_count": 0,
+                        "detail_skipped_count": 0,
+                        "pages": [],
+                        "requests": 0,
+                    }
+                    state["query_runs"].append(qrun)
                     _status_update(
                         status_tracker,
-                        "query_failed",
-                        query=query_spec.query,
-                        kind=query_spec.kind,
-                        geo_name=query_spec.geo_name,
-                        error=exc,
+                        "query_started",
+                        query=spec.query,
+                        kind=spec.kind,
+                        geo_name=spec.geo_name,
                     )
-                    consecutive_errors += 1
+                    done = False
+                    while not done:
+                        try:
+                            for attempt in range(retries + 1):
+                                try:
+                                    budget.check()
+                                    search_page.last_search_evidence = None
+                                    if progress.get("next_url"):
+                                        raw_posts, page_info, landed_url = (
+                                            _collect_public_page(
+                                                search_page,
+                                                url=progress["next_url"],
+                                                query_spec=spec,
+                                                sort=sort,
+                                                timeout_ms=timeout_ms,
+                                                raw_limit=max_results_per_query
+                                                - progress["returned"],
+                                            )
+                                        )
+                                    else:
+                                        raw_posts, page_info, landed_url = (
+                                            _collect_for_query(
+                                                search_page,
+                                                query_spec=spec,
+                                                sort=sort,
+                                                timeout_ms=timeout_ms,
+                                                raw_limit=max_results_per_query
+                                                - progress["returned"],
+                                            )
+                                        )
+                                    break
+                                except ThreadsAccessBlocked:
+                                    raise
+                                except ThreadsCrawlerError:
+                                    if attempt == retries:
+                                        raise
+                                    search_page.wait_for_timeout(int(2**attempt * 1000))
+                            captured = datetime.now(UTC).isoformat()
+                            native = search_page.last_search_evidence
+                            if not isinstance(native, dict):
+                                native = {
+                                    "source_exposure_count": len(raw_posts),
+                                    "within_page_duplicates_count": 0,
+                                    "parser_deferred_count": 0,
+                                    "source_record_ids": [
+                                        str(p["id"])
+                                        for p in raw_posts
+                                        if p.get("id") is not None
+                                    ],
+                                    "records": raw_posts,
+                                }
+                            page_fingerprint = fingerprint(
+                                native.get(
+                                    "search_results", native.get("records", raw_posts)
+                                )
+                            )
+                            if page_fingerprint in progress["fingerprints"]:
+                                qrun["pagination_stop"] = "repeated_public_page"
+                                done = True
+                                break
+                            progress["fingerprints"].append(page_fingerprint)
+                            evidence = {
+                                "query_id": qid,
+                                "query": spec.query,
+                                "source_run_id": identity,
+                                "observed_at": captured,
+                                "page": progress["page"],
+                                "landed_url": landed_url,
+                                "page_info": page_info,
+                                "native": native,
+                                "decisions": [],
+                            }
+                            state["search_evidence"].append(evidence)
+                            page_ids = set(native["source_record_ids"])
+                            qrun["unique_discovered_count"] += len(page_ids - seen)
+                            qrun["duplicate_discovered_count"] += len(page_ids & seen)
+                            seen.update(page_ids)
+                            qrun["raw_count"] += len(raw_posts)
+                            qrun["source_exposure_count"] += native[
+                                "source_exposure_count"
+                            ]
+                            qrun["within_page_duplicates_count"] += native[
+                                "within_page_duplicates_count"
+                            ]
+                            qrun["parser_deferred_count"] += native[
+                                "parser_deferred_count"
+                            ]
+                            progress["returned"] += len(raw_posts)
+                            qrun["landed_url"] = landed_url
+                            qrun["page_info"] = page_info
+                            qrun["sort_preserved"] = sort != "recent" or parse_qs(
+                                urlsplit(landed_url).query
+                            ).get("filter") == ["recent"]
+                            qrun["pages"].append(
+                                {
+                                    "page": progress["page"],
+                                    "raw_count": len(raw_posts),
+                                    "source_exposure_count": native[
+                                        "source_exposure_count"
+                                    ],
+                                    "page_info": page_info,
+                                    **publication_range(raw_posts),
+                                }
+                            )
+                            for index, raw in enumerate(raw_posts):
+                                sid = (
+                                    str(raw["id"])
+                                    if raw.get("id") is not None
+                                    else None
+                                )
+                                if (
+                                    len(collected) >= limit
+                                    or progress["accepted"] >= per_query_cap
+                                ):
+                                    reason = (
+                                        "result_limit"
+                                        if len(collected) >= limit
+                                        else "per_query_cap"
+                                    )
+                                    evidence["decisions"].append(
+                                        {
+                                            "source_record_id": sid,
+                                            "outcome": "not_evaluated",
+                                            "reason": reason,
+                                        }
+                                    )
+                                    qrun["not_evaluated_count"] += 1
+                                    continue
+                                reasons = rejection_reasons(
+                                    raw,
+                                    spec,
+                                    published_after=lower,
+                                    published_before=upper,
+                                )
+                                if reasons:
+                                    qrun["rejected_count"] += 1
+                                    qrun["relevance_rejected_count"] += int(
+                                        any(
+                                            r
+                                            in (
+                                                "missing_pickleball_subject",
+                                                "missing_market_topic",
+                                                "missing_vietnam_evidence",
+                                            )
+                                            for r in reasons
+                                        )
+                                    )
+                                    qrun["rejection_reasons"][reasons[0]] = (
+                                        qrun["rejection_reasons"].get(reasons[0], 0) + 1
+                                    )
+                                    for r in reasons:
+                                        qrun["rejection_reason_matches"][r] = (
+                                            qrun["rejection_reason_matches"].get(r, 0)
+                                            + 1
+                                        )
+                                    evidence["decisions"].append(
+                                        {
+                                            "source_record_id": sid,
+                                            "outcome": "rejected",
+                                            "reasons": reasons,
+                                        }
+                                    )
+                                    continue
+                                adapted = adapt_post(raw, query_spec=spec)
+                                if sid in accepted_ids:
+                                    qrun["accepted_duplicates_count"] += 1
+                                    if sid in collected:
+                                        merge_adapted_post(collected[sid], adapted)
+                                    evidence["decisions"].append(
+                                        {
+                                            "source_record_id": sid,
+                                            "outcome": "accepted_duplicate",
+                                        }
+                                    )
+                                    continue
+                                adapted["_observed_at"] = captured
+                                if (
+                                    detail_limit is None
+                                    or state["detail_attempts"] < detail_limit
+                                ):
+                                    try:
+                                        budget.check()
+                                        state["detail_attempts"] += 1
+                                        detail = _fetch_post_detail(
+                                            detail_page,
+                                            post=adapted,
+                                            timeout_ms=timeout_ms,
+                                        )
+                                        _assert_post_detail_identity(adapted, detail)
+                                        adapted.update(
+                                            detail=detail, detail_status="ok"
+                                        )
+                                        qrun["detail_success_count"] += 1
+                                    except ThreadsAccessBlocked as exc:
+                                        adapted.update(
+                                            detail=None,
+                                            detail_status="error",
+                                            detail_error=str(exc),
+                                        )
+                                        qrun.update(
+                                            status="error", blocked=True, error=str(exc)
+                                        )
+                                        qrun["detail_failed_count"] += 1
+                                        stopping_reason = "access_blocked"
+                                    except BudgetExhausted as exc:
+                                        adapted.update(detail=None, detail_status=None)
+                                        qrun["detail_skipped_count"] += 1
+                                        stopping_reason = str(exc)
+                                    except ThreadsCrawlerError as exc:
+                                        adapted.update(
+                                            detail=None,
+                                            detail_status="error",
+                                            detail_error=str(exc),
+                                        )
+                                        qrun["detail_failed_count"] += 1
+                                else:
+                                    adapted.update(detail=None, detail_status=None)
+                                    qrun["detail_skipped_count"] += 1
+                                collected[sid] = adapted
+                                accepted_ids.add(sid)
+                                qrun["accepted_count"] += 1
+                                progress["accepted"] += 1
+                                evidence["decisions"].append(
+                                    {"source_record_id": sid, "outcome": "accepted"}
+                                )
+                                if qrun["blocked"]:
+                                    remaining = len(raw_posts) - index - 1
+                                    qrun["not_evaluated_count"] += remaining
+                                    evidence["decisions"].extend(
+                                        {
+                                            "source_record_id": str(p.get("id")),
+                                            "outcome": "not_evaluated",
+                                            "reason": "access_blocked",
+                                        }
+                                        for p in raw_posts[index + 1 :]
+                                    )
+                                    break
+                            if qrun["blocked"]:
+                                done = True
+                            elif (
+                                len(collected) >= limit
+                                or progress["accepted"] >= per_query_cap
+                            ):
+                                qrun["pagination_stop"] = (
+                                    "result_limit"
+                                    if len(collected) >= limit
+                                    else "per_query_cap"
+                                )
+                                done = True
+                            elif progress["returned"] >= max_results_per_query:
+                                qrun["pagination_stop"] = "per_query_result_limit"
+                                done = True
+                            elif progress["page"] >= max_pages_per_query:
+                                qrun["pagination_stop"] = "page_budget"
+                                done = True
+                            elif not page_info or not page_info.get("has_next_page"):
+                                qrun["pagination_stop"] = "no_public_continuation"
+                                done = True
+                            else:
+                                target = public_next_url(search_page, spec.query)
+                                if not target:
+                                    qrun["pagination_stop"] = (
+                                        "cursor_without_supported_public_navigation"
+                                    )
+                                    done = True
+                                elif target == landed_url:
+                                    qrun["pagination_stop"] = "repeated_public_link"
+                                    done = True
+                                else:
+                                    progress.update(
+                                        page=progress["page"] + 1, next_url=target
+                                    )
+                            state["query_progress"] = progress
+                            persist()
+                        except BudgetExhausted as exc:
+                            stopping_reason = str(exc)
+                            qrun["status"] = "partial"
+                            qrun["pagination_stop"] = stopping_reason
+                            break
+                        except ThreadsAccessBlocked as exc:
+                            stopping_reason = "access_blocked"
+                            qrun.update(status="error", blocked=True, error=str(exc))
+                            break
+                        except ThreadsCrawlerError as exc:
+                            qrun.update(status="error", error=str(exc))
+                            done = True
+                            consecutive_errors += 1
+                            break
+                    qrun.update(
+                        duration_seconds=time.monotonic() - started,
+                        requests=budget.used - requests_before,
+                    )
+                    if done and not qrun["blocked"]:
+                        state["query_index"] += 1
+                        state["query_progress"] = None
+                    if qrun["status"] == "error":
+                        _status_update(
+                            status_tracker,
+                            "query_failed",
+                            query=spec.query,
+                            kind=spec.kind,
+                            geo_name=spec.geo_name,
+                            error=qrun.get("error", "query failed"),
+                        )
+                    else:
+                        consecutive_errors = 0
+                        _status_update(
+                            status_tracker,
+                            "query_succeeded",
+                            query=spec.query,
+                            kind=spec.kind,
+                            geo_name=spec.geo_name,
+                            raw_count=qrun["source_exposure_count"],
+                            accepted_count=qrun["accepted_count"],
+                            total_collected=len(collected),
+                            landed_url=qrun.get("landed_url"),
+                        )
+                    persist()
+                    if stopping_reason in (
+                        "access_blocked",
+                        "request_budget",
+                        "duration_budget",
+                    ):
+                        break
                     if consecutive_errors >= 3:
                         stopping_reason = "consecutive_source_errors"
                         break
                     search_page.wait_for_timeout(int(query_delay * 1000))
-                    continue
-
-                accepted_this_query = 0
-                detail_success_count = 0
-                detail_failed_count = 0
-                detail_skipped_count = 0
-                eligible_duplicates = 0
-                irrelevant_count = 0
-                query_ids = {str(p["id"]) for p in raw_posts if p.get("id") is not None}
-                newly_discovered = len(query_ids - discovered_ids)
-                discovered_ids.update(query_ids)
-                detail_seconds = 0
-                detail_blocked = False
-
-                for raw_post in raw_posts:
-                    adapted = adapt_post(
-                        raw_post,
-                        query_spec=query_spec,
-                    )
-                    if adapted is None:
-                        irrelevant_count += 1
-                        continue
-
-                    post_id = adapted.get("id")
-                    if post_id is None:
-                        continue
-
-                    post_id = str(post_id)
-
-                    if post_id in collected:
-                        eligible_duplicates += 1
-                        merge_adapted_post(
-                            collected[post_id],
-                            adapted,
-                        )
-                        continue
-
-                    if detail_limit is None or detail_attempts < detail_limit:
-                        detail_started = time.monotonic()
-                        detail_attempts += 1
-                        try:
-                            detail = _fetch_post_detail(
-                                detail_page, post=adapted, timeout_ms=timeout_ms
-                            )
-                            _assert_post_detail_identity(adapted, detail)
-                            adapted["detail"] = detail
-                            adapted["detail_status"] = "ok"
-                            detail_success_count += 1
-                        except ThreadsAccessBlocked as exc:
-                            adapted.update(
-                                detail=None,
-                                detail_status="error",
-                                detail_error=str(exc),
-                            )
-                            detail_failed_count += 1
-                            detail_blocked = True
-                            stopping_reason = "access_blocked"
-                        except ThreadsCrawlerError as exc:
-                            adapted.update(
-                                detail=None,
-                                detail_status="error",
-                                detail_error=str(exc),
-                            )
-                            detail_failed_count += 1
-                        detail_seconds += time.monotonic() - detail_started
-                    else:
-                        adapted.update(detail=None, detail_status=None)
-                        detail_skipped_count += 1
-
-                    collected[post_id] = adapted
-                    accepted_this_query += 1
-
-                    if detail_blocked:
-                        break
-
-                    if accepted_this_query >= per_query_cap:
-                        break
-                    if len(collected) >= limit:
-                        break
-
-                query_runs.append(
-                    {
-                        "query": query_spec.query,
-                        "kind": query_spec.kind,
-                        "geo_name": query_spec.geo_name,
-                        "status": "error" if detail_blocked else "ok",
-                        "blocked": detail_blocked,
-                        "landed_url": landed_url,
-                        "raw_count": len(raw_posts),
-                        "accepted_count": accepted_this_query,
-                        "detail_success_count": detail_success_count,
-                        "detail_failed_count": detail_failed_count,
-                        "detail_skipped_count": detail_skipped_count,
-                        "unique_discovered_count": newly_discovered,
-                        "duplicate_discovered_count": len(query_ids) - newly_discovered,
-                        "accepted_duplicates_count": eligible_duplicates,
-                        "relevance_rejected_count": irrelevant_count,
-                        "duration_seconds": time.monotonic() - query_started,
-                        "detail_seconds": detail_seconds,
-                        **publication_range(raw_posts),
-                        "pages": [
-                            {
-                                "page": 1,
-                                "raw_count": len(raw_posts),
-                                "page_info": page_info,
-                            }
-                        ],
-                        "pagination_stop": (
-                            "no_public_continuation"
-                            if not page_info or not page_info.get("has_next_page")
-                            else "cursor_without_supported_public_navigation"
-                        ),
-                        "page_info": page_info,
-                    }
-                )
-
-                _status_update(
-                    status_tracker,
-                    "query_succeeded",
-                    query=query_spec.query,
-                    kind=query_spec.kind,
-                    geo_name=query_spec.geo_name,
-                    raw_count=len(raw_posts),
-                    accepted_count=accepted_this_query,
-                    total_collected=len(collected),
-                    landed_url=landed_url,
-                )
-
-                print(
-                    f"[threads-crawler] query={query_spec.query!r} "
-                    f"raw={len(raw_posts)} accepted={accepted_this_query} "
-                    f"detail_ok={detail_success_count} "
-                    f"detail_failed={detail_failed_count} "
-                    f"total={len(collected)}/{limit}",
-                    flush=True,
-                )
-
-                search_page.wait_for_timeout(
-                    int((query_delay + random.uniform(0, 0.25)) * 1000)
-                )
-                if detail_blocked:
-                    break
-        finally:
-            browser.close()
-
-    posts = list(collected.values())[:limit]
-
-    if not posts:
-        if stopping_reason == "access_blocked":
-            raise ThreadsAccessBlocked(
-                query_runs[-1].get("error", "Public collection was blocked")
+            finally:
+                browser.close()
+        if len(collected) >= limit and state["query_index"] < len(plan):
+            stopping_reason = "result_limit"
+        runs = state["query_runs"]
+        totals = {
+            name: sum(r.get(name, 0) for r in runs)
+            for name in (
+                "source_exposure_count",
+                "raw_count",
+                "accepted_count",
+                "accepted_duplicates_count",
+                "rejected_count",
+                "duplicate_discovered_count",
+                "unique_discovered_count",
+                "within_page_duplicates_count",
+                "parser_deferred_count",
+                "not_evaluated_count",
+                "detail_failed_count",
             )
-        raise ThreadsCrawlerError(
-            "No posts matched the configured Vietnam relevance policy"
+        }
+        has_more = state["query_index"] < len(plan)
+        coverage = dict(
+            planner_version=PLANNER_VERSION,
+            survey_id=state["survey_id"],
+            planned_queries=len(plan),
+            attempted_queries=len(runs),
+            successful_queries=sum(r["status"] == "ok" for r in runs),
+            pagination_limited_queries=sum(
+                r.get("pagination_stop")
+                in {
+                    "page_budget",
+                    "per_query_result_limit",
+                    "per_query_cap",
+                    "cursor_without_supported_public_navigation",
+                    "repeated_public_page",
+                    "repeated_public_link",
+                }
+                for r in runs
+            ),
+            failed_queries=sum(r["status"] == "error" for r in runs),
+            partial_queries=sum(r["status"] == "partial" for r in runs),
+            queries_attempted_this_invocation=query_attempts,
+            completed_query_cursor=state["query_index"],
+            remaining_queries=len(plan) - state["query_index"],
+            requests_this_invocation=budget.used,
+            request_unit="public_page_navigation_or_reload",
+            max_requests=max_requests,
+            max_queries=max_queries,
+            max_pages_per_query=max_pages_per_query,
+            max_results_per_query=max_results_per_query,
+            limit=limit,
+            per_query_cap=per_query_cap,
+            published_after=state["bounds"][0],
+            published_before=state["bounds"][1],
+            window_enforcement="local_source_timestamp_filter",
+            has_more=has_more,
+            **totals,
         )
-
-    return {
-        "source": "threads",
-        "seed_query": query,
-        "sort": sort,
-        "started_at": started_at,
-        "collected_at": datetime.now(UTC).isoformat(),
-        "count": len(posts),
-        "query_runs": query_runs,
-        "posts": posts,
-        "collection_stopping_reason": stopping_reason,
-        "discovered_unique_count": len(discovered_ids),
-        "query_seeds": query_seeds or [query],
-    }
+        envelope = {
+            "source": "threads",
+            "seed_query": query,
+            "sort": sort,
+            "run_id": identity,
+            "started_at": state["started_at"],
+            "collected_at": datetime.now(UTC).isoformat(),
+            "count": len(collected),
+            "query_runs": runs,
+            "posts": list(collected.values()),
+            "collection_stopping_reason": stopping_reason,
+            "discovered_unique_count": len(seen),
+            "query_seeds": seeds,
+            "query_plan": [{**asdict(p), "query_id": query_id(p.query)} for p in plan],
+            "discovery": coverage,
+            "search_evidence": state["search_evidence"],
+        }
+        state.update(exported=True, envelope=envelope)
+        persist()
+        return envelope
 
 
 def save_json(payload: dict[str, Any], output_path: Path) -> Path:
@@ -786,6 +1196,19 @@ def _parse_args() -> argparse.Namespace:
         type=Path,
         default=default_output_path(),
     )
+    parser.add_argument("--discovery-config", type=Path)
+    parser.add_argument("--max-queries", type=int)
+    parser.add_argument("--max-requests", type=int)
+    parser.add_argument("--max-pages-per-query", type=int)
+    parser.add_argument("--published-after")
+    parser.add_argument("--published-before")
+    parser.add_argument("--lookback-days", type=int)
+    parser.add_argument("--checkpoint", type=Path)
+    parser.add_argument(
+        "--fresh",
+        action="store_true",
+        help="Start a fresh discovery survey instead of resuming.",
+    )
     parser.add_argument("--headed", action="store_true")
     parser.add_argument(
         "--timeout-ms",
@@ -793,6 +1216,37 @@ def _parse_args() -> argparse.Namespace:
         default=DEFAULT_TIMEOUT_MS,
     )
     return parser.parse_args()
+
+
+def discovery_options(args):
+    options = {}
+    if args.discovery_config:
+        config = json.loads(args.discovery_config.read_text())
+        options = config.get("threads", config)
+        if not isinstance(options, dict):
+            raise ValueError("discovery config must be an object")
+        options = {
+            k: v
+            for k, v in options.items()
+            if k
+            not in {"query", "limit", "sort", "per_query_cap", "timeout_ms", "headless"}
+        }
+    for name in (
+        "max_queries",
+        "max_requests",
+        "max_pages_per_query",
+        "published_after",
+        "published_before",
+        "lookback_days",
+    ):
+        value = getattr(args, name)
+        if value is not None:
+            options[name] = value
+    if args.checkpoint:
+        options["checkpoint_path"] = args.checkpoint
+    if args.fresh:
+        options["resume"] = False
+    return options
 
 
 def main() -> int:
@@ -825,8 +1279,16 @@ def main() -> int:
             timeout_ms=args.timeout_ms,
             per_query_cap=args.per_query_cap,
             status_tracker=status_tracker,
+            **discovery_options(args),
         )
         output_path = save_json(payload, args.output)
+        options = discovery_options(args)
+        if options.get("checkpoint_path"):
+            from dsp_collector.sources.crawler.threads.discovery import (
+                acknowledge_checkpoint,
+            )
+
+            acknowledge_checkpoint(options["checkpoint_path"], payload["run_id"])
         _status_update(
             status_tracker,
             "succeed",
