@@ -388,3 +388,21 @@ collect-live-eda:
 
 report-live-eda:
 	@$(SPARK_PYTHON) scripts/report_live_dataset.py --export
+
+.PHONY: spark-bronze-backfill spark-bronze-youtube
+spark-bronze-backfill:
+	$(SPARK_PYTHON) -m dsp_spark.jobs.batch.ingest_bronze --backfill
+
+spark-bronze-youtube:
+	$(SPARK_PYTHON) -m dsp_spark.jobs.batch.ingest_bronze --source youtube --artifact "$(SPARK_ARTIFACT)"
+
+.PHONY: spark-bronze-social-silver spark-bronze-retention-plan
+spark-bronze-social-silver:
+	$(SPARK_PYTHON) -m dsp_spark.jobs.batch.ingest_social_bronze
+
+spark-bronze-retention-plan:
+	$(SPARK_PYTHON) -m dsp_spark.jobs.batch.bronze_retention
+
+.PHONY: spark-bronze-status
+spark-bronze-status:
+	$(SPARK_PYTHON) -m dsp_spark.jobs.batch.ingest_bronze --status-file "$(SPARK_STATUS_FILE)"

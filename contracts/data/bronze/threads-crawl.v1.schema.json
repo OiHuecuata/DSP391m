@@ -20,6 +20,11 @@
       "format": "date-time",
       "description": "Timezone-aware crawler completion time, retained verbatim for replay and passed unchanged to each normalizer call."
     },
+    "discovery": {"type": "object", "additionalProperties": true, "description": "Planner budgets and query coverage; exposures are not unique entities."},
+    "query_plan": {"type": "array", "items": {"type": "object"}, "description": "Legacy envelopes contain the entire candidate plan. Planner v3 stores attempted queries here and retains the reconstructable universe in query_universe."},
+    "query_universe": {"type": "object", "additionalProperties": true, "description": "Versioned geography/vocabulary snapshots and plan identity; candidate counts are not executed searches."},
+    "acquisition": {"type": "object", "additionalProperties": true, "description": "Acquisition lifecycle and survey completeness, independent of processing/ingestion outcomes."},
+    "search_evidence": {"type": "array", "items": {"type": "object"}, "description": "Public source data and admission decisions with query/run/page/capture-time lineage, including rejected and deferred records."},
     "count": {
       "type": "integer",
       "minimum": 0,
@@ -33,7 +38,7 @@
     "source_id": {"type": ["string", "integer", "null"]},
     "counter": {
       "type": ["integer", "null"],
-      "description": "Crawler-provided engagement value. Search may already default missing source counters to zero; Bronze does not change that meaning."
+      "description": "Crawler-provided engagement value. Current collection preserves unavailable counters as null. Historical projected zeros remain unchanged; native raw payload takes precedence when available."
     },
     "string_list": {"type": "array", "items": {"type": "string"}},
     "query_run": {
@@ -44,7 +49,7 @@
         "query": {"type": "string"},
         "kind": {"type": "string"},
         "geo_name": {"$ref": "#/$defs/nullable_string"},
-        "status": {"type": "string", "enum": ["ok", "error"]},
+        "status": {"type": "string", "enum": ["ok", "error", "partial"]},
         "error": {"type": "string"},
         "landed_url": {"type": "string"},
         "raw_count": {"type": "integer", "minimum": 0},
@@ -74,6 +79,7 @@
       "additionalProperties": true,
       "description": "Unchanged crawler search/adapted record. Optional known fields allow imperfect records to be retained for inspection even when Silver rejects them. Successful detail enrichment is never required.",
       "properties": {
+        "_observed_at": {"type": "string", "format": "date-time", "description": "Actual public page capture time, preserved across checkpoint recovery."},
         "id": {"$ref": "#/$defs/source_id"},
         "code": {"$ref": "#/$defs/nullable_string"},
         "url": {"$ref": "#/$defs/nullable_string"},

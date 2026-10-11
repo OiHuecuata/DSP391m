@@ -3,6 +3,7 @@
 import json
 from datetime import UTC, datetime
 
+from delta.tables import DeltaTable
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 
@@ -29,6 +30,10 @@ def build_social_activity_daily(spark, settings: SparkSettings):
         gold = social_activity_daily(silver, generated_at=generated_at)
         gold = validated_gold(gold, "social_activity_daily").persist()
         source_silver = silver
+        if DeltaTable.isDeltaTable(spark, settings.paths.social_comments):
+            source_silver = source_silver.unionByName(
+                read_delta(spark, settings.paths.social_comments)
+            ).dropDuplicates(["event_id"])
         if "view_count" not in source_silver.columns:
             source_silver = source_silver.withColumn(
                 "view_count", F.lit(None).cast("long")

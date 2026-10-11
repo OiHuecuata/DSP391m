@@ -1,4 +1,4 @@
-"""Canonical multi-source Silver event transport: no crawling, normalization or storage.
+"""Source observation and canonical Silver event transport; no crawling or storage.
 
 Acknowledgements, not enqueue success, determine publication results. Idempotence
 protects retries within a producer session; later Silver replay can duplicate
@@ -16,6 +16,7 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from functools import lru_cache
+from importlib.resources import files
 from pathlib import Path
 from typing import Any, Literal
 
@@ -52,13 +53,21 @@ class PublicationResult:
 @lru_cache(maxsize=1)
 def _validators() -> tuple[Draft202012Validator, Draft202012Validator]:
     """Resolve both contracts locally; never retrieve schemas over HTTP."""
-    root = Path(__file__).resolve().parents[5] / "contracts"
+    root = next(
+        (
+            p / "contracts"
+            for p in Path(__file__).resolve().parents
+            if (p / "contracts/data/silver/social-post.v1.schema.json").is_file()
+        ),
+        None,
+    )
+    root = root or files("dsp_contracts")
     silver_path = root / "data/silver/social-post.v1.schema.json"
     event_path = root / "kafka/social-post-event.v1.schema.json"
     silver = json.loads(silver_path.read_text(encoding="utf-8"))
     event = json.loads(event_path.read_text(encoding="utf-8"))
-    silver["$id"] = silver_path.as_uri()
-    event["$id"] = event_path.as_uri()
+    silver["$id"] = "file:///dsp-contracts/data/silver/social-post.v1.schema.json"
+    event["$id"] = "file:///dsp-contracts/kafka/social-post-event.v1.schema.json"
     registry = Registry().with_resources(
         (schema["$id"], Resource.from_contents(schema)) for schema in (silver, event)
     )
@@ -175,14 +184,21 @@ class KafkaPublisher:
                 f"Kafka producer initialization failed: {exc}"
             ) from exc
 
+    def publish_bronze_observation(self, event):
+        validate_bronze_event(event)
+        return self._publish_event(event, event["event_id"])
+
     def publish_social_post(self, event: Mapping[str, Any]) -> DeliveryReceipt:
+        validate_social_post_event(event)
+        return self._publish_event(event, event["record_id"])
+
+    def _publish_event(self, event, record_key) -> DeliveryReceipt:
         if self._closed:
             raise PublicationError("Kafka publisher is closed")
-        validate_social_post_event(event)
         serialized = json.dumps(event, ensure_ascii=False, allow_nan=False).encode(
             "utf-8"
         )
-        receipt = DeliveryReceipt(event["event_id"], event["record_id"])
+        receipt = DeliveryReceipt(event["event_id"], record_key)
 
         def delivered(error: Any, _message: Any) -> None:
             receipt.status = "failed" if error is not None else "delivered"
@@ -191,7 +207,7 @@ class KafkaPublisher:
         try:
             self._producer.produce(
                 self.settings.social_post_topic,
-                key=event["record_id"].encode("utf-8"),
+                key=record_key.encode("utf-8"),
                 value=serialized,
                 on_delivery=delivered,
             )
@@ -322,6 +338,158 @@ def publish_social_batch(
         selected.social_post_topic,
         status,
         len(records),
+        published,
+        failed,
+        errors,
+        flush_error,
+    )
+
+
+def build_bronze_event(dataset, row):
+    """Bound wire volume without truncating source evidence or changing identity."""
+    import base64
+    import os
+    import zlib
+
+    from ..runtime.bronze import encode
+
+    raw = encode(row)
+    event = {
+        "schema_version": "1",
+        "event_type": "bronze.observed",
+        "event_id": row["observation_id"],
+        "dataset": dataset,
+        "record_json": raw,
+    }
+    if len(raw.encode()) >= int(
+        os.getenv("DSP_BRONZE_COMPRESSION_THRESHOLD", "262144")
+    ):
+        event.update(
+            record_json=base64.b64encode(zlib.compress(raw.encode())).decode(),
+            record_encoding="zlib-base64",
+        )
+    return event
+
+
+def validate_bronze_event(event):
+    from ..runtime.bronze import DATASETS, decode, validate_observation
+
+    if (
+        set(event) - {"record_encoding"}
+        != {"schema_version", "event_type", "event_id", "dataset", "record_json"}
+        or event["schema_version"] != "1"
+        or event["event_type"] != "bronze.observed"
+        or event["dataset"] not in DATASETS
+    ):
+        raise ValueError("invalid Bronze event envelope")
+    encoding = event.get("record_encoding", "json")
+    if encoding == "zlib-base64":
+        import base64
+        import os
+        import zlib
+
+        try:
+            limit = int(os.getenv("DSP_BRONZE_MAX_DECODE_BYTES", "134217728"))
+            if limit <= 0:
+                raise ValueError("Invalid decoded observation byte limit")
+            decompressor = zlib.decompressobj()
+            raw = decompressor.decompress(
+                base64.b64decode(event["record_json"], validate=True), limit + 1
+            )
+            if (
+                len(raw) > limit
+                or decompressor.unconsumed_tail
+                or decompressor.unused_data
+                or not decompressor.eof
+            ):
+                raise ValueError(
+                    "Compressed observation exceeds bounds or is incomplete"
+                )
+            row = decode(raw.decode())
+        except (ValueError, zlib.error) as exc:
+            raise ValueError("Invalid compressed Bronze observation") from exc
+    elif encoding == "json":
+        row = decode(event["record_json"])
+    else:
+        raise ValueError("Unsupported Bronze record encoding")
+    validate_observation(event["dataset"], row)
+    if row["observation_id"] != event["event_id"]:
+        raise ValueError("Bronze event identity conflicts with observation")
+    return row
+
+
+def publish_bronze_batch(artifact, *, settings=None, publisher_factory=None):
+    """Publish source observations independently of Silver acceptance, with acks.
+
+    Reuses the existing topic. Malformed source rows are returned as failures;
+    successful observations and collection-run errors remain replayable.
+    """
+    import os
+
+    from ..runtime.bronze import (
+        extract_collection_status,
+        extract_observations,
+        load_policies,
+    )
+
+    envelope = (
+        json.loads(Path(artifact).read_text())
+        if isinstance(artifact, (str, Path))
+        else artifact
+    )
+    extractor = (
+        extract_collection_status
+        if "posts" not in envelope
+        and "videos" not in envelope
+        and ("finished_at" in envelope or "completed_at" in envelope)
+        else extract_observations
+    )
+    datasets, errors = extractor(
+        envelope,
+        artifact_uri=(
+            Path(artifact).resolve().as_uri()
+            if isinstance(artifact, (str, Path))
+            else None
+        ),
+        policies=load_policies(os.getenv("DSP_SOURCE_POLICY_REGISTRY")),
+    )
+    selected = settings or KafkaSettings.from_env()
+    receipts, flush_error = [], None
+    publisher = (publisher_factory or KafkaPublisher)(selected)
+    try:
+        for dataset, rows in datasets.items():
+            for row in rows:
+                event = build_bronze_event(dataset, row)
+                try:
+                    receipts.append(publisher.publish_bronze_observation(event))
+                except (ValueError, TypeError, PublicationError) as exc:
+                    errors.append(
+                        {"observation_id": row["observation_id"], "error": str(exc)}
+                    )
+    finally:
+        try:
+            publisher.close()
+        except PublicationError as exc:
+            flush_error = str(exc)
+    for receipt in receipts:
+        if receipt.status != "delivered":
+            errors.append(
+                {
+                    "event_id": receipt.event_id,
+                    "error": receipt.error or "delivery not acknowledged",
+                }
+            )
+    published = sum(r.status == "delivered" for r in receipts)
+    failed = len(errors)
+    return PublicationResult(
+        envelope["run_id"],
+        selected.social_post_topic,
+        (
+            "partial"
+            if published and (failed or flush_error)
+            else "failed" if failed or flush_error else "success"
+        ),
+        published + failed,
         published,
         failed,
         errors,

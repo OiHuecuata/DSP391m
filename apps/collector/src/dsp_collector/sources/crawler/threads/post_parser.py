@@ -231,7 +231,9 @@ def _author(raw_post: dict[str, Any]) -> dict[str, Any]:
         "id": _string_id(user.get("pk") or user.get("id")),
         "username": user.get("username"),
         "full_name": user.get("full_name"),
-        "is_verified": bool(user.get("is_verified")),
+        "is_verified": (
+            user.get("is_verified") if type(user.get("is_verified")) is bool else None
+        ),
         "profile_pic_url": user.get("profile_pic_url"),
     }
 
@@ -351,15 +353,35 @@ def extract_media(raw_post: dict[str, Any]) -> list[dict[str, Any]]:
     return media
 
 
-def _engagement(raw_post: dict[str, Any]) -> dict[str, int]:
+def _engagement(raw_post: dict[str, Any]) -> dict[str, int | None]:
     info = raw_post.get("text_post_app_info") or {}
-
-    return {
-        "like_count": int(raw_post.get("like_count") or 0),
-        "reply_count": int(info.get("direct_reply_count") or 0),
-        "repost_count": int(info.get("repost_count") or 0),
-        "quote_count": int(info.get("quote_count") or 0),
+    values = {
+        key: raw_post.get(key)
+        for key in ("like_count", "view_count", "comment_count", "share_count")
     }
+    values.update(
+        reply_count=info.get("direct_reply_count"),
+        repost_count=info.get("repost_count"),
+        quote_count=info.get("quote_count"),
+    )
+    result = {}
+    for key, value in values.items():
+        if value is None:
+            result[key] = None
+        elif type(value) is int and value >= 0:
+            result[key] = value
+        elif (
+            type(value) is float
+            and value.is_integer()
+            and 0 <= value < 2**63
+            or isinstance(value, str)
+            and value.isascii()
+            and value.isdecimal()
+        ):
+            result[key] = int(value)
+        else:
+            raise ThreadsPostParserError(f"Malformed engagement counter: {key}")
+    return result
 
 
 def _compact_post(
@@ -377,6 +399,7 @@ def _compact_post(
         "taken_at": raw_post.get("taken_at"),
         "author": _author(raw_post),
         "engagement": _engagement(raw_post),
+        "raw_payload": raw_post,
         "is_reply": bool(info.get("is_reply")),
         "media_type": raw_post.get("media_type"),
         "media": extract_media(raw_post),
@@ -401,6 +424,8 @@ def _visible_replies(
     if main_id is None:
         return replies
 
+    by_id = {_string_id(p.get("pk") or p.get("id")): p for p in candidates}
+
     for post in candidates:
         post_id = _string_id(post.get("pk") or post.get("id"))
 
@@ -416,7 +441,20 @@ def _visible_replies(
             or info.get("replied_to_post_id")
             or info.get("parent_post_id")
         )
-        if reply_to_id != main_id:
+        ancestor = reply_to_id
+        traversed = {post_id}
+        while ancestor and ancestor != main_id and ancestor not in traversed:
+            traversed.add(ancestor)
+            parent = by_id.get(ancestor)
+            if not parent:
+                break
+            parent_info = parent.get("text_post_app_info") or {}
+            ancestor = _string_id(
+                parent_info.get("reply_to_post_id")
+                or parent_info.get("replied_to_post_id")
+                or parent_info.get("parent_post_id")
+            )
+        if ancestor != main_id:
             continue
 
         if post_id is not None:
@@ -426,6 +464,8 @@ def _visible_replies(
 
         compact = _compact_post(post)
         compact["reply_to_post_id"] = reply_to_id
+        compact["native_post_id"] = main_id
+        compact["parent_comment_id"] = reply_to_id if reply_to_id != main_id else None
         replies.append(compact)
 
     return replies

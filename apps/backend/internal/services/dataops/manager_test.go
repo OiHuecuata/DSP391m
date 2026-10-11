@@ -49,6 +49,51 @@ func selection(name string, enabled bool) map[string]SourceConfig {
 	return map[string]SourceConfig{"threads": {Enabled: name == "threads" && enabled, Interval: 43200}, "youtube": {Enabled: name == "youtube" && enabled, Interval: 21600}, "pbplus": {Enabled: name == "pbplus" && enabled, Interval: 86400}}
 }
 
+func TestCheckpointOnlyRecoveryUsesOriginalIdentityAndReplayCannotFetch(t *testing.T) {
+	m := newTestManager(t, true, "PARTIAL", "0.01")
+	id := "checkpoint-only"
+	path := filepath.Join(m.options.Directory, "discovery")
+	if err := os.MkdirAll(path, 0700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(path, "threads.json"), []byte(`{"run_id":"checkpoint-only","exported":false,"posts":{"123":{"_observed_at":"2026-10-10T00:00:00Z"}}}`), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if m.Snapshot().Sources["threads"].PendingAcquisition != id {
+		t.Fatal("pending acquisition hidden")
+	}
+	if err := m.Replay(id); err == nil {
+		t.Fatal("processing replay accepted absent evidence")
+	}
+	if err := m.Recover(id); err != nil {
+		t.Fatal(err)
+	}
+	await(t, func() bool { return len(m.Snapshot().Runs) > 0 && m.Snapshot().Runs[0].Completed != nil })
+	r := m.Snapshot().Runs[0]
+	if r.ID != id || r.Operation != "interrupted_recovery" {
+		t.Fatal(r)
+	}
+}
+
+func TestCommittedDiscoveryContinuationUsesNewIdentity(t *testing.T) {
+	m := newTestManager(t, true, "PARTIAL", "0.01")
+	id := "committed"
+	path := filepath.Join(m.options.Directory, "discovery")
+	_ = os.MkdirAll(path, 0700)
+	_ = os.WriteFile(filepath.Join(path, "threads.json"), []byte(`{"run_id":"committed","exported":true,"artifact_committed":true}`), 0600)
+	m.mu.Lock()
+	m.state.Runs = append(m.state.Runs, &Run{ID: id, Source: "threads", Status: "PARTIAL", Started: time.Now().UTC()})
+	m.mu.Unlock()
+	if err := m.Continue(id); err != nil {
+		t.Fatal(err)
+	}
+	await(t, func() bool { return m.Snapshot().Runs[0].Completed != nil })
+	r := m.Snapshot().Runs[0]
+	if r.ID == id || r.Operation != "discovery_continuation" {
+		t.Fatal(r)
+	}
+}
+
 func TestStartReturnsImmediatelyAndSchedules(t *testing.T) {
 	m := newTestManager(t, true, "SUCCESS", "0.1")
 	start := time.Now()

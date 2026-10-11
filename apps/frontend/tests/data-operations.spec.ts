@@ -45,8 +45,8 @@ test("Save settings uses PATCH without starting collection", async ({ page }) =>
 test("Retry saved run sends the original observation ID", async ({ page }) => {
   const data=snapshot("FAILED");data.collection.sources.threads.last_run_id="saved-failed-run";
   await show(page,data);let body;
-  await page.route("**/api/v1/collection/retry", (route) => {body=route.request().postDataJSON();return route.fulfill({status:202,json:snapshot("RUNNING").collection});});
-  await page.getByRole("button",{name:"Retry saved Threads run",exact:true}).click();
+  await page.route("**/api/v1/collection/replay", (route) => {body=route.request().postDataJSON();return route.fulfill({status:202,json:snapshot("RUNNING").collection});});
+  await page.getByRole("button",{name:"Replay saved Threads processing",exact:true}).click();
   await expect(page.getByRole("status")).toContainText("source data will not be fetched again");
   expect(body).toEqual({run_id:"saved-failed-run"});
 });
@@ -58,4 +58,113 @@ test("active source metrics come from current structured progress", async ({ pag
  await expect(page.getByRole("article",{name:"Threads collection"})).not.toContainText("999");
  await expect(page.getByRole("status")).toContainText("Kafka acknowledged 3");
  await expect(page.getByRole("status")).toContainText("Spark consumed 3");
+});
+
+test("Threads continuation exposes incomplete discovery and queues a new acquisition",async({page})=>{
+ const data=snapshot("PARTIAL");const source=data.collection.sources.threads;
+ source.last_run_id="committed";
+ source.metrics={accepted:0,errors:0,stopping_reason:"request_budget",acquisition:{status:"partial"},processing_status:"success",bronze_ingestion_status:"success",discovery:{planned_queries:10000,attempted_queries:32,remaining_queries:9968,has_more:true,requests_this_invocation:32,max_requests:32}};
+ await show(page,data);let body;
+ await page.route("**/api/v1/collection/continue",route=>{body=route.request().postDataJSON();return route.fulfill({status:202,json:snapshot("RUNNING").collection});});
+ const card=page.getByRole("article",{name:"Threads collection"});
+ await expect(card).toContainText("request_budget");await expect(card).toContainText("9,968");
+ await page.getByRole("button",{name:"Continue Threads discovery",exact:true}).click();
+ expect(body).toEqual({run_id:"committed"});await expect(page.getByRole("status")).toContainText("new acquisition run ID");
+});
+
+test("checkpoint-only Threads recovery is distinct from processing replay",async({page})=>{
+ const data=snapshot("INTERRUPTED");data.collection.sources.threads.pending_acquisition_run_id="pending";
+ await show(page,data);let body;
+ await page.route("**/api/v1/collection/recover",route=>{body=route.request().postDataJSON();return route.fulfill({status:202,json:snapshot("RUNNING").collection});});
+ await page.getByRole("button",{name:"Recover interrupted Threads acquisition",exact:true}).click();
+ expect(body).toEqual({run_id:"pending"});await expect(page.getByRole("status")).toContainText("original run ID");
+});
+
+function threadsSnapshot(completed = 188, active = true) {
+  const data = snapshot(active ? "RUNNING" : "PARTIAL");
+  const c = data.collection;
+  c.continuous = true;
+  c.status = active ? "RUNNING" : "IDLE";
+  const s = c.sources.threads;
+  s.survey = { survey_id: "05fd542b1d224e99bce6517eb769e8af", plan_id: "stable-plan", planner_version: "3", candidate_queries: 117528, completed_queries: completed, remaining_queries: 117528 - completed, eligible_queries: 117528 - completed, deferred_queries: 0, retry_pending_queries: 0, updated_at: "2026-10-11T00:00:00Z", has_more: true };
+  s.last_completed_at = "2026-10-11T00:00:00Z";
+  s.next_run_at = active ? undefined : "2026-10-12T12:00:00Z";
+  s.last_batch = { run_id: "completed-batch", source: "threads", status: "PARTIAL", started_at: "2026-10-10T23:59:00Z", completed_at: s.last_completed_at, duration_seconds: 60, metrics: { accepted: 0, discovered: 0, stopping_reason: "request_budget", discovery: { executed_queries: 32, requests_this_invocation: 32, max_requests: 32 } } };
+  c.runs = [s.last_batch];
+  s.last_run_id = active ? "current-batch" : s.last_batch.run_id;
+  if (active) {
+    c.active_run_id = s.last_run_id;
+    c.runs.unshift({ run_id: s.last_run_id, source: "threads", status: "RUNNING", operation: "auto", started_at: "2026-10-11T00:00:00Z", duration_seconds: 0 });
+    c.progress = { stage: "collecting", operation: "auto", query_plan_count: 117528, queries_processed: 0, batch: { requests_used: 0, max_requests: 32, queries_executed: 0, technical_errors: 0 }, survey: s.survey, discovered: 0, accepted: 0 };
+  }
+  return data;
+}
+
+test("Threads running batch shows navigation units and separate confirmed survey", async ({ page }) => {
+  const data = threadsSnapshot(); data.collection.progress!.batch = { queries_executed: 12, requests_used: 25, max_requests: 32 };
+  data.collection.progress!.query = "tìm kèo pickleball Đà Nẵng";
+  await show(page, data);
+  const card = page.getByRole("article", { name: "Threads collection" });
+  await expect(card.getByText("Navigation requests / budget").locator("+ dd")).toHaveText("25 / 32");
+  await expect(card.getByText("Queries executed in batch").locator("+ dd")).toHaveText("12");
+  await expect(card.getByText("Current query").locator("+ dd")).toContainText("Đà Nẵng");
+  await expect(card.getByText("Completed queries / unique candidates").locator("+ dd")).toHaveText("188 / 117,528");
+  await expect(card.getByRole("progressbar", { name: "Entire survey completion" })).toHaveAttribute("value", "188");
+  await expect(card).not.toContainText("0/117528");
+});
+
+test("Threads polling preserves 188 at batch start then advances 220 and 252; refresh restores waiting", async ({ page }) => {
+  test.setTimeout(40_000);
+  let data = threadsSnapshot();
+  await page.route("**/api/v1/data-ops/status", route => route.fulfill({ json: data }));
+  await page.goto("/data-operations");
+  const card = page.getByRole("article", { name: "Threads collection" });
+  const completed = card.getByText("Completed queries / unique candidates").locator("+ dd");
+  await expect(completed).toHaveText("188 / 117,528");
+  await expect(card.getByText("Navigation requests / budget").locator("+ dd")).toHaveText("0 / 32");
+  data = threadsSnapshot(220);
+  await expect(completed).toHaveText("220 / 117,528");
+  data = threadsSnapshot(252, false);
+  await expect(completed).toHaveText("252 / 117,528");
+  await expect(card).toContainText("CONTINUOUS ENABLED — WAITING");
+  await expect(card).toContainText("Latest batch — PARTIAL");
+  await expect(card.getByText("Next scheduled execution").locator("+ dd")).not.toHaveText("Unavailable");
+  await expect(card.getByText("Time remaining").locator("+ dd")).toContainText(/s$|Due/);
+  await expect(card).toContainText("completed-batch");
+  await expect(card).toContainText("request_budget");
+  await page.reload();
+  await expect(completed).toHaveText("252 / 117,528");
+  await expect(card).toContainText("CONTINUOUS ENABLED — WAITING");
+  await expect(card).not.toContainText("Current batch — RUNNING");
+});
+
+test("missing Threads telemetry shows unavailable instead of invented zeros", async ({ page }) => {
+  const data = threadsSnapshot(); delete data.collection.progress; delete data.collection.sources.threads.survey;
+  delete data.collection.sources.threads.metrics;
+  await show(page, data);
+  const card = page.getByRole("article", { name: "Threads collection" });
+  await expect(card.getByText("Completed queries / unique candidates").locator("+ dd")).toHaveText("Unavailable / Unavailable");
+  await expect(card.getByText("Navigation requests / budget").locator("+ dd")).toHaveText("Unavailable / Unavailable");
+});
+
+test("Threads replay shows zero new discovery and keeps checkpoint coverage", async ({ page }) => {
+  const data = threadsSnapshot(); data.collection.runs[0].operation = "processing_replay";
+  data.collection.progress!.survey!.completed_queries = 999; // Saved telemetry belongs to the original acquisition.
+  data.collection.sources.threads.survey = { ...data.collection.progress!.survey, completed_queries: 188 };
+  await show(page, data);
+  const card = page.getByRole("article", { name: "Threads collection" });
+  await expect(card.getByText("Queries executed in batch").locator("+ dd")).toHaveText("0");
+  await expect(card.getByText("Navigation requests / budget").locator("+ dd")).toHaveText("0 / 32");
+  await expect(card.getByText("Completed queries / unique candidates").locator("+ dd")).toHaveText("188 / 117,528");
+});
+
+test("disconnected scheduler never claims continuous execution is running", async ({ page }) => {
+  let calls = 0;
+  await page.route("**/api/v1/data-ops/status", route => ++calls === 1 ? route.fulfill({ json: threadsSnapshot() }) : route.fulfill({ status: 503 }));
+  await page.goto("/data-operations");
+  await expect(page.getByRole("main").getByRole("alert")).toContainText("may be stale");
+  const card = page.getByRole("article", { name: "Threads collection" });
+  await expect(card).toContainText("UNAVAILABLE");
+  await expect(card).not.toContainText("CONTINUOUS ENABLED — RUNNING");
+  await expect(card).toContainText("188 / 117,528");
 });

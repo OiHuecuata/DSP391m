@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Bronze shared envelope v1",
+  "$defs": {
+    "schema_version": {
+      "type": "string",
+      "const": "1"
+    },
+    "observation_id": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "source_platform": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_record_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "record_type": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_url": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "collected_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_created_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "source_updated_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "collection_run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "query_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "query_metadata": {
+      "type": "string"
+    },
+    "raw_payload": {
+      "type": "string"
+    },
+    "payload_hash": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "retention_policy_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "retention_expires_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "artifact_uri": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ingested_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time",
+      "description": "UTC Delta ingestion time; null before persistence."
+    },
+    "ingestion_metadata": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Encoded ingestion transport metadata; Kafka offsets/checkpoint batch when available."
+    }
+  }
+}

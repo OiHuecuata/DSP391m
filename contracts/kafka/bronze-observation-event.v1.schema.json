@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Bronze observation transport v1",
+  "description": "Record-level source observations on the existing social topic. Payload is validated against its named Bronze contract before persistence. Kafka key equals observation_id.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "event_type",
+    "event_id",
+    "dataset",
+    "record_json"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1"
+    },
+    "event_type": {
+      "type": "string",
+      "const": "bronze.observed"
+    },
+    "event_id": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "dataset": {
+      "type": "string",
+      "enum": [
+        "bronze_court_observations",
+        "bronze_social_posts",
+        "bronze_social_comments",
+        "bronze_engagement_snapshots",
+        "bronze_collection_runs",
+        "bronze_source_changes"
+      ]
+    },
+    "record_json": {
+      "type": "string"
+    },
+    "record_encoding": {
+      "type": "string",
+      "enum": ["json", "zlib-base64"],
+      "description": "Optional lossless transport compression for large observations. Absent means legacy plain JSON. Identities and decoded payloads are unchanged."
+    }
+  }
+}

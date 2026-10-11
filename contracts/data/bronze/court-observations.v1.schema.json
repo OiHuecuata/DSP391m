@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Bronze court-observations v1",
+  "description": "Source venue \u00d7 collection observation; no canonical venue resolution. Identity is SHA-256 of [dataset, platform, source ID, run ID, UTC collection time]; additional source fields survive in raw_payload. JSON fields are encoded strings. Technical timestamps use UTC.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "observation_id",
+    "source_platform",
+    "source_record_id",
+    "record_type",
+    "source_url",
+    "collected_at",
+    "source_created_at",
+    "source_updated_at",
+    "collection_run_id",
+    "query_id",
+    "query_metadata",
+    "raw_payload",
+    "payload_hash",
+    "retention_policy_id",
+    "retention_expires_at",
+    "artifact_uri",
+    "source_venue_id",
+    "venue_name_raw",
+    "address_raw",
+    "court_count_raw",
+    "price_raw",
+    "amenities_raw",
+    "opening_hours_raw",
+    "venue_status_raw",
+    "description_raw",
+    "latitude_raw",
+    "longitude_raw",
+    "ingested_at",
+    "ingestion_metadata"
+  ],
+  "properties": {
+    "schema_version": {
+      "$ref": "observation.v1.schema.json#/$defs/schema_version"
+    },
+    "observation_id": {
+      "$ref": "observation.v1.schema.json#/$defs/observation_id"
+    },
+    "source_platform": {
+      "$ref": "observation.v1.schema.json#/$defs/source_platform"
+    },
+    "source_record_id": {
+      "$ref": "observation.v1.schema.json#/$defs/source_record_id"
+    },
+    "record_type": {
+      "type": "string",
+      "enum": [
+        "Venue"
+      ]
+    },
+    "source_url": {
+      "$ref": "observation.v1.schema.json#/$defs/source_url"
+    },
+    "collected_at": {
+      "$ref": "observation.v1.schema.json#/$defs/collected_at"
+    },
+    "source_created_at": {
+      "$ref": "observation.v1.schema.json#/$defs/source_created_at"
+    },
+    "source_updated_at": {
+      "$ref": "observation.v1.schema.json#/$defs/source_updated_at"
+    },
+    "collection_run_id": {
+      "$ref": "observation.v1.schema.json#/$defs/collection_run_id"
+    },
+    "query_id": {
+      "$ref": "observation.v1.schema.json#/$defs/query_id"
+    },
+    "query_metadata": {
+      "$ref": "observation.v1.schema.json#/$defs/query_metadata"
+    },
+    "raw_payload": {
+      "$ref": "observation.v1.schema.json#/$defs/raw_payload"
+    },
+    "payload_hash": {
+      "$ref": "observation.v1.schema.json#/$defs/payload_hash"
+    },
+    "retention_policy_id": {
+      "$ref": "observation.v1.schema.json#/$defs/retention_policy_id"
+    },
+    "retention_expires_at": {
+      "$ref": "observation.v1.schema.json#/$defs/retention_expires_at"
+    },
+    "artifact_uri": {
+      "$ref": "observation.v1.schema.json#/$defs/artifact_uri"
+    },
+    "source_venue_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "venue_name_raw": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "address_raw": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "court_count_raw": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "price_raw": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "amenities_raw": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "opening_hours_raw": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "venue_status_raw": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "description_raw": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "latitude_raw": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": -90,
+      "maximum": 90
+    },
+    "longitude_raw": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": -180,
+      "maximum": 180
+    },
+    "ingested_at": {
+      "$ref": "observation.v1.schema.json#/$defs/ingested_at"
+    },
+    "ingestion_metadata": {
+      "$ref": "observation.v1.schema.json#/$defs/ingestion_metadata"
+    }
+  }
+}

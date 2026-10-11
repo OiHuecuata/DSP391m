@@ -3,7 +3,12 @@
   "threads": {
     "query": "pickleball", "limit": 100, "sort": "recent", "per_query_cap": 25,
     "timeout_ms": 20000, "query_seeds": ["pickleball"], "max_results_per_query": 25,
-    "detail_limit": 2, "query_delay": 2, "retries": 1
+    "detail_limit": 2, "query_delay": 2, "retries": 1,
+    "max_queries": null, "max_requests": 32, "max_pages_per_query": 2,
+    "max_duration_seconds": 300, "max_geo_aliases": null, "include_local": true,
+    "query_categories": ["playing", "players", "training", "competitions", "venues", "booking", "pricing", "availability", "supply", "feedback"],
+    "max_query_failures": 3, "retry_backoff_seconds": 30,
+    "lookback_days": null, "resume": true
   },
   "youtube": {
     "keywords": ["pickleball", "sân pickleball", "chơi pickleball"],

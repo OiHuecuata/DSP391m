@@ -49,9 +49,7 @@ def process_youtube_envelope(envelope, *, run_id=None, artifact_root):
                 seen.add(record["record_id"])
         except (ValueError, TypeError, KeyError):
             errors.append({"reason": "invalid_source_record"})
-    source_errors = [
-        e for e in bronze["errors"] if e.get("reason") != "commentsDisabled"
-    ]
+    source_errors = list(bronze["errors"])
     status = (
         "partial"
         if records and (errors or source_errors)

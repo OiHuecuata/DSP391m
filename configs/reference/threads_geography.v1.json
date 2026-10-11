@@ -1,0 +1,1368 @@
+{
+  "schema_version": "1",
+  "provenance": {
+    "authority": "Báo Điện tử Chính phủ / Nghị quyết 202/2025/QH15",
+    "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+    "resolution_effective_date": "2025-06-12",
+    "new_government_operation_date": "2025-07-01",
+    "historical_snapshot": "Immediately before July 2025; Huế already a municipality",
+    "identifiers": "Internal discovery identifiers, not administrative codes",
+    "locality_limitations": "Six curated locality references plus three verified current wards; no exhaustive sub-provincial coverage"
+  },
+  "locations": [
+    {
+      "geo_id": "discovery:pre_2025_07:ha-giang",
+      "canonical_name": "Hà Giang",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Hà Giang"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Tuyên Quang",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:tuyen-quang",
+      "canonical_name": "Tuyên Quang",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Tuyên Quang"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Tuyên Quang",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:2025_07:tuyen-quang",
+      "canonical_name": "Tuyên Quang",
+      "admin_version": "2025_07",
+      "level": "province",
+      "aliases": [
+        "Tuyên Quang"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Tuyên Quang",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:yen-bai",
+      "canonical_name": "Yên Bái",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Yên Bái"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Lào Cai",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:lao-cai",
+      "canonical_name": "Lào Cai",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Lào Cai"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Lào Cai",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:2025_07:lao-cai",
+      "canonical_name": "Lào Cai",
+      "admin_version": "2025_07",
+      "level": "province",
+      "aliases": [
+        "Lào Cai"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Lào Cai",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:bac-kan",
+      "canonical_name": "Bắc Kạn",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Bắc Kạn"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Thái Nguyên",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:thai-nguyen",
+      "canonical_name": "Thái Nguyên",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Thái Nguyên"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Thái Nguyên",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:2025_07:thai-nguyen",
+      "canonical_name": "Thái Nguyên",
+      "admin_version": "2025_07",
+      "level": "province",
+      "aliases": [
+        "Thái Nguyên"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Thái Nguyên",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:vinh-phuc",
+      "canonical_name": "Vĩnh Phúc",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Vĩnh Phúc"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Phú Thọ",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:hoa-binh",
+      "canonical_name": "Hòa Bình",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Hòa Bình"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Phú Thọ",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:phu-tho",
+      "canonical_name": "Phú Thọ",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Phú Thọ"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Phú Thọ",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:2025_07:phu-tho",
+      "canonical_name": "Phú Thọ",
+      "admin_version": "2025_07",
+      "level": "province",
+      "aliases": [
+        "Phú Thọ"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Phú Thọ",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:bac-giang",
+      "canonical_name": "Bắc Giang",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Bắc Giang"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Bắc Ninh",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:bac-ninh",
+      "canonical_name": "Bắc Ninh",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Bắc Ninh"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Bắc Ninh",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:2025_07:bac-ninh",
+      "canonical_name": "Bắc Ninh",
+      "admin_version": "2025_07",
+      "level": "province",
+      "aliases": [
+        "Bắc Ninh"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Bắc Ninh",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:thai-binh",
+      "canonical_name": "Thái Bình",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Thái Bình"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Hưng Yên",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:hung-yen",
+      "canonical_name": "Hưng Yên",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Hưng Yên"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Hưng Yên",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:2025_07:hung-yen",
+      "canonical_name": "Hưng Yên",
+      "admin_version": "2025_07",
+      "level": "province",
+      "aliases": [
+        "Hưng Yên"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Hưng Yên",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:hai-phong",
+      "canonical_name": "Hải Phòng",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Hải Phòng",
+        "hải phòng",
+        "hai phong"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Hải Phòng",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:hai-duong",
+      "canonical_name": "Hải Dương",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Hải Dương"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Hải Phòng",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:2025_07:hai-phong",
+      "canonical_name": "Hải Phòng",
+      "admin_version": "2025_07",
+      "level": "province",
+      "aliases": [
+        "Hải Phòng",
+        "hải phòng",
+        "hai phong"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Hải Phòng",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:ha-nam",
+      "canonical_name": "Hà Nam",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Hà Nam"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Ninh Bình",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:nam-dinh",
+      "canonical_name": "Nam Định",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Nam Định"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Ninh Bình",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:ninh-binh",
+      "canonical_name": "Ninh Bình",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Ninh Bình"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Ninh Bình",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:2025_07:ninh-binh",
+      "canonical_name": "Ninh Bình",
+      "admin_version": "2025_07",
+      "level": "province",
+      "aliases": [
+        "Ninh Bình"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Ninh Bình",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:quang-binh",
+      "canonical_name": "Quảng Bình",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Quảng Bình"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Quảng Trị",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:quang-tri",
+      "canonical_name": "Quảng Trị",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Quảng Trị"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Quảng Trị",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:2025_07:quang-tri",
+      "canonical_name": "Quảng Trị",
+      "admin_version": "2025_07",
+      "level": "province",
+      "aliases": [
+        "Quảng Trị"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Quảng Trị",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:da-nang",
+      "canonical_name": "Đà Nẵng",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Đà Nẵng",
+        "đà nẵng",
+        "da nang",
+        "Da Nang"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Đà Nẵng",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:quang-nam",
+      "canonical_name": "Quảng Nam",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Quảng Nam"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Đà Nẵng",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:2025_07:da-nang",
+      "canonical_name": "Đà Nẵng",
+      "admin_version": "2025_07",
+      "level": "province",
+      "aliases": [
+        "Đà Nẵng",
+        "đà nẵng",
+        "da nang",
+        "Da Nang"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Đà Nẵng",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:kon-tum",
+      "canonical_name": "Kon Tum",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Kon Tum"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Quảng Ngãi",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:quang-ngai",
+      "canonical_name": "Quảng Ngãi",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Quảng Ngãi"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Quảng Ngãi",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:2025_07:quang-ngai",
+      "canonical_name": "Quảng Ngãi",
+      "admin_version": "2025_07",
+      "level": "province",
+      "aliases": [
+        "Quảng Ngãi"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Quảng Ngãi",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:binh-dinh",
+      "canonical_name": "Bình Định",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Bình Định"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Gia Lai",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:gia-lai",
+      "canonical_name": "Gia Lai",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Gia Lai"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Gia Lai",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:2025_07:gia-lai",
+      "canonical_name": "Gia Lai",
+      "admin_version": "2025_07",
+      "level": "province",
+      "aliases": [
+        "Gia Lai"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Gia Lai",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:ninh-thuan",
+      "canonical_name": "Ninh Thuận",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Ninh Thuận"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Khánh Hòa",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:khanh-hoa",
+      "canonical_name": "Khánh Hòa",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Khánh Hòa"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Khánh Hòa",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:2025_07:khanh-hoa",
+      "canonical_name": "Khánh Hòa",
+      "admin_version": "2025_07",
+      "level": "province",
+      "aliases": [
+        "Khánh Hòa"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Khánh Hòa",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:dak-nong",
+      "canonical_name": "Đắk Nông",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Đắk Nông"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Lâm Đồng",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:binh-thuan",
+      "canonical_name": "Bình Thuận",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Bình Thuận"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Lâm Đồng",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:lam-dong",
+      "canonical_name": "Lâm Đồng",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Lâm Đồng"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Lâm Đồng",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:2025_07:lam-dong",
+      "canonical_name": "Lâm Đồng",
+      "admin_version": "2025_07",
+      "level": "province",
+      "aliases": [
+        "Lâm Đồng"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Lâm Đồng",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:phu-yen",
+      "canonical_name": "Phú Yên",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Phú Yên"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Đắk Lắk",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:dak-lak",
+      "canonical_name": "Đắk Lắk",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Đắk Lắk"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Đắk Lắk",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:2025_07:dak-lak",
+      "canonical_name": "Đắk Lắk",
+      "admin_version": "2025_07",
+      "level": "province",
+      "aliases": [
+        "Đắk Lắk"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Đắk Lắk",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:ho-chi-minh",
+      "canonical_name": "Hồ Chí Minh",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Hồ Chí Minh",
+        "Sài Gòn",
+        "TP.HCM",
+        "TP HCM",
+        "HCM",
+        "TP. Hồ Chí Minh",
+        "hồ chí minh",
+        "ho chi minh",
+        "tp hcm",
+        "tphcm",
+        "hcm",
+        "hcmc",
+        "sài gòn",
+        "sai gon",
+        "saigon",
+        "Ho Chi Minh"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Hồ Chí Minh",
+      "official_code": null,
+      "preferred_search_aliases": [
+        "Sài Gòn"
+      ]
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:ba-ria---vung-tau",
+      "canonical_name": "Bà Rịa - Vũng Tàu",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Bà Rịa - Vũng Tàu"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Hồ Chí Minh",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:binh-duong",
+      "canonical_name": "Bình Dương",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Bình Dương",
+        "bình dương",
+        "binh duong"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Hồ Chí Minh",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:2025_07:ho-chi-minh",
+      "canonical_name": "Hồ Chí Minh",
+      "admin_version": "2025_07",
+      "level": "province",
+      "aliases": [
+        "Hồ Chí Minh",
+        "Sài Gòn",
+        "TP.HCM",
+        "TP HCM",
+        "HCM",
+        "TP. Hồ Chí Minh",
+        "hồ chí minh",
+        "ho chi minh",
+        "tp hcm",
+        "tphcm",
+        "hcm",
+        "hcmc",
+        "sài gòn",
+        "sai gon",
+        "saigon",
+        "Ho Chi Minh"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Hồ Chí Minh",
+      "official_code": null,
+      "preferred_search_aliases": [
+        "Sài Gòn"
+      ]
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:binh-phuoc",
+      "canonical_name": "Bình Phước",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Bình Phước"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Đồng Nai",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:dong-nai",
+      "canonical_name": "Đồng Nai",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Đồng Nai",
+        "đồng nai",
+        "dong nai"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Đồng Nai",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:2025_07:dong-nai",
+      "canonical_name": "Đồng Nai",
+      "admin_version": "2025_07",
+      "level": "province",
+      "aliases": [
+        "Đồng Nai",
+        "đồng nai",
+        "dong nai"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Đồng Nai",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:long-an",
+      "canonical_name": "Long An",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Long An"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Tây Ninh",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:tay-ninh",
+      "canonical_name": "Tây Ninh",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Tây Ninh"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Tây Ninh",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:2025_07:tay-ninh",
+      "canonical_name": "Tây Ninh",
+      "admin_version": "2025_07",
+      "level": "province",
+      "aliases": [
+        "Tây Ninh"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Tây Ninh",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:can-tho",
+      "canonical_name": "Cần Thơ",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Cần Thơ",
+        "cần thơ",
+        "can tho"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Cần Thơ",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:soc-trang",
+      "canonical_name": "Sóc Trăng",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Sóc Trăng"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Cần Thơ",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:hau-giang",
+      "canonical_name": "Hậu Giang",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Hậu Giang"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Cần Thơ",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:2025_07:can-tho",
+      "canonical_name": "Cần Thơ",
+      "admin_version": "2025_07",
+      "level": "province",
+      "aliases": [
+        "Cần Thơ",
+        "cần thơ",
+        "can tho"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Cần Thơ",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:ben-tre",
+      "canonical_name": "Bến Tre",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Bến Tre"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Vĩnh Long",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:tra-vinh",
+      "canonical_name": "Trà Vinh",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Trà Vinh"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Vĩnh Long",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:vinh-long",
+      "canonical_name": "Vĩnh Long",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Vĩnh Long"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Vĩnh Long",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:2025_07:vinh-long",
+      "canonical_name": "Vĩnh Long",
+      "admin_version": "2025_07",
+      "level": "province",
+      "aliases": [
+        "Vĩnh Long"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Vĩnh Long",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:tien-giang",
+      "canonical_name": "Tiền Giang",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Tiền Giang"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Đồng Tháp",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:dong-thap",
+      "canonical_name": "Đồng Tháp",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Đồng Tháp"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Đồng Tháp",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:2025_07:dong-thap",
+      "canonical_name": "Đồng Tháp",
+      "admin_version": "2025_07",
+      "level": "province",
+      "aliases": [
+        "Đồng Tháp"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Đồng Tháp",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:bac-lieu",
+      "canonical_name": "Bạc Liêu",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Bạc Liêu"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Cà Mau",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:ca-mau",
+      "canonical_name": "Cà Mau",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Cà Mau"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Cà Mau",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:2025_07:ca-mau",
+      "canonical_name": "Cà Mau",
+      "admin_version": "2025_07",
+      "level": "province",
+      "aliases": [
+        "Cà Mau"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Cà Mau",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:kien-giang",
+      "canonical_name": "Kiên Giang",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Kiên Giang"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "An Giang",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:an-giang",
+      "canonical_name": "An Giang",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "An Giang"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "An Giang",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:2025_07:an-giang",
+      "canonical_name": "An Giang",
+      "admin_version": "2025_07",
+      "level": "province",
+      "aliases": [
+        "An Giang"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "An Giang",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:cao-bang",
+      "canonical_name": "Cao Bằng",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Cao Bằng"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Cao Bằng",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:2025_07:cao-bang",
+      "canonical_name": "Cao Bằng",
+      "admin_version": "2025_07",
+      "level": "province",
+      "aliases": [
+        "Cao Bằng"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Cao Bằng",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:dien-bien",
+      "canonical_name": "Điện Biên",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Điện Biên"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Điện Biên",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:2025_07:dien-bien",
+      "canonical_name": "Điện Biên",
+      "admin_version": "2025_07",
+      "level": "province",
+      "aliases": [
+        "Điện Biên"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Điện Biên",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:ha-tinh",
+      "canonical_name": "Hà Tĩnh",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Hà Tĩnh"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Hà Tĩnh",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:2025_07:ha-tinh",
+      "canonical_name": "Hà Tĩnh",
+      "admin_version": "2025_07",
+      "level": "province",
+      "aliases": [
+        "Hà Tĩnh"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Hà Tĩnh",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:lai-chau",
+      "canonical_name": "Lai Châu",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Lai Châu"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Lai Châu",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:2025_07:lai-chau",
+      "canonical_name": "Lai Châu",
+      "admin_version": "2025_07",
+      "level": "province",
+      "aliases": [
+        "Lai Châu"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Lai Châu",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:lang-son",
+      "canonical_name": "Lạng Sơn",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Lạng Sơn"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Lạng Sơn",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:2025_07:lang-son",
+      "canonical_name": "Lạng Sơn",
+      "admin_version": "2025_07",
+      "level": "province",
+      "aliases": [
+        "Lạng Sơn"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Lạng Sơn",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:nghe-an",
+      "canonical_name": "Nghệ An",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Nghệ An"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Nghệ An",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:2025_07:nghe-an",
+      "canonical_name": "Nghệ An",
+      "admin_version": "2025_07",
+      "level": "province",
+      "aliases": [
+        "Nghệ An"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Nghệ An",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:quang-ninh",
+      "canonical_name": "Quảng Ninh",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Quảng Ninh"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Quảng Ninh",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:2025_07:quang-ninh",
+      "canonical_name": "Quảng Ninh",
+      "admin_version": "2025_07",
+      "level": "province",
+      "aliases": [
+        "Quảng Ninh"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Quảng Ninh",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:thanh-hoa",
+      "canonical_name": "Thanh Hóa",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Thanh Hóa"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Thanh Hóa",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:2025_07:thanh-hoa",
+      "canonical_name": "Thanh Hóa",
+      "admin_version": "2025_07",
+      "level": "province",
+      "aliases": [
+        "Thanh Hóa"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Thanh Hóa",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:son-la",
+      "canonical_name": "Sơn La",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Sơn La"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Sơn La",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:2025_07:son-la",
+      "canonical_name": "Sơn La",
+      "admin_version": "2025_07",
+      "level": "province",
+      "aliases": [
+        "Sơn La"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Sơn La",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:ha-noi",
+      "canonical_name": "Hà Nội",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Hà Nội",
+        "hà nội",
+        "ha noi",
+        "hanoi",
+        "Hanoi"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Hà Nội",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:2025_07:ha-noi",
+      "canonical_name": "Hà Nội",
+      "admin_version": "2025_07",
+      "level": "province",
+      "aliases": [
+        "Hà Nội",
+        "hà nội",
+        "ha noi",
+        "hanoi",
+        "Hanoi"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Hà Nội",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:pre_2025_07:hue",
+      "canonical_name": "Huế",
+      "admin_version": "pre_2025_07",
+      "level": "province",
+      "aliases": [
+        "Huế",
+        "huế",
+        "hue",
+        "Thừa Thiên Huế"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Huế",
+      "official_code": null,
+      "alias_provenance": {
+        "Thừa Thiên Huế": "https://baochinhphu.vn/thanh-lap-thanh-pho-hue-truc-thuoc-trung-uong-102241205150328922.htm"
+      }
+    },
+    {
+      "geo_id": "discovery:2025_07:hue",
+      "canonical_name": "Huế",
+      "admin_version": "2025_07",
+      "level": "province",
+      "aliases": [
+        "Huế",
+        "huế",
+        "hue",
+        "Thừa Thiên Huế"
+      ],
+      "source_url": "https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm",
+      "current_name": "Huế",
+      "official_code": null,
+      "alias_provenance": {
+        "Thừa Thiên Huế": "https://baochinhphu.vn/thanh-lap-thanh-pho-hue-truc-thuoc-trung-uong-102241205150328922.htm"
+      }
+    },
+    {
+      "geo_id": "discovery:local:nha-trang",
+      "canonical_name": "Nha Trang",
+      "admin_version": "local_reference",
+      "level": "locality",
+      "aliases": [
+        "Nha Trang",
+        "nha trang"
+      ],
+      "source_url": "configs/reference/vietnam_locations.v1.json; vietnam_terms.LOCAL_AREA_ALIASES",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:local:vung-tau",
+      "canonical_name": "Vũng Tàu",
+      "admin_version": "local_reference",
+      "level": "locality",
+      "aliases": [
+        "Vũng Tàu",
+        "vung tau"
+      ],
+      "source_url": "configs/reference/vietnam_locations.v1.json; vietnam_terms.LOCAL_AREA_ALIASES",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:local:cau-giay",
+      "canonical_name": "Cầu Giấy",
+      "admin_version": "local_reference",
+      "level": "locality",
+      "aliases": [
+        "Cầu Giấy",
+        "cau giay"
+      ],
+      "source_url": "configs/reference/vietnam_locations.v1.json; vietnam_terms.LOCAL_AREA_ALIASES",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:local:bac-tu-liem",
+      "canonical_name": "Bắc Từ Liêm",
+      "admin_version": "local_reference",
+      "level": "locality",
+      "aliases": [
+        "Bắc Từ Liêm",
+        "bac tu liem"
+      ],
+      "source_url": "configs/reference/vietnam_locations.v1.json; vietnam_terms.LOCAL_AREA_ALIASES",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:local:nam-tu-liem",
+      "canonical_name": "Nam Từ Liêm",
+      "admin_version": "local_reference",
+      "level": "locality",
+      "aliases": [
+        "Nam Từ Liêm",
+        "nam tu liem"
+      ],
+      "source_url": "configs/reference/vietnam_locations.v1.json; vietnam_terms.LOCAL_AREA_ALIASES",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:local:thu-duc",
+      "canonical_name": "Thủ Đức",
+      "admin_version": "local_reference",
+      "level": "locality",
+      "aliases": [
+        "Thủ Đức",
+        "thu duc"
+      ],
+      "source_url": "configs/reference/vietnam_locations.v1.json; vietnam_terms.LOCAL_AREA_ALIASES",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:2025_07:ward:nghia-do",
+      "canonical_name": "Nghĩa Đô",
+      "admin_version": "2025_07",
+      "level": "ward",
+      "aliases": [
+        "Nghĩa Đô",
+        "phường Nghĩa Đô",
+        "Nghĩa Đô Hà Nội"
+      ],
+      "source_url": "https://xaydungchinhsach.chinhphu.vn/danh-sach-3321-don-vi-hanh-chinh-cap-xa-tai-34-tinh-thanh-sau-sap-xep-sap-nhap-119250710102358656.htm",
+      "parent_name": "Hà Nội",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:2025_07:ward:tay-tuu",
+      "canonical_name": "Tây Tựu",
+      "admin_version": "2025_07",
+      "level": "ward",
+      "aliases": [
+        "Tây Tựu",
+        "phường Tây Tựu",
+        "Tây Tựu Hà Nội"
+      ],
+      "source_url": "https://xaydungchinhsach.chinhphu.vn/danh-sach-3321-don-vi-hanh-chinh-cap-xa-tai-34-tinh-thanh-sau-sap-xep-sap-nhap-119250710102358656.htm",
+      "parent_name": "Hà Nội",
+      "official_code": null
+    },
+    {
+      "geo_id": "discovery:2025_07:ward:nam-nha-trang",
+      "canonical_name": "Nam Nha Trang",
+      "admin_version": "2025_07",
+      "level": "ward",
+      "aliases": [
+        "Nam Nha Trang",
+        "phường Nam Nha Trang",
+        "Nam Nha Trang Khánh Hòa"
+      ],
+      "source_url": "https://xaydungchinhsach.chinhphu.vn/danh-sach-3321-don-vi-hanh-chinh-cap-xa-tai-34-tinh-thanh-sau-sap-xep-sap-nhap-119250710102358656.htm",
+      "parent_name": "Khánh Hòa",
+      "official_code": null
+    }
+  ]
+}

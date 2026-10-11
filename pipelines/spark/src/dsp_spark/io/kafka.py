@@ -11,6 +11,7 @@ def read_social_stream(spark: SparkSession, settings: SparkSettings):
         .option("kafka.bootstrap.servers", settings.kafka_bootstrap_servers)
         .option("subscribe", settings.social_post_topic)
         .option("startingOffsets", settings.starting_offsets)
+        .option("maxOffsetsPerTrigger", settings.max_offsets_per_trigger)
         .option("failOnDataLoss", "true")
         .option("kafka.allow.auto.create.topics", "false")
         .load()

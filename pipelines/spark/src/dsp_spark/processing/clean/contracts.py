@@ -19,6 +19,13 @@ from pyspark.sql import types as T
 from referencing import Registry, Resource
 
 CONTRACT_FILES = {
+    "bronze_envelope": "data/bronze/observation.v1.schema.json",
+    "bronze_court_observations": "data/bronze/court-observations.v1.schema.json",
+    "bronze_social_posts": "data/bronze/social-posts.v1.schema.json",
+    "bronze_social_comments": "data/bronze/social-comments.v1.schema.json",
+    "bronze_engagement_snapshots": "data/bronze/engagement-snapshots.v1.schema.json",
+    "bronze_collection_runs": "data/bronze/collection-runs.v1.schema.json",
+    "bronze_source_changes": "data/bronze/source-changes.v1.schema.json",
     "youtube_bronze": "data/bronze/youtube-api.v1.schema.json",
     "social_source_activity_daily": "data/gold/social-source-activity-daily.v1.schema.json",
     "location_market_signal_snapshot": "data/gold/location-market-signal-snapshot.v1.schema.json",
@@ -77,6 +84,7 @@ def _resolve(node, uri, documents):
 
 
 def spark_schema(kind: str) -> T.StructType:
+    bronze_timestamps = kind.startswith("bronze_")
     documents = _documents(contract_documents())
     uri = "file:///dsp-contracts/" + CONTRACT_FILES[kind]
 
@@ -96,6 +104,12 @@ def spark_schema(kind: str) -> T.StructType:
             "boolean": T.BooleanType,
         }
         if kind in scalars:
+            if (
+                bronze_timestamps
+                and kind == "string"
+                and node.get("format") == "date-time"
+            ):
+                return T.TimestampType(), nullable
             return scalars[kind](), nullable
         if kind == "array":
             child, contains_null = convert(node["items"], base)

@@ -101,6 +101,7 @@ def collect_youtube(
     envelope = {
         "schema_version": "1",
         "source": "youtube",
+        "started_at": datetime.now(UTC).isoformat(),
         "collected_at": None,
         "query_runs": [],
         "responses": [],
@@ -259,7 +260,7 @@ def collect_youtube(
                 for data in pages(
                     "commentThreads",
                     {
-                        "part": "snippet",
+                        "part": "snippet,replies",
                         "videoId": video_id,
                         "maxResults": min(100, c.max_comments_per_video),
                         "order": "time",
@@ -280,6 +281,47 @@ def collect_youtube(
                             {"video_id": video_id, "payload": comment}
                         )
                         count += 1
+                        observed_replies = 0
+                        for reply in thread.get("replies", {}).get("comments", []):
+                            parent_id = reply.get("snippet", {}).get("parentId")
+                            if parent_id != comment["id"]:
+                                envelope["errors"].append(
+                                    {
+                                        "reason": "reply_parent_conflict",
+                                        "video_id": video_id,
+                                        "comment_id": reply.get("id"),
+                                    }
+                                )
+                                continue
+                            if (
+                                reply.get("id") in seen_comments
+                                or count >= c.max_comments_per_video
+                            ):
+                                continue
+                            seen_comments.add(reply.get("id"))
+                            envelope["comments"].append(
+                                {
+                                    "video_id": video_id,
+                                    "parent_comment_id": parent_id,
+                                    "payload": reply,
+                                }
+                            )
+                            count += 1
+                            observed_replies += 1
+                        total_replies = thread.get("snippet", {}).get("totalReplyCount")
+                        if (
+                            type(total_replies) is int
+                            and total_replies > observed_replies
+                        ):
+                            envelope["errors"].append(
+                                {
+                                    "reason": "partial_replies",
+                                    "video_id": video_id,
+                                    "comment_id": comment["id"],
+                                    "expected": total_replies,
+                                    "observed": observed_replies,
+                                }
+                            )
                     if count >= c.max_comments_per_video:
                         break
             except APIStop as exc:

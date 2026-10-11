@@ -39,11 +39,27 @@ class LakehousePaths:
     court_supply_by_location: str = ""
     unresolved_court_locations: str = ""
     location_market_signal_snapshot: str = ""
+    bronze_court_observations: str = ""
+    bronze_social_posts: str = ""
+    bronze_social_comments: str = ""
+    bronze_engagement_snapshots: str = ""
+    bronze_collection_runs: str = ""
+    bronze_source_changes: str = ""
+    rejected_bronze: str = ""
+    social_comments: str = ""
 
     def __post_init__(self):
         base = storage_uri(self.base)
         object.__setattr__(self, "base", base)
         for field, suffix in {
+            "bronze_court_observations": "bronze/court_observations",
+            "bronze_social_posts": "bronze/social_posts",
+            "bronze_social_comments": "bronze/social_comments",
+            "bronze_engagement_snapshots": "bronze/engagement_snapshots",
+            "bronze_collection_runs": "bronze/collection_runs",
+            "bronze_source_changes": "bronze/source_changes",
+            "social_comments": "silver/social_comments",
+            "rejected_bronze": "rejected/bronze",
             "youtube_bronze": "bronze/youtube",
             "social_source_activity_daily": "gold/social_source_activity_daily",
             "threads_bronze": "bronze/threads",
@@ -70,6 +86,22 @@ class LakehousePaths:
     def from_env(cls):
         return cls(
             base=os.getenv("DSP_LAKEHOUSE_BASE_URI", default_base_uri()),
+            bronze_court_observations=os.getenv(
+                "DSP_DELTA_BRONZE_COURT_OBSERVATIONS_PATH", ""
+            ),
+            bronze_social_posts=os.getenv("DSP_DELTA_BRONZE_SOCIAL_POSTS_PATH", ""),
+            bronze_social_comments=os.getenv(
+                "DSP_DELTA_BRONZE_SOCIAL_COMMENTS_PATH", ""
+            ),
+            bronze_engagement_snapshots=os.getenv(
+                "DSP_DELTA_BRONZE_ENGAGEMENT_SNAPSHOTS_PATH", ""
+            ),
+            bronze_collection_runs=os.getenv(
+                "DSP_DELTA_BRONZE_COLLECTION_RUNS_PATH", ""
+            ),
+            bronze_source_changes=os.getenv("DSP_DELTA_BRONZE_SOURCE_CHANGES_PATH", ""),
+            rejected_bronze=os.getenv("DSP_DELTA_REJECTED_BRONZE_PATH", ""),
+            social_comments=os.getenv("DSP_DELTA_SOCIAL_COMMENTS_PATH", ""),
             youtube_bronze=os.getenv("DSP_DELTA_YOUTUBE_BRONZE_PATH", ""),
             social_source_activity_daily=os.getenv(
                 "DSP_DELTA_SOCIAL_SOURCE_ACTIVITY_DAILY_PATH", ""
@@ -133,8 +165,14 @@ class SparkSettings:
     s3_endpoint: str | None = None
     s3_region: str | None = None
     s3_path_style: bool = False
+    max_offsets_per_trigger: int = 1000
 
     def __post_init__(self):
+        if (
+            type(self.max_offsets_per_trigger) is not int
+            or self.max_offsets_per_trigger <= 0
+        ):
+            raise ValueError("Kafka max offsets per trigger must be positive")
         if not self.social_post_topic:
             object.__setattr__(self, "social_post_topic", default_social_topic())
         if (
@@ -155,6 +193,9 @@ class SparkSettings:
                 "DSP_KAFKA_BOOTSTRAP_SERVERS", "localhost:9092"
             ),
             social_post_topic=os.getenv("DSP_KAFKA_SOCIAL_POST_TOPIC", ""),
+            max_offsets_per_trigger=int(
+                os.getenv("DSP_KAFKA_MAX_OFFSETS_PER_TRIGGER", "1000")
+            ),
             starting_offsets=os.getenv("DSP_KAFKA_STARTING_OFFSETS", "earliest"),
             trigger_interval=os.getenv("DSP_SPARK_TRIGGER_INTERVAL", "10 seconds"),
             s3_endpoint=os.getenv("DSP_S3_ENDPOINT"),

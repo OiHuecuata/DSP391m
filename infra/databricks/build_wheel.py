@@ -31,6 +31,27 @@ def build_wheel(output: Path | None = None):
             ROOT / "apps/collector/src/dsp_collector/runtime/config.py",
             collector / "config.py",
         )
+        shutil.copyfile(
+            ROOT / "apps/collector/src/dsp_collector/runtime/bronze.py",
+            collector / "bronze.py",
+        )
+        publishers = stage / "dsp_collector/publishers"
+        publishers.mkdir()
+        shutil.copyfile(
+            ROOT / "apps/collector/src/dsp_collector/publishers/kafka.py",
+            publishers / "kafka.py",
+        )
+        for relative in (
+            "normalizers/social_post.py",
+            "normalizers/youtube.py",
+            "normalizers/court.py",
+            "sources/crawler/threads/vietnam_terms.py",
+        ):
+            target = stage / "dsp_collector" / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(
+                ROOT / "apps/collector/src/dsp_collector" / relative, target
+            )
         contracts = stage / "dsp_contracts"
         for path in (ROOT / "contracts").rglob("*.schema.json"):
             target = contracts / path.relative_to(ROOT / "contracts")

@@ -90,6 +90,13 @@ def _validate_envelope(envelope: Mapping[str, Any]) -> None:
         raise ValueError("unsupported Bronze schema_version")
 
 
+def _capture_time(post, fallback):
+    from ..normalizers.social_post import _eligible_detail
+
+    detail = _eligible_detail(post, str(post.get("id")))
+    return detail.get("_observed_at") or post.get("_observed_at") or fallback
+
+
 def process_threads_envelope(
     envelope: Mapping[str, Any],
     *,
@@ -141,7 +148,9 @@ def process_threads_envelope(
         try:
             records.append(
                 normalize_social_post(
-                    post, run_id=selected_run_id, collected_at=bronze["collected_at"]
+                    post,
+                    run_id=selected_run_id,
+                    collected_at=_capture_time(post, bronze["collected_at"]),
                 )
             )
         except (ValueError, TypeError) as exc:
@@ -157,13 +166,71 @@ def process_threads_envelope(
                 }
             )
 
+        # Accessible, identity-checked replies use the existing SocialPost
+        # transport and its comment routing flag. They never inherit the
+        # parent's inferred geography or analytical labels.
+        from ..normalizers.social_post import _eligible_detail
+        from ..sources.crawler.threads.vietnam_terms import (
+            _detect_locations,
+            _detect_topics,
+        )
+
+        source_id = str(post.get("id"))
+        detail = _eligible_detail(post, source_id)
+        for reply in detail.get("visible_replies", []):
+            try:
+                native = reply.get("raw_payload") or {}
+                text = reply.get("text")
+                projection = {
+                    **reply,
+                    **reply.get("engagement", {}),
+                    "user": native.get("user"),
+                    "is_reply": True,
+                    "matched_queries": post.get("matched_queries"),
+                    "query_contexts": post.get("query_contexts"),
+                    "detected_locations": _detect_locations(text or ""),
+                    "categories": _detect_topics(text or "")[0],
+                    "detail": None,
+                    "detail_status": None,
+                }
+                normalized = normalize_social_post(
+                    projection,
+                    run_id=selected_run_id,
+                    collected_at=reply.get("_observed_at")
+                    or detail.get("_observed_at")
+                    or post.get("_observed_at", bronze["collected_at"]),
+                )
+                normalized["parent_record_id"] = "threads:" + source_id
+                if not any(r["record_id"] == normalized["record_id"] for r in records):
+                    records.append(normalized)
+            except (ValueError, TypeError) as exc:
+                errors.append(
+                    {
+                        "parent_source_id": source_id,
+                        "source_record_id": reply.get("id"),
+                        "error": str(exc),
+                    }
+                )
+
     collection_errors = [
-        copy.deepcopy(q) for q in bronze["query_runs"] if q.get("status") == "error"
+        copy.deepcopy(q)
+        for q in bronze["query_runs"]
+        if q.get("status") == "error" or q.get("detail_failed_count", 0)
     ]
-    has_errors = bool(errors or collection_errors)
+    collection_errors.extend(
+        {"source_record_id": p.get("id"), "error": p.get("detail_error")}
+        for p in bronze["posts"]
+        if p.get("detail_status") == "error"
+    )
+    from ..runtime.acquisition import threads_outcome
+
+    acquisition = threads_outcome(bronze)
+    has_errors = bool(errors)
     status: Literal["success", "partial", "failed"] = (
         "partial" if has_errors and records else "failed" if has_errors else "success"
     )
+    if not has_errors:
+        status = acquisition["status"]
     silver = {
         "schema_version": "1",
         "source": "threads",
@@ -179,6 +246,10 @@ def process_threads_envelope(
         "rejected_count": len(errors),
         "normalization_errors": errors,
         "collection_errors": collection_errors,
+        "acquisition": acquisition,
+        "processing_status": (
+            "partial" if errors and records else "failed" if errors else "success"
+        ),
         "records": records,
     }
     _write_json_atomic(silver_path, silver)
@@ -253,6 +324,14 @@ def collect_threads(
     previous_run_id = status_tracker.status.run_id if status_tracker else None
     try:
         selected_run_id = uuid4().hex if status_tracker is None else None
+        options = dict(crawl_options or {})
+        if crawler is None and selected_run_id:
+            checkpoint = options.get("checkpoint_path")
+            if checkpoint and Path(checkpoint).exists() and options.get("resume", True):
+                saved = json.loads(Path(checkpoint).read_text())
+                if not saved.get("artifact_committed"):
+                    selected_run_id = saved["run_id"]
+            options.setdefault("run_id", selected_run_id)
         envelope = (crawler if crawler is not None else _crawl_threads)(
             query=query,
             limit=limit,
@@ -261,8 +340,9 @@ def collect_threads(
             timeout_ms=timeout_ms,
             per_query_cap=per_query_cap,
             status_tracker=status_tracker,
-            **(crawl_options or {}),
+            **options,
         )
+        selected_run_id = envelope.get("run_id") or selected_run_id
         if status_tracker is not None:
             selected_run_id = status_tracker.status.run_id
             if (
@@ -274,12 +354,26 @@ def collect_threads(
         result = process_threads_envelope(
             envelope, run_id=selected_run_id, artifact_root=artifact_root
         )
+        if options.get("checkpoint_path"):
+            from ..sources.crawler.threads.discovery import acknowledge_checkpoint
+
+            acknowledge_checkpoint(options["checkpoint_path"], result.run_id)
         if publish_kafka or (kafka_settings is not None and kafka_settings.enabled):
             result = _publish_silver(result, kafka_settings, publisher_factory)
         if status_tracker is not None:
             if result.status == "success":
                 status_tracker.succeed(
                     collected_count=result.count, output_path=result.silver_path
+                )
+            elif result.status == "partial":
+                status_tracker.partial(
+                    collected_count=result.count,
+                    output_path=result.silver_path,
+                    error=(
+                        f"{result.rejected_count} records rejected"
+                        if result.rejected_count
+                        else None
+                    ),
                 )
             else:
                 _report_failure(
@@ -322,6 +416,15 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--sort", choices=("recent", "top"), default="recent")
     parser.add_argument("--per-query-cap", type=int, default=3)
     parser.add_argument("--timeout-ms", type=int, default=60_000)
+    parser.add_argument("--discovery-config", type=Path)
+    parser.add_argument("--max-queries", type=int)
+    parser.add_argument("--max-requests", type=int)
+    parser.add_argument("--max-pages-per-query", type=int)
+    parser.add_argument("--published-after")
+    parser.add_argument("--published-before")
+    parser.add_argument("--lookback-days", type=int)
+    parser.add_argument("--checkpoint", type=Path)
+    parser.add_argument("--fresh", action="store_true")
     parser.add_argument("--headed", action="store_true")
     args = parser.parse_args(argv)
     if args.run_id is not None and args.replay is None:
@@ -349,7 +452,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "threads", args.artifact_root / "threads" / "status.json"
                 )
             )
+            from ..sources.crawler.threads.crawler import discovery_options
+
             result = collect_threads(
+                crawl_options=discovery_options(args),
                 query=args.query,
                 limit=args.limit,
                 sort=args.sort,

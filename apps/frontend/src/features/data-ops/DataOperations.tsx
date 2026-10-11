@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { controlCollection, getOperations } from "@/services/data-ops";
+import { ThreadsProgress } from "./ThreadsProgress";
+import { activeSource, continuousLabel, retainSurvey } from "./progress";
 import { formatPhysicalSize } from "./format";
 import type { Operations, SourceConfig, SourceName } from "./types";
 
@@ -14,6 +16,11 @@ function Badge({ value }: { value: string }) {
 }
 
 export function DataOperations() {
+  const [now, setNow] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1_000);
+    return () => clearInterval(timer);
+  }, []);
   const [data, setData] = useState<Operations | null>(null);
   const [draft, setDraft] = useState<SourceConfig | null>(null);
   const [error, setError] = useState("");
@@ -26,7 +33,7 @@ export function DataOperations() {
       try {
         const next = await getOperations(abort.signal);
         if (!abort.signal.aborted) {
-          setData(next); setError("");
+          setData(old => ({ ...next, collection: retainSurvey(next.collection, old?.collection) })); setError("");
           setDraft((old) => old ?? Object.fromEntries(sources.map(({ id }) => [id, { enabled: next.collection.sources[id].enabled && next.collection.sources[id].configured, interval_seconds: next.collection.sources[id].interval_seconds }])) as SourceConfig);
         }
       } catch (e) { if (!abort.signal.aborted) setError(e instanceof Error ? e.message : "Operations unavailable."); }
@@ -36,12 +43,12 @@ export function DataOperations() {
     return () => { abort.abort(); clearTimeout(timer); };
   }, []);
 
-  async function control(action: "start" | "stop" | "run" | "config" | "retry", selected?: SourceName[], retry?: string) {
+  async function control(action: "start" | "stop" | "run" | "config" | "retry" | "replay" | "continue" | "recover", selected?: SourceName[], retry?: string) {
     setBusy(true); setNotice("");
     try {
-      const collection = await controlCollection(action, action === "retry" ? { run_id: retry! } : (action === "start" || action === "config") && draft ? { sources: draft } : action === "run" ? { sources: selected ?? sources.filter(({ id }) => draft?.[id].enabled).map(({ id }) => id) } : undefined);
-      setData((old) => old ? { ...old, collection } : old);
-      setNotice(action === "config" ? "Source settings saved." : action === "retry" ? "Saved run queued for replay; source data will not be fetched again." : action === "stop" ? "Future runs stopped. The current cycle will finish safely." : action === "start" ? "Continuous collection enabled. You can close this browser." : "Run queued. Collection continues in the background.");
+      const collection = await controlCollection(action, ["retry", "replay", "continue", "recover"].includes(action) ? { run_id: retry! } : (action === "start" || action === "config") && draft ? { sources: draft } : action === "run" ? { sources: selected ?? sources.filter(({ id }) => draft?.[id].enabled).map(({ id }) => id) } : undefined);
+      setData((old) => old ? { ...old, collection: retainSurvey(collection, old.collection) } : old);
+      setNotice(action === "config" ? "Source settings saved." : ["retry", "replay"].includes(action) ? "Saved processing queued for replay; source data will not be fetched again." : action === "recover" ? "Interrupted acquisition queued with its original run ID." : action === "continue" ? "Discovery continuation queued with a new acquisition run ID." : action === "stop" ? "Future runs stopped. The current cycle will finish safely." : action === "start" ? "Continuous collection enabled. Start enables scheduled execution; an existing schedule may wait until its next run. You can close this browser." : "Run queued. Collection continues in the background.");
     } catch (e) { setNotice(e instanceof Error ? e.message : "Control failed."); }
     finally { setBusy(false); }
   }
@@ -56,18 +63,20 @@ export function DataOperations() {
       {!data && !error && <div role="status">Loading data operations…</div>}
       {data && draft && <>
         <section aria-label="Pipeline" className="card ops-panel"><div className="panel-header"><h2>Pipeline</h2><Badge value={data.pipeline.status} /></div><p className="muted">{data.pipeline.basis}</p><p className="muted">Polling every 3 seconds · Infrastructure refreshed every {data.pipeline.refresh_interval_seconds} seconds</p></section>
-        <section aria-label="Collection" className="card ops-panel"><div className="panel-header"><h2>Collection</h2><Badge value={c!.status} /></div><p className="muted">Recurring bounded cycles. Each cycle finishes ingestion and refresh before the next one begins.</p>
+        <section aria-label="Collection" className="card ops-panel"><div className="panel-header"><h2>Collection</h2><Badge value={continuousLabel(c!, !!error)} /></div><p className="muted">Recurring bounded cycles. Each cycle finishes ingestion and refresh before the next one begins. Start Continuous enables scheduled execution and may wait for an existing schedule.</p>
           <div className="ops-actions"><button disabled={busy || !sources.some(({ id }) => draft[id].enabled)} onClick={() => control("start")}>Start continuous collection</button><button disabled={busy || (!c!.continuous && !c!.active_run_id)} onClick={() => control("stop")}>Stop after current run</button><button disabled={busy || !sources.some(({ id }) => draft[id].enabled)} onClick={() => control("run")}>Run all now</button><button disabled={busy} onClick={() => control("config")}>Save source settings</button></div>
           {notice && <p role="status" className="notice ops-notice">{notice}</p>}
-          {progress && <p role="status" className="runtime-message">Stage: {progress.stage ?? "scheduled"}{progress.query_plan_count != null && ` · Threads queries ${progress.queries_processed ?? 0}/${progress.query_plan_count}`}{progress.requests_used != null && ` · YouTube API requests ${progress.requests_used}`}{progress.videos != null && ` · Videos ${progress.videos}`}{progress.comments != null && ` · Comments ${progress.comments}`}{progress.accepted != null && ` · Accepted ${progress.accepted}`}{progress.metrics?.acknowledged != null && ` · Kafka acknowledged ${progress.metrics.acknowledged}`}{progress.metrics?.consumed != null && ` · Spark consumed ${progress.metrics.consumed}`}{progress.query && ` · ${progress.query}`}</p>}
+          {progress && <p role="status" className="runtime-message">Stage: {progress.stage ?? "scheduled"}{activeSource(c!) === "youtube" && progress.requests_used != null && ` · YouTube API requests ${progress.requests_used}`}{progress.videos != null && ` · Videos ${progress.videos}`}{progress.comments != null && ` · Comments ${progress.comments}`}{progress.accepted != null && ` · Accepted ${progress.accepted}`}{progress.metrics?.acknowledged != null && ` · Kafka acknowledged ${progress.metrics.acknowledged}`}{progress.metrics?.consumed != null && ` · Spark consumed ${progress.metrics.consumed}`}{progress.query && ` · ${progress.query}`}</p>}
           <div className="ops-source-grid">{sources.map(({ id, label }) => {
-            const s = c!.sources[id]; const m = c!.active_run_id && c!.active_run_id === s.last_run_id ? progress?.metrics : s.metrics;
+            const s = c!.sources[id]; const m = activeSource(c!) === id ? progress?.metrics : s.metrics;
             return <article key={id} aria-label={`${label} collection`} className="query-card"><div className="panel-header"><h2>{label}</h2><Badge value={s.queued ? "QUEUED" : s.status} /></div>
               <label className="ops-toggle"><input type="checkbox" checked={draft[id].enabled} disabled={!s.configured || busy} onChange={(e) => setDraft({ ...draft, [id]: { ...draft[id], enabled: e.target.checked } })} />Enable {label}</label>
               <label className="ops-interval">Interval (seconds)<input aria-label={`${label} interval seconds`} type="number" min={10} max={604800} value={draft[id].interval_seconds} onChange={(e) => setDraft({ ...draft, [id]: { ...draft[id], interval_seconds: Number(e.target.value) } })} /></label>
               {id === "youtube" && <p className="muted">API configured: {s.configured ? "Yes" : "No"}</p>}
-              <dl className="ops-details"><dt>Last started</dt><dd>{date(s.last_started_at)}</dd><dt>Last completed</dt><dd>{date(s.last_completed_at)}</dd><dt>Next run</dt><dd>{date(s.next_run_at)}</dd><dt>Run ID</dt><dd>{s.last_run_id ?? "—"}</dd><dt>Discovered / exposures</dt><dd>{m?.discovered ?? "—"}</dd><dt>Accepted</dt><dd>{m?.accepted ?? "—"}</dd><dt>New / existing identities</dt><dd>{m ? `${m.new_identities ?? "—"} / ${m.existing_identities ?? "—"}` : "—"}</dd><dt>Errors</dt><dd>{m?.errors ?? "—"}</dd>{id === "youtube" && <><dt>Videos / comments</dt><dd>{m ? `${m.videos ?? 0} / ${m.comments ?? 0}` : "—"}</dd><dt>API requests / budget</dt><dd>{m?.requests ? `${m.requests.used} / ${m.requests.budget}` : "—"}</dd><dt>Stopping reason</dt><dd>{m?.stopping_reason ?? "—"}</dd></>}</dl>
-              {s.last_error && <p className="error-text">{s.last_error}</p>}<button disabled={busy || !s.configured || s.queued || ["RUNNING", "STOPPING", "RECOVERING"].includes(s.status)} onClick={() => control("run", [id])}>Run {label} now</button>{s.last_run_id && ["FAILED", "PARTIAL"].includes(s.status) && <button disabled={busy || s.queued} onClick={() => control("retry", undefined, s.last_run_id)}>Retry saved {label} run</button>}
+              {id === "threads" && <ThreadsProgress collection={c!} unavailable={!!error} now={now} />}
+              {id !== "threads" && <dl className="ops-details"><dt>Last started</dt><dd>{date(s.last_started_at)}</dd><dt>Last completed</dt><dd>{date(s.last_completed_at)}</dd><dt>Next run</dt><dd>{date(s.next_run_at)}</dd><dt>Run ID</dt><dd>{s.last_run_id ?? "—"}</dd><dt>Discovered / exposures</dt><dd>{m?.discovered ?? "—"}</dd><dt>Accepted</dt><dd>{m?.accepted ?? "—"}</dd><dt>New / existing identities</dt><dd>{m ? `${m.new_identities ?? "—"} / ${m.existing_identities ?? "—"}` : "—"}</dd><dt>Errors</dt><dd>{m?.errors ?? "—"}</dd>{id === "youtube" && <><dt>Videos / comments</dt><dd>{m ? `${m.videos ?? 0} / ${m.comments ?? 0}` : "—"}</dd><dt>API requests / budget</dt><dd>{m?.requests ? `${m.requests.used} / ${m.requests.budget}` : "—"}</dd><dt>Stopping reason</dt><dd>{m?.stopping_reason ?? "—"}</dd></>}</dl>}
+              {s.last_error && <p className="error-text">{s.last_error}</p>}<button disabled={busy || !s.configured || s.queued || ["RUNNING", "STOPPING", "RECOVERING"].includes(s.status)} onClick={() => control("run", [id])}>Run {label} now</button>{s.last_run_id && ["FAILED", "PARTIAL"].includes(s.status) && <button disabled={busy || s.queued} onClick={() => control("replay", undefined, s.last_run_id)}>Replay saved {label} processing</button>}{id === "threads" && s.pending_acquisition_run_id && <button disabled={busy || s.queued || activeSource(c!) === id} onClick={() => control("recover", undefined, s.pending_acquisition_run_id)}>Recover interrupted Threads acquisition</button>}{id === "threads" && s.last_run_id && (c!.sources.threads.survey?.has_more ?? m?.discovery?.has_more) && !s.pending_acquisition_run_id && <button disabled={busy || s.queued || activeSource(c!) === id} onClick={() => control("continue", undefined, s.last_run_id)}>Continue Threads discovery</button>}
+
             </article>;
           })}</div><p className="muted">Save source selections and intervals, or apply them with Start. Threads public search has limited results, stale content, and unreliable detail enrichment.</p>
         </section>

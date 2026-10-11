@@ -180,7 +180,10 @@ def process(config, collections, report):
 
 def _process_locked(config, collections, report):
     from delta.tables import DeltaTable
-    from dsp_collector.publishers.kafka import publish_social_batch
+    from dsp_collector.publishers.kafka import (
+        publish_bronze_batch,
+        publish_social_batch,
+    )
     from dsp_spark.io.clickhouse import (
         ClickHouseClient,
         read_gold_rows,
@@ -307,6 +310,19 @@ def _process_locked(config, collections, report):
             )
         if "threads" in collections:
             silver = Path(collections["threads"]["silver_path"])
+            raw_publication = stage(
+                "bronze_kafka_publish",
+                lambda: asdict(
+                    publish_bronze_batch(
+                        collections["threads"]["bronze_path"], settings=config.kafka
+                    )
+                ),
+            )
+            if raw_publication["flush_error"] or any(
+                e.get("event_id") or e.get("observation_id")
+                for e in raw_publication["errors"]
+            ):
+                raise RuntimeError("Bronze Kafka publication failed")
             publication = stage(
                 "kafka_publish",
                 lambda: asdict(publish_social_batch(silver, settings=config.kafka)),

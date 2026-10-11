@@ -61,7 +61,7 @@ func (h *DataOpsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		err = h.Manager.Configure(body.Sources)
-	case "collection/retry":
+	case "collection/retry", "collection/replay", "collection/recover", "collection/continue":
 		var body struct {
 			RunID string `json:"run_id"`
 		}
@@ -69,7 +69,14 @@ func (h *DataOpsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			writeJSON(w, 400, map[string]string{"error": "run_id required"})
 			return
 		}
-		err = h.Manager.Retry(body.RunID)
+		switch path {
+		case "collection/recover":
+			err = h.Manager.Recover(body.RunID)
+		case "collection/continue":
+			err = h.Manager.Continue(body.RunID)
+		default:
+			err = h.Manager.Replay(body.RunID)
+		}
 	case "collection/start":
 		var body struct {
 			Sources map[string]dataops.SourceConfig `json:"sources"`

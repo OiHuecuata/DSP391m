@@ -455,6 +455,7 @@ def fingerprint(frame):
 
 
 def verify(spark, config, collections):
+    from delta.tables import DeltaTable
     from dsp_collector.publishers.kafka import build_social_post_event
     from dsp_spark.io.clickhouse import ClickHouseClient, read_gold_rows
     from dsp_spark.io.delta import read_delta
@@ -476,11 +477,14 @@ def verify(spark, config, collections):
             raise ValueError(f"{source} Bronze run/envelope verification failed")
         bronze_counts[source] = 1
         table = "social_posts" if source == "threads" else "courts"
-        stored = (
-            read_delta(spark, getattr(config.spark.paths, table))
-            .filter(F.col("run_id") == result["run_id"])
-            .collect()
-        )
+        silver = read_delta(spark, getattr(config.spark.paths, table))
+        if source == "threads" and DeltaTable.isDeltaTable(
+            spark, config.spark.paths.social_comments
+        ):
+            silver = silver.unionByName(
+                read_delta(spark, config.spark.paths.social_comments)
+            )
+        stored = silver.filter(F.col("run_id") == result["run_id"]).collect()
         expected = json.loads(Path(result["silver_path"]).read_text())["records"]
         actual = {r.record_id: r.asDict(recursive=True) for r in stored}
         if len(stored) != len(expected) or len(actual) != len(stored):
@@ -544,7 +548,10 @@ def execute(config, summary, directory):
 
 
 def _execute_locked(config, summary, directory):
-    from dsp_collector.publishers.kafka import publish_social_batch
+    from dsp_collector.publishers.kafka import (
+        publish_bronze_batch,
+        publish_social_batch,
+    )
     from dsp_spark.io.clickhouse import (
         ClickHouseClient,
         read_gold_rows,
@@ -580,6 +587,17 @@ def _execute_locked(config, summary, directory):
         )
     summary["threads_run_id"] = collections["threads"]["run_id"]
     summary["pbplus_run_id"] = collections["pbplus"]["run_id"]
+    raw_publication = stage(
+        "bronze_kafka_publish",
+        lambda: publish_bronze_batch(
+            collections["threads"]["bronze_path"], settings=config.kafka
+        ),
+    )
+    summary["bronze_publication"] = asdict(raw_publication)
+    if raw_publication.flush_error or any(
+        e.get("event_id") or e.get("observation_id") for e in raw_publication.errors
+    ):
+        raise ValueError("Bronze observations could not be acknowledged")
     publication = stage(
         "kafka_publish",
         lambda: publish_social_batch(

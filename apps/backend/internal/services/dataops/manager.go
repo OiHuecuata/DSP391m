@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"sync"
 	"syscall"
@@ -19,18 +20,22 @@ import (
 var ErrConflict = errors.New("source already running or queued")
 
 type Source struct {
-	Enabled    bool           `json:"enabled"`
-	Configured bool           `json:"configured"`
-	Interval   int            `json:"interval_seconds"`
-	Status     string         `json:"status"`
-	LastRun    string         `json:"last_run_id,omitempty"`
-	Started    *time.Time     `json:"last_started_at,omitempty"`
-	Completed  *time.Time     `json:"last_completed_at,omitempty"`
-	Next       *time.Time     `json:"next_run_at,omitempty"`
-	Error      string         `json:"last_error,omitempty"`
-	Pending    bool           `json:"queued"`
-	RetryRun   string         `json:"retry_run_id,omitempty"`
-	Metrics    map[string]any `json:"metrics,omitempty"`
+	Enabled            bool           `json:"enabled"`
+	Configured         bool           `json:"configured"`
+	Interval           int            `json:"interval_seconds"`
+	Status             string         `json:"status"`
+	LastRun            string         `json:"last_run_id,omitempty"`
+	Started            *time.Time     `json:"last_started_at,omitempty"`
+	Completed          *time.Time     `json:"last_completed_at,omitempty"`
+	Next               *time.Time     `json:"next_run_at,omitempty"`
+	Error              string         `json:"last_error,omitempty"`
+	Pending            bool           `json:"queued"`
+	RetryRun           string         `json:"retry_run_id,omitempty"`
+	Metrics            map[string]any `json:"metrics,omitempty"`
+	PendingAcquisition string         `json:"pending_acquisition_run_id,omitempty"`
+	Operation          string         `json:"queued_operation,omitempty"`
+	Survey             map[string]any `json:"survey,omitempty"`
+	LastBatch          *Run           `json:"last_batch,omitempty"`
 }
 type Run struct {
 	ID        string         `json:"run_id"`
@@ -44,6 +49,7 @@ type Run struct {
 	Stages    map[string]any `json:"stages,omitempty"`
 	PID       int            `json:"pid,omitempty"`
 	Attempt   int            `json:"attempt"`
+	Operation string         `json:"operation,omitempty"`
 }
 type State struct {
 	StopRequested bool               `json:"stop_requested"`
@@ -69,6 +75,9 @@ type Manager struct {
 	wake             chan struct{}
 	closing          bool
 	persistenceError string
+	checkpointAt     time.Time
+	checkpointCached discoveryCheckpoint
+	checkpointError  error
 }
 type SourceConfig struct {
 	Enabled  bool `json:"enabled"`
@@ -190,12 +199,26 @@ func (m *Manager) Snapshot() State {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.refreshStatusLocked()
+	// Recovery metadata comes from a potentially large legacy checkpoint. Cache
+	// status reads; explicit recovery/continuation still validate fresh evidence.
+	if m.checkpointAt.IsZero() || time.Since(m.checkpointAt) >= 15*time.Second {
+		m.checkpointCached, m.checkpointError = m.threadsCheckpoint()
+		m.checkpointAt = time.Now()
+	}
+	if checkpoint, err := m.checkpointCached, m.checkpointError; err == nil && !checkpoint.Exported {
+		m.state.Sources["threads"].PendingAcquisition = checkpoint.RunID
+	} else {
+		m.state.Sources["threads"].PendingAcquisition = ""
+	}
 	m.state.Progress = nil
 	if m.state.Active != "" {
 		var p map[string]any
 		if b, err := os.ReadFile(filepath.Join(m.options.Directory, "runs", m.state.Active, "progress.json")); err == nil && json.Unmarshal(b, &p) == nil {
 			m.state.Progress = p
 		}
+	}
+	if m.projectSurveyLocked() {
+		m.saveLocked()
 	}
 	b, _ := json.Marshal(m.state)
 	var result State
@@ -328,7 +351,9 @@ func (m *Manager) Configure(config map[string]SourceConfig) error {
 }
 
 // Retry reuses immutable artifacts and observation identity; no source re-fetch.
-func (m *Manager) Retry(id string) error {
+func (m *Manager) Retry(id string) error  { return m.Replay(id) }
+func (m *Manager) Replay(id string) error { return m.queueSaved(id, false) }
+func (m *Manager) queueSaved(id string, recovery bool) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	r := m.findRun(id)
@@ -339,22 +364,85 @@ func (m *Manager) Retry(id string) error {
 	if m.closing || s.Pending || s.Status == "RUNNING" || s.Status == "STOPPING" || s.Status == "RECOVERING" {
 		return ErrConflict
 	}
-	if r.Status != "FAILED" && r.Status != "PARTIAL" {
+	if r.Status != "FAILED" && r.Status != "PARTIAL" && r.Status != "INTERRUPTED" {
 		return errors.New("retry requires failed or partial run")
 	}
 	if _, err := os.Stat(filepath.Join(m.options.Directory, "runs", id, "collection.json")); err != nil {
 		if _, rawErr := os.Stat(filepath.Join(m.options.Directory, "runs", id, "bronze", r.Source, id+".json")); rawErr != nil {
-			return errors.New("no saved collection available; use Run Now")
+			checkpoint, checkpointErr := m.threadsCheckpoint()
+			if !recovery || r.Source != "threads" || checkpointErr != nil || checkpoint.RunID != id || checkpoint.Exported {
+				return errors.New("no saved acquisition checkpoint or collection available")
+			}
 		}
 	}
 	s.Pending = true
 	s.RetryRun = id
+	s.Operation = "processing_replay"
+	if recovery {
+		s.Operation = "interrupted_recovery"
+	}
 	m.refreshStatusLocked()
 	if err := m.persistLocked(); err != nil {
 		return err
 	}
 	m.signal()
 	return nil
+}
+
+type discoveryCheckpoint struct {
+	RunID     string `json:"run_id"`
+	Exported  bool   `json:"exported"`
+	Committed bool   `json:"artifact_committed"`
+}
+
+func (m *Manager) threadsCheckpoint() (discoveryCheckpoint, error) {
+	path := filepath.Join(m.options.Directory, "discovery", "threads.json")
+	var config struct {
+		Threads struct {
+			Path string `json:"checkpoint_path"`
+		} `json:"threads"`
+	}
+	if b, err := os.ReadFile(m.options.Config); err == nil && json.Unmarshal(b, &config) == nil && config.Threads.Path != "" {
+		path = config.Threads.Path
+		if !filepath.IsAbs(path) {
+			path = filepath.Join(m.options.Root, path)
+		}
+	}
+	var checkpoint discoveryCheckpoint
+	b, err := os.ReadFile(path)
+	if err == nil {
+		err = json.Unmarshal(b, &checkpoint)
+		if err == nil && !regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$`).MatchString(checkpoint.RunID) {
+			err = errors.New("invalid checkpoint acquisition identity")
+		}
+	}
+	return checkpoint, err
+}
+
+// Recover resumes uncommitted acquisition; Replay/Retry retains committed evidence.
+func (m *Manager) Recover(id string) error {
+	m.mu.Lock()
+	checkpoint, err := m.threadsCheckpoint()
+	if err == nil && checkpoint.RunID == id && !checkpoint.Exported && m.findRun(id) == nil {
+		m.state.Runs = append(m.state.Runs, &Run{ID: id, Source: "threads", Status: "INTERRUPTED", Started: time.Now().UTC()})
+	}
+	m.mu.Unlock()
+	if err != nil || checkpoint.RunID != id || checkpoint.Exported {
+		return errors.New("no interrupted acquisition for this run")
+	}
+	return m.queueSaved(id, true)
+}
+
+func (m *Manager) Continue(id string) error {
+	m.mu.Lock()
+	r := m.findRun(id)
+	checkpoint, err := m.threadsCheckpoint()
+	valid := r != nil && r.Source == "threads" && err == nil && checkpoint.RunID == id && checkpoint.Exported && checkpoint.Committed
+	m.mu.Unlock()
+	if !valid {
+		return errors.New("discovery continuation requires committed source evidence")
+	}
+	return m.RunNow([]string{"threads"})
 }
 func (m *Manager) RunNow(names []string) error {
 	m.mu.Lock()
@@ -379,6 +467,7 @@ func (m *Manager) RunNow(names []string) error {
 	}
 	for _, name := range names {
 		m.state.Sources[name].Pending = true
+		m.state.Sources[name].Operation = "discovery_continuation"
 	}
 	if m.state.Active == "" {
 		m.state.StopRequested = false
@@ -463,7 +552,8 @@ func (m *Manager) tick() {
 	s.LastRun = id
 	s.Started = &now
 	s.Error = ""
-	r := &Run{ID: id, Source: name, Status: "RUNNING", Started: now}
+	r := &Run{ID: id, Source: name, Status: "RUNNING", Started: now, Operation: s.Operation}
+	s.Operation = ""
 	r.Attempt = 1
 	if previous != nil {
 		r.Attempt = max(1, previous.Attempt) + 1
@@ -491,6 +581,9 @@ func (m *Manager) run(r *Run) {
 		cmd, err = m.options.Runner(r.Source, r.ID)
 	} else {
 		cmd = exec.Command(m.options.Python, filepath.Join(m.options.Root, "orchestration/local/collection_worker.py"), "--source", r.Source, "--run-id", r.ID, "--state", m.options.Directory, "--config", m.options.Config)
+		if r.Operation != "" {
+			cmd.Args = append(cmd.Args, "--operation", r.Operation)
+		}
 		cmd.Dir = m.options.Root
 		cmd.Env = append(os.Environ(), "PYTHONUNBUFFERED=1")
 		// Terminal interrupts target the backend; its shutdown waits for this job.
@@ -542,6 +635,21 @@ func (m *Manager) finishLocked(r *Run, failure string) {
 	s.Completed = &now
 	s.Error = r.Error
 	s.Metrics = r.Metrics
+	lastBatch := *r
+	lastBatch.Stages = nil
+	s.LastBatch = &lastBatch
+	m.checkpointAt = time.Time{}
+	if r.Source == "threads" {
+		if r.Operation != "processing_replay" {
+			var p map[string]any
+			if b, err := os.ReadFile(filepath.Join(m.options.Directory, "runs", r.ID, "progress.json")); err == nil && json.Unmarshal(b, &p) == nil {
+				if survey, ok := p["survey"].(map[string]any); ok {
+					m.setSurveyLocked(survey)
+				}
+			}
+		}
+		m.setSurveyLocked(surveyFromMetrics(r.Metrics, r.Completed))
+	}
 	if m.state.Continuous && s.Enabled && !m.closing {
 		next := now.Add(sourceCadence(s))
 		s.Next = &next

@@ -1,8 +1,11 @@
 """Kafka Silver events to observation-preserving Delta via foreachBatch."""
 
 import argparse
+import os
+from datetime import UTC, datetime, timedelta
 from functools import partial
 
+from jsonschema import ValidationError
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 
@@ -32,6 +35,7 @@ def initialize_social_silver(spark, settings):
         ]
     )
     migrate_social_schema(spark, settings)
+    migrate_social_comments(spark, settings)
     empty, _ = split_social_events(spark.createDataFrame([], schema))
     merge_delta(
         empty, settings.paths.social_posts, keys=("event_id",), initialize_empty=True
@@ -74,6 +78,37 @@ def migrate_social_schema(spark, settings):
             f"`{name}` {fields[name].dataType.simpleString()}" for name in missing
         )
         spark.sql(f"ALTER TABLE delta.`{path}` ADD COLUMNS ({columns})")
+
+
+def comment_condition(frame):
+    return (F.col("source") == "youtube_comment") | F.coalesce(
+        F.col("is_reply"), F.lit(False)
+    )
+
+
+def migrate_social_comments(spark, settings):
+    """Copy historical comment observations before atomic removal from posts.
+
+    Delta files/logs remain intact for time travel. On interruption, the copy
+    merge safely replays; posts are removed only after comments are committed.
+    """
+    from delta.tables import DeltaTable
+
+    from ...io.delta import read_delta
+
+    if DeltaTable.isDeltaTable(spark, settings.paths.social_posts):
+        frame = read_delta(spark, settings.paths.social_posts)
+        comments = frame.filter(comment_condition(frame))
+        merge_delta(
+            comments,
+            settings.paths.social_comments,
+            keys=("event_id",),
+            initialize_empty=True,
+        )
+        if not comments.isEmpty():
+            DeltaTable.forPath(spark, settings.paths.social_posts).delete(
+                "source = 'youtube_comment' OR is_reply = true"
+            )
 
 
 def split_social_events(frame):
@@ -144,6 +179,84 @@ def split_social_events(frame):
 
 
 def persist_social_batch(frame, batch_id: int, *, settings: SparkSettings):
+    from dsp_collector.publishers.kafka import validate_bronze_event
+    from dsp_collector.runtime.bronze import (
+        DATASETS,
+        apply_source_policy,
+        decode,
+        encode,
+        load_policies,
+        timestamp,
+    )
+
+    from ...processing.clean.bronze import persist_observations
+
+    # New raw-source events share the topic with legacy normalized events.
+    event_type = F.get_json_object(F.col("value").cast("string"), "$.event_type")
+    bronze = frame.filter(event_type == "bronze.observed")
+    policies = load_policies(os.getenv("DSP_SOURCE_POLICY_REGISTRY"))
+    datasets = {name: [] for name in DATASETS}
+    failures = []
+    # Driver Row timestamps use local wall time. Serialize the UTC SQL value
+    # before iteration, matching the source-record replay adapter.
+    bronze = bronze.withColumn("_timestamp_micros", F.unix_micros("timestamp"))
+    for message in bronze.toLocalIterator():
+        try:
+            event = decode(bytes(message.value).decode("utf-8"))
+            row = apply_source_policy(validate_bronze_event(event), policies)
+            if bytes(message.key).decode("utf-8") != event["event_id"]:
+                raise ValueError("Kafka key conflicts with Bronze observation identity")
+            row["ingestion_metadata"] = encode(
+                {
+                    "kafka_topic": message.topic,
+                    "kafka_partition": message.partition,
+                    "kafka_offset": message.offset,
+                    "kafka_timestamp": (
+                        timestamp(
+                            datetime(1970, 1, 1, tzinfo=UTC)
+                            + timedelta(microseconds=message._timestamp_micros)
+                        )
+                        if message.timestamp
+                        else None
+                    ),
+                    "microbatch_id": batch_id,
+                }
+            )
+            datasets[event["dataset"]].append(row)
+        except (ValueError, TypeError, KeyError, ValidationError) as exc:
+            failures.append((message, str(exc)))
+    if any(datasets.values()):
+        persist_observations(frame.sparkSession, datasets, settings)
+    if failures:
+        reject_schema = split_social_events(frame.limit(0))[1].schema
+        rejected_rows = [
+            (
+                (
+                    None
+                    if "credential" in reason or "policy prohibits" in reason
+                    else bytes(m.value).decode("utf-8", errors="replace")
+                ),
+                (
+                    None
+                    if "credential" in reason or "policy prohibits" in reason
+                    else bytes(m.value)
+                ),
+                bytes(m.key).decode("utf-8", errors="replace") if m.key else None,
+                m.topic,
+                m.partition,
+                m.offset,
+                m.timestamp,
+                reason,
+                datetime.now(UTC),
+            )
+            for m, reason in failures
+        ]
+        merge_delta(
+            frame.sparkSession.createDataFrame(rejected_rows, reject_schema),
+            settings.paths.rejected_social,
+            keys=("kafka_topic", "kafka_partition", "kafka_offset"),
+        )
+    frame = frame.filter(event_type.isNull() | (event_type != "bronze.observed"))
     # foreachBatch can run again after a crash. Both writes therefore merge on
     # stable identity. Separate tables are not one cross-table transaction.
     frame = frame.persist()
@@ -155,8 +268,14 @@ def persist_social_batch(frame, batch_id: int, *, settings: SparkSettings):
             keys=("kafka_topic", "kafka_partition", "kafka_offset"),
         )
         merge_delta(
-            valid,
+            valid.filter(~comment_condition(valid)),
             settings.paths.social_posts,
+            keys=("event_id",),
+            initialize_empty=True,
+        )
+        merge_delta(
+            valid.filter(comment_condition(valid)),
+            settings.paths.social_comments,
             keys=("event_id",),
             initialize_empty=True,
         )
@@ -166,6 +285,7 @@ def persist_social_batch(frame, batch_id: int, *, settings: SparkSettings):
 
 def start_social_stream(spark, settings: SparkSettings, *, available_now: bool = False):
     migrate_social_schema(spark, settings)
+    migrate_social_comments(spark, settings)
     stream = read_social_stream(spark, settings)
     # An empty source may never invoke foreachBatch. Derive the empty Silver
     # schema through the same projection used by actual Kafka batches.

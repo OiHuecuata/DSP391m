@@ -233,7 +233,7 @@
         "string",
         "null"
       ],
-      "pattern": "^youtube:[A-Za-z0-9_-]+$"
+      "pattern": "^(?:youtube:[A-Za-z0-9_-]+|threads:[0-9]+)$"
     },
     "video_duration": {
       "type": [
@@ -309,6 +309,9 @@
           },
           "source_record_id": {
             "pattern": "^[0-9]+$"
+          },
+          "parent_record_id": {
+            "pattern": "^threads:[0-9]+$"
           }
         }
       }
@@ -352,10 +355,10 @@
       "then": {
         "properties": {
           "record_id": {
-            "pattern": "^youtube-comment:[A-Za-z0-9_-]+$"
+            "pattern": "^youtube-comment:\\S+$"
           },
           "source_record_id": {
-            "pattern": "^[A-Za-z0-9_-]+$"
+            "pattern": "^\\S+$"
           },
           "parent_record_id": {
             "type": "string",

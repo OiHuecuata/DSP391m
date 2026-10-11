@@ -20,7 +20,8 @@ from dsp_collector.sources.crawler.threads.vietnam_terms import QuerySpec
 class CrawlerScaleTests(unittest.TestCase):
     def test_query_seeds_use_canonical_plan_and_deduplicate(self):
         plan = threads.expanded_query_plan(["pickleball", " Pickleball "])
-        self.assertEqual(len(plan), 17)
+        self.assertEqual(plan, threads.expanded_query_plan(["pickleball"]))
+        self.assertGreater(len(plan), 17)
         self.assertIn("pickleball Hà Nội", [q.query for q in plan])
 
     def test_search_retains_native_payload(self):

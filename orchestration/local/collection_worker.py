@@ -46,6 +46,22 @@ def cycle_status(collection_status, error_count):
     return "PARTIAL" if collection_status == "partial" or error_count else "SUCCESS"
 
 
+def crawler_progress(snapshot):
+    """Project small structured fields; coverage is independent of local attempts."""
+    metadata = snapshot.get("metadata", {})
+    return {
+        "stage": "collecting",
+        "queries_processed": snapshot["queries_processed"],
+        "query_plan_count": snapshot["query_plan_count"],
+        "discovered": snapshot["raw_count"],
+        "accepted": snapshot["collected_count"],
+        "query": (snapshot.get("current_query") or {}).get("query"),
+        "batch": metadata.get("batch"),
+        "survey": metadata.get("survey"),
+        "operation": metadata.get("operation"),
+    }
+
+
 def execute(source, run_id, directory, policy, report, update):
     with pipeline.lakehouse_lock(pipeline.resolve_config()):
         return _execute_locked(source, run_id, directory, policy, report, update)
@@ -59,6 +75,7 @@ def _execute_locked(source, run_id, directory, policy, report, update):
     from dsp_collector.jobs.collect_youtube import process_youtube_envelope
     from dsp_collector.publishers.kafka import (
         build_social_post_event,
+        publish_bronze_batch,
         publish_social_batch,
     )
     from dsp_collector.runtime.status import CrawlerStatusTracker
@@ -118,19 +135,15 @@ def _execute_locked(source, run_id, directory, policy, report, update):
 
         def _persist(self):
             super()._persist()
-            s = self.snapshot()
-            update(
-                {
-                    "stage": "collecting",
-                    "queries_processed": s["queries_processed"],
-                    "query_plan_count": s["query_plan_count"],
-                    "discovered": s["raw_count"],
-                    "accepted": s["collected_count"],
-                    "query": (s.get("current_query") or {}).get("query"),
-                }
-            )
+            update(crawler_progress(self.snapshot()))
 
     manifest = directory / "collection.json"
+    if (
+        report.get("operation") == "processing_replay"
+        and not manifest.is_file()
+        and not (directory / "bronze" / source / f"{run_id}.json").is_file()
+    ):
+        raise RuntimeError("processing replay requires saved acquisition evidence")
     if manifest.is_file():
         result = json.loads(manifest.read_text())
         result["reused_collection"] = True
@@ -172,7 +185,13 @@ def _execute_locked(source, run_id, directory, policy, report, update):
                 envelope, run_id=run_id, artifact_root=directory
             )
         elif source == "threads":
-            envelope = crawl_threads_posts(status_tracker=tracker, **policy[source])
+            options = {**policy[source]}
+            options.setdefault(
+                "checkpoint_path",
+                directory.parent.parent / "discovery" / "threads.json",
+            )
+            options["run_id"] = run_id
+            envelope = crawl_threads_posts(status_tracker=tracker, **options)
             collected = process_threads_envelope(
                 envelope, run_id=run_id, artifact_root=directory
             )
@@ -194,15 +213,43 @@ def _execute_locked(source, run_id, directory, policy, report, update):
                 tracker.succeed(
                     collected_count=collected.count, output_path=collected.silver_path
                 )
+            elif collected.status == "partial":
+                tracker.partial(
+                    collected_count=collected.count, output_path=collected.silver_path
+                )
             else:
                 tracker.fail("Collection partially normalized; see saved batch")
         result = json.loads(json.dumps(asdict(collected), default=str))
         result["collection_seconds"] = time.monotonic() - t
         result["reused_collection"] = replayed
         pipeline.write_report(manifest, result)
+    if source == "threads":
+        checkpoint = Path(
+            policy[source].get("checkpoint_path")
+            or directory.parent.parent / "discovery" / "threads.json"
+        )
+        if checkpoint.is_file():
+            saved_checkpoint = json.loads(checkpoint.read_text())
+            if saved_checkpoint.get("run_id") == run_id:
+                from dsp_collector.sources.crawler.threads.discovery import (
+                    acknowledge_checkpoint,
+                )
+
+                acknowledge_checkpoint(checkpoint, run_id)
     report["collection"] = result
     bronze = json.loads(Path(result["bronze_path"]).read_text())
-    records = json.loads(Path(result["silver_path"]).read_text())["records"]
+    batch = json.loads(Path(result["silver_path"]).read_text())
+    records = batch["records"]
+    acquisition = None
+    if source == "threads":
+        from dsp_collector.runtime.acquisition import threads_outcome
+
+        acquisition = threads_outcome(bronze)
+        if (
+            not batch.get("normalization_errors")
+            and not acquisition["technical_failures"]
+        ):
+            result["status"] = acquisition["status"]
     errors = (
         len(bronze.get("errors", [])) + result["rejected_count"]
         if source == "youtube"
@@ -210,6 +257,8 @@ def _execute_locked(source, run_id, directory, policy, report, update):
         + sum(p.get("detail_status") == "error" for p in bronze.get("posts", []))
         + result["rejected_count"]
     )
+    if source == "threads":
+        errors = acquisition["technical_failures"] + result["rejected_count"]
     report["metrics"] = {
         "accepted": len(records),
         "errors": errors,
@@ -220,16 +269,42 @@ def _execute_locked(source, run_id, directory, policy, report, update):
         "videos": len(bronze.get("videos", [])),
         "comments": len(bronze.get("comments", [])),
         "queries": len(bronze.get("query_runs", [])),
+        "discovery": bronze.get("discovery"),
+        "acquisition": acquisition,
+        "operation": (
+            "processing_replay"
+            if result.get("reused_collection")
+            else (
+                "interrupted_recovery"
+                if bronze.get("operation") == "interrupted_recovery"
+                else "discovery_continuation"
+            )
+        ),
+        "processing_status": batch.get(
+            "processing_status",
+            "success" if not batch.get("normalization_errors") else "partial",
+        ),
         "requests": bronze.get("requests"),
         "api_requests_this_attempt": (
             0
             if result.get("reused_collection")
-            else bronze.get("requests", {}).get("used", 0)
+            else (
+                bronze.get("discovery", {}).get("requests_this_invocation", 0)
+                if source == "threads"
+                else bronze.get("requests", {}).get("used", 0)
+            )
         ),
         "stopping_reason": bronze.get(
             "stopping_reason", bronze.get("collection_stopping_reason")
         ),
     }
+    if (
+        source == "threads"
+        and not result.get("reused_collection")
+        and isinstance(report["metrics"]["discovery"], dict)
+        and bronze.get("collected_at")
+    ):
+        report["metrics"]["discovery"]["updated_at"] = bronze["collected_at"]
     update({"stage": "collected", "metrics": report["metrics"]})
     spark = stage("spark_start", lambda: create_spark(config.spark, kafka=True))
     # SparkSession is not a wire result.
@@ -246,6 +321,11 @@ def _execute_locked(source, run_id, directory, policy, report, update):
             if DeltaTable.isDeltaTable(spark, table_path)
             else None
         )
+        if source != "pbplus" and DeltaTable.isDeltaTable(
+            spark, config.spark.paths.social_comments
+        ):
+            comments = read_delta(spark, config.spark.paths.social_comments)
+            before = before.unionByName(comments) if before is not None else comments
         previous_ids = (
             {r[0] for r in before.select("record_id").distinct().collect()}
             if before is not None
@@ -261,6 +341,9 @@ def _execute_locked(source, run_id, directory, policy, report, update):
                 spark, result["bronze_path"], config.spark, source=source
             ),
         )
+        report["metrics"]["bronze_ingestion_status"] = "success"
+        if report["stages"]["bronze"]["result"].get("rejected_count"):
+            report["metrics"]["bronze_ingestion_status"] = "partial"
         if source == "pbplus":
             stage(
                 "court_silver",
@@ -269,6 +352,19 @@ def _execute_locked(source, run_id, directory, policy, report, update):
             if not DeltaTable.isDeltaTable(spark, config.spark.paths.social_posts):
                 initialize_social_silver(spark, config.spark)
         else:
+            raw_publication = stage(
+                "bronze_kafka",
+                lambda: asdict(
+                    publish_bronze_batch(result["bronze_path"], settings=config.kafka)
+                ),
+            )
+            errors += raw_publication["failed_count"]
+            report["metrics"]["errors"] = errors
+            if raw_publication["flush_error"] or any(
+                e.get("event_id") or e.get("observation_id")
+                for e in raw_publication["errors"]
+            ):
+                raise RuntimeError("bronze_kafka_delivery_failed")
             pub = stage(
                 "kafka",
                 lambda: asdict(
@@ -292,9 +388,14 @@ def _execute_locked(source, run_id, directory, policy, report, update):
                 "seconds": time.monotonic() - t,
                 "input_records": consumed,
             }
-        actual = (
-            read_delta(spark, table_path).filter(F.col("run_id") == run_id).collect()
-        )
+        current = read_delta(spark, table_path)
+        if source != "pbplus" and DeltaTable.isDeltaTable(
+            spark, config.spark.paths.social_comments
+        ):
+            current = current.unionByName(
+                read_delta(spark, config.spark.paths.social_comments)
+            )
+        actual = current.filter(F.col("run_id") == run_id).collect()
         actual_map = {r.record_id: r.asDict(recursive=True) for r in actual}
         if len(actual) != len(records) or any(
             any(actual_map.get(r["record_id"], {}).get(k) != v for k, v in r.items())
@@ -380,6 +481,16 @@ def main(argv=None):
         "--source", choices=("threads", "youtube", "pbplus"), required=True
     )
     parser.add_argument("--run-id", required=True)
+    parser.add_argument(
+        "--operation",
+        choices=(
+            "auto",
+            "processing_replay",
+            "interrupted_recovery",
+            "discovery_continuation",
+        ),
+        default="auto",
+    )
     parser.add_argument("--state", type=Path, required=True)
     parser.add_argument(
         "--config", type=Path, default=ROOT / "configs/collection/data_ops.v1.json"
@@ -395,6 +506,7 @@ def main(argv=None):
         "status": "RUNNING",
         "stages": {},
         "metrics": {},
+        "operation": args.operation,
     }
     current_progress = {}
 
@@ -405,6 +517,8 @@ def main(argv=None):
             directory / "progress.json",
             {
                 "run_id": args.run_id,
+                "source": args.source,
+                "operation": args.operation,
                 "updated_at": datetime.now(UTC).isoformat(),
                 **current_progress,
             },
@@ -414,6 +528,7 @@ def main(argv=None):
         try:
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
             policy = json.loads(args.config.read_text())
+            report["collection_configuration"] = policy.get(args.source)
             import shutil
 
             if shutil.disk_usage(args.state).free < policy.get(
@@ -438,6 +553,30 @@ def main(argv=None):
         finally:
             report["completed_at"] = datetime.now(UTC).isoformat()
             pipeline.write_report(directory / "summary.json", report)
+            if (
+                report["status"] == "FAILED"
+                and report.get("stage") == "collecting"
+                and not (
+                    directory / "bronze" / args.source / f"{args.run_id}.json"
+                ).exists()
+            ):
+                try:
+                    from dsp_collector.publishers.kafka import publish_bronze_batch
+
+                    publication = publish_bronze_batch(
+                        directory / "summary.json",
+                        settings=pipeline.resolve_config().kafka,
+                    )
+                    report["stages"]["bronze_failed_run"] = {
+                        "result": asdict(publication)
+                    }
+                except Exception:  # noqa: BLE001
+                    # Keep terminal source status replayable if ingestion is unavailable.
+                    report["stages"]["bronze_failed_run"] = {
+                        "status": "failed",
+                        "error": "Terminal status retained in summary.json for ingestion replay",
+                    }
+                pipeline.write_report(directory / "summary.json", report)
             update(
                 {
                     "stage": "finished",

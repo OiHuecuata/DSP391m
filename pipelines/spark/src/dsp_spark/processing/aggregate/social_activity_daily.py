@@ -56,7 +56,12 @@ def eligible_location_posts(latest: DataFrame) -> DataFrame:
 def social_activity_daily(silver: DataFrame, *, generated_at: str) -> DataFrame:
     """Full deterministic aggregation; only the supplied rebuild time varies."""
     mentions = eligible_location_posts(
-        latest_social_posts(silver.filter(F.col("source") == "threads"))
+        latest_social_posts(
+            silver.filter(
+                (F.col("source") == "threads")
+                & ~F.coalesce(F.col("is_reply"), F.lit(False))
+            )
+        )
     )
     grouped = mentions.groupBy("activity_date", "location_id", "location_name").agg(
         F.count("record_id").alias("post_count"),

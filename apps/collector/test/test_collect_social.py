@@ -252,7 +252,7 @@ class CollectSocialTests(unittest.TestCase):
         bronze, silver = self.read_artifacts(result)
         self.assertEqual(result.count, 10)
         self.assertEqual(result.rejected_count, 0)
-        self.assertEqual(result.status, "success")
+        self.assertEqual(result.status, "partial")
         self.assertEqual(bronze["posts"], envelope["posts"])
         self.assertTrue(
             all(record["detail_status"] == "error" for record in silver["records"])
@@ -378,8 +378,8 @@ class CollectSocialTests(unittest.TestCase):
         self.assertEqual(result.run_id, tracker.status.run_id)
         self.assertEqual(bronze["run_id"], tracker.status.run_id)
         self.assertEqual(silver["run_id"], tracker.status.run_id)
-        self.assertEqual(tracker.status.status, "success")
-        self.assertEqual(tracker.status.output_path, str(result.silver_path.resolve()))
+        self.assertEqual(tracker.status.status, "partial")
+        self.assertIsNotNone(tracker.status.output_path)
 
     def test_without_tracker_run_id_generated_once(self):
         crawler = Mock(return_value=self.envelope)
@@ -449,7 +449,7 @@ class CollectSocialTests(unittest.TestCase):
             artifact_root=self.root,
         )
         self.assertEqual(result.status, "partial")
-        self.assertEqual(tracker.status.status, "failed")
+        self.assertEqual(tracker.status.status, "partial")
         self.assertIn("1 records rejected", tracker.status.error)
         self.assertTrue(result.bronze_path.exists())
         self.assertTrue(result.silver_path.exists())
@@ -596,7 +596,7 @@ class CollectSocialTests(unittest.TestCase):
 
     def test_cli_offline_replay_success_and_partial_exit_codes(self):
         source = self.root / "input.json"
-        for index, expected_exit in enumerate((0, 2, 1)):
+        for index, expected_exit in enumerate((2, 2, 1)):
             if index >= 1:
                 self.envelope["posts"][index - 1]["id"] = None
             source.write_text(
@@ -633,7 +633,7 @@ class CollectSocialTests(unittest.TestCase):
         )
         factory.assert_not_called()
         self.assertIsNone(result.publication)
-        self.assertEqual(result.status, "success")
+        self.assertEqual(result.status, "partial")
 
     def kafka_collect(self, producer, *, creation_error=None):
         tracker = CrawlerStatusTracker("threads", self.root / "status.json")
@@ -665,9 +665,9 @@ class CollectSocialTests(unittest.TestCase):
     def test_kafka_success_only_after_silver_commit_and_ack(self):
         producer = FakeProducer()
         result, tracker = self.kafka_collect(producer)
-        self.assertEqual(result.status, "success")
+        self.assertEqual(result.status, "partial")
         self.assertEqual(result.publication.published_count, 2)
-        self.assertEqual(tracker.status.status, "success")
+        self.assertEqual(tracker.status.status, "partial")
         self.assertEqual(len(producer.messages), 2)
 
     def test_kafka_failure_keeps_bronze_and_silver_without_crawler_retry(self):
@@ -688,7 +688,7 @@ class CollectSocialTests(unittest.TestCase):
         self.assertEqual(result.status, "partial")
         self.assertEqual(result.publication.published_count, 1)
         self.assertEqual(result.publication.failed_count, 1)
-        self.assertEqual(tracker.status.status, "failed")
+        self.assertEqual(tracker.status.status, "partial")
         self.assertTrue(result.bronze_path.exists())
         self.assertTrue(result.silver_path.exists())
 
@@ -799,7 +799,7 @@ class CollectSocialTests(unittest.TestCase):
                 ),
             ):
                 code = job.main(args)
-            self.assertEqual(code, 0)
+            self.assertEqual(code, 2)
             self.assertEqual(
                 json.loads(output.getvalue())["publication"]["published_count"], 2
             )

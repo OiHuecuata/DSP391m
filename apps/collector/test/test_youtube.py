@@ -204,7 +204,77 @@ class YouTubeTests(unittest.TestCase):
         self.assertEqual(len(e["comments"]), 3)
         self.assertEqual(e["requests"]["by_endpoint"]["commentThreads"], 1)
 
-    def test_comments_disabled_keeps_video_success(self):
+    def test_opaque_comment_and_reply_identifiers_are_preserved(self):
+        raw = comment()["snippet"]["topLevelComment"]
+        raw["id"] = "comment_1.reply-2"
+        raw["snippet"]["parentId"] = "comment_1"
+        record = normalize_youtube(
+            raw,
+            run_id="opaque",
+            collected_at="2026-10-10T00:00:00Z",
+            video_id="video_00001",
+        )
+        event = build_social_post_event(record)
+        self.assertEqual(event["record_id"], "youtube-comment:comment_1.reply-2")
+        self.assertTrue(record["is_reply"])
+
+    def test_embedded_replies_are_collected_with_parent_evidence(self):
+        def handler(r, n):
+            if r.url.path.endswith("/commentThreads"):
+                thread = comment()
+                thread["snippet"]["totalReplyCount"] = 1
+                thread["replies"] = {
+                    "comments": [
+                        {
+                            "id": "reply_1",
+                            "snippet": {
+                                "parentId": "comment_1",
+                                "textOriginal": "reply",
+                            },
+                        }
+                    ]
+                }
+                return {"items": [thread]}
+            return self.handler(r, n)
+
+        e, requests = self.run_api(handler)
+        self.assertEqual(len(e["comments"]), 2)
+        self.assertEqual(e["comments"][1]["parent_comment_id"], "comment_1")
+        self.assertEqual(e["requests"]["by_endpoint"]["comments"], 0)
+        self.assertEqual(requests[-1].url.params["part"], "snippet,replies")
+
+    def test_incomplete_embedded_replies_are_recorded_as_partial(self):
+        def handler(r, n):
+            if r.url.path.endswith("/commentThreads"):
+                thread = comment()
+                thread["snippet"]["totalReplyCount"] = 5
+                thread["replies"] = {
+                    "comments": [
+                        {
+                            "id": "reply_1",
+                            "snippet": {
+                                "parentId": "comment_1",
+                                "textOriginal": "reply",
+                            },
+                        }
+                    ]
+                }
+                return {"items": [thread]}
+            return self.handler(r, n)
+
+        e, _ = self.run_api(handler)
+        self.assertEqual(len(e["comments"]), 2)
+        self.assertEqual(e["errors"][0]["reason"], "partial_replies")
+        with tempfile.TemporaryDirectory() as d:
+            result = process_youtube_envelope(
+                e, run_id="partial-replies", artifact_root=d
+            )
+            self.assertEqual(result.status, "partial")
+            self.assertEqual(result.count, 3)
+
+    def test_comments_disabled_preserves_video_and_marks_comment_collection_partial(
+        self,
+    ):
         e, _ = self.run_api(
             lambda r, n: (
                 (403, {"error": {"errors": [{"reason": "commentsDisabled"}]}})
@@ -214,7 +284,7 @@ class YouTubeTests(unittest.TestCase):
         )
         with tempfile.TemporaryDirectory() as d:
             result = process_youtube_envelope(e, run_id="disabled", artifact_root=d)
-        self.assertEqual(result.status, "success")
+        self.assertEqual(result.status, "partial")
         self.assertEqual(result.count, 1)
 
     def test_empty_comments_are_clean(self):

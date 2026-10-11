@@ -283,6 +283,7 @@ def scrape_court(
         "url": url,
         "has_media": _section_has_media(soup, "Hình ảnh sân"),
         "court_name": name,
+        "description": introduction or None,
         "number_of_courts": number_of_courts,
     }
     if address:
@@ -313,6 +314,7 @@ def crawl_pbplus_courts(
     if retries < 0:
         raise ValueError("retries must be >= 0")
 
+    started_at = datetime.now(UTC).isoformat()
     listing_soup = get_page(LIST_URL, timeout=timeout, retries=retries)
     all_links = find_court_links(listing_soup)
     raw_links = [
@@ -374,6 +376,7 @@ def crawl_pbplus_courts(
         "source": "pbplus",
         "seed_query": "pickleball courts",
         "sort": "directory",
+        "started_at": started_at,
         "collected_at": datetime.now(UTC).isoformat(),
         "count": len(posts),
         "query_runs": [query_run],

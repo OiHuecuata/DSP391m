@@ -39,6 +39,9 @@ class QuerySpec:
     geo_name: str | None
     priority: int
     kind: str  # country | city | fallback
+    query_category: str | None = None
+    geo_provenance: tuple[dict, ...] = ()
+    semantic_provenance: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -428,9 +431,16 @@ def _detect_locations(text: str) -> list[str]:
     return list(dict.fromkeys(locations))
 
 
-def _detect_topics(text: str) -> tuple[list[str], list[str]]:
+def _detect_topics(text: str, *, expanded: bool = False) -> tuple[list[str], list[str]]:
     categories: list[str] = []
     signals: list[str] = []
+    from .discovery import semantic_vocabulary
+
+    for category, concepts in semantic_vocabulary().items() if expanded else []:
+        hits = _hits(text, [c["concept"] for c in concepts])
+        if hits:
+            categories.append(category)
+            signals.extend(f"topic:{category}:{term}" for term in hits[:3])
 
     for category, terms in TOPIC_TERMS.items():
         matched = _hits(text, terms)
@@ -472,6 +482,7 @@ def assess_post(
     post: dict[str, Any],
     *,
     query_spec: QuerySpec,
+    expanded_topics: bool = False,
 ) -> RelevanceAssessment:
     """Score one raw post against the Vietnam pickleball research scope.
 
@@ -483,8 +494,17 @@ def assess_post(
     """
     text = str(post.get("text") or "").strip()
 
-    categories, topic_signals = _detect_topics(text)
+    categories, topic_signals = _detect_topics(text, expanded=expanded_topics)
     locations = _detect_locations(text)
+    if expanded_topics:
+        from .discovery import national_geography
+
+        for reference in national_geography():
+            if (
+                _hits(text, reference["aliases"])
+                and reference["canonical_name"] not in locations
+            ):
+                locations.append(reference["canonical_name"])
     vietnamese_like, language_signals = _detect_vietnamese(text)
     subject_hits = _hits(text, PICKLEBALL_TERMS)
     subject_present = bool(subject_hits)
@@ -537,9 +557,14 @@ def adapt_post(
     post: dict[str, Any],
     *,
     query_spec: QuerySpec,
+    expanded_topics: bool = False,
 ) -> dict[str, Any] | None:
     """Return an annotated post when relevant, otherwise ``None``."""
-    assessment = assess_post(post, query_spec=query_spec)
+    from .discovery import query_id
+
+    assessment = assess_post(
+        post, query_spec=query_spec, expanded_topics=expanded_topics
+    )
 
     if not assessment.is_relevant:
         return None
@@ -553,6 +578,9 @@ def adapt_post(
                 "kind": query_spec.kind,
                 "geo_key": query_spec.geo_key,
                 "geo_name": query_spec.geo_name,
+                "query_category": query_spec.query_category,
+                "geo_provenance": list(query_spec.geo_provenance),
+                "query_id": query_id(query_spec.query),
             }
         ],
         "categories": list(assessment.categories),
