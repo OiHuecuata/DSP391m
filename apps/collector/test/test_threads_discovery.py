@@ -50,6 +50,51 @@ def post(identity, text="Tìm sân pickleball Hà Nội", when=EPOCH):
 
 
 class ThreadsDiscoveryTests(unittest.TestCase):
+    def test_live_coverage_is_checkpoint_confirmed_and_survives_continuation(self):
+        from dsp_collector.runtime.status import CrawlerStatusTracker
+
+        class RecordingTracker(CrawlerStatusTracker):
+            def __init__(self, path):
+                self.updates = []
+                super().__init__("threads", path)
+
+            def _persist(self):
+                super()._persist()
+                self.updates.append(self.snapshot())
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            checkpoint = root / "checkpoint.json"
+            first = RecordingTracker(root / "first.json")
+            self.crawl([([], {})], max_requests=1, run_id="first",
+                       checkpoint_path=checkpoint, status_tracker=first)
+            initial = next(s["metadata"] for s in first.updates
+                           if s["metadata"].get("survey"))
+            self.assertEqual(initial["batch"]["requests_used"], 0)
+            self.assertEqual(initial["survey"]["completed_queries"], 0)
+            self.assertEqual(first.snapshot()["metadata"]["survey"]["completed_queries"], 1)
+            acknowledge_checkpoint(checkpoint, "first")
+            second = RecordingTracker(root / "second.json")
+            self.crawl([([], {})], max_requests=1, run_id="second",
+                       checkpoint_path=checkpoint, status_tracker=second)
+            initial = next(s["metadata"] for s in second.updates
+                           if s["metadata"].get("survey"))
+            self.assertEqual(initial["batch"]["requests_used"], 0)
+            self.assertEqual(initial["survey"]["completed_queries"], 1)
+            final = second.snapshot()["metadata"]
+            self.assertEqual(final["survey"]["completed_queries"], 2)
+            self.assertEqual(final["batch"]["queries_executed"], 1)
+            self.assertEqual(final["survey"]["plan_id"], initial["survey"]["plan_id"])
+            self.assertTrue(final["survey"]["updated_at"])
+
+    def test_navigation_observer_counts_retries_without_query_completion(self):
+        usage = []
+        budget = RequestBudget(3, None, on_consume=lambda: usage.append(budget.used))
+        page = PublicPage(Mock(), budget)
+        page.goto("https://www.threads.com/search?q=pickleball")
+        page.reload()
+        self.assertEqual(usage, [1, 2])
+
     def test_legacy_plan_exact_17_is_geographic_vocabulary_not_query_budget(self):
         legacy = build_query_plan("pickleball")
         self.assertEqual(len(legacy), 17)

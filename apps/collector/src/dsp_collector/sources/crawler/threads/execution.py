@@ -221,10 +221,45 @@ def execute(options):
         consecutive = 0
         stop = "query_plan_exhausted"
 
-        def persist():
+        def publish_progress(survey=None):
+            c._status_update(
+                o["status_tracker"], "discovery_progress",
+                batch={
+                    "requests_used": budget.used,
+                    "max_requests": o["max_requests"],
+                    "max_queries": o["max_queries"],
+                    "queries_executed": sum(
+                        bool(q.get("search_navigations")) for q in state["query_runs"]
+                    ),
+                    "technical_errors": sum(
+                        q.get("status") == "error" for q in state["query_runs"]
+                    ),
+                },
+                survey=survey,
+            )
+
+        # Navigation telemetry must not imply that a query is completed.
+        budget.on_consume = publish_progress
+
+        def persist(confirm_coverage=False):
             state["seen_ids"] = sorted(seen)
             if path:
                 save_checkpoint(path, state)
+            if not path or not confirm_coverage:
+                publish_progress()
+                return
+            cov = coverage(state, plan)
+            publish_progress({
+                **{k: cov[k] for k in (
+                    "completed_queries", "remaining_queries", "eligible_queries",
+                    "deferred_queries", "retry_pending_queries", "has_more",
+                )},
+                "survey_id": state["survey_id"],
+                "plan_id": state["plan_id"],
+                "planner_version": PLANNER_VERSION,
+                "candidate_queries": len(plan),
+                "updated_at": datetime.now(UTC).isoformat(),
+            })
 
         c._status_update(
             o["status_tracker"],
@@ -240,7 +275,7 @@ def execute(options):
                 "operation": operation,
             },
         )
-        persist()
+        persist(confirm_coverage=True)
         with c.browser_factory() as playwright:
             browser = playwright.chromium.launch(headless=o["headless"])
             search = PublicPage(
@@ -718,7 +753,7 @@ def execute(options):
                             duration_seconds=time.monotonic() - began,
                             coverage_status=work["status"],
                         )
-                        persist()
+                        persist(confirm_coverage=True)
                     method = (
                         "query_failed"
                         if run["status"] == "error"
@@ -880,5 +915,5 @@ def execute(options):
             "survey_complete"
         ]
         state.update(exported=True, envelope=envelope)
-        persist()
+        persist(confirm_coverage=True)
         return envelope

@@ -34,6 +34,8 @@ type Source struct {
 	Metrics            map[string]any `json:"metrics,omitempty"`
 	PendingAcquisition string         `json:"pending_acquisition_run_id,omitempty"`
 	Operation          string         `json:"queued_operation,omitempty"`
+	Survey             map[string]any `json:"survey,omitempty"`
+	LastBatch          *Run           `json:"last_batch,omitempty"`
 }
 type Run struct {
 	ID        string         `json:"run_id"`
@@ -73,6 +75,9 @@ type Manager struct {
 	wake             chan struct{}
 	closing          bool
 	persistenceError string
+	checkpointAt     time.Time
+	checkpointCached discoveryCheckpoint
+	checkpointError  error
 }
 type SourceConfig struct {
 	Enabled  bool `json:"enabled"`
@@ -194,7 +199,13 @@ func (m *Manager) Snapshot() State {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.refreshStatusLocked()
-	if checkpoint, err := m.threadsCheckpoint(); err == nil && !checkpoint.Exported {
+	// Recovery metadata comes from a potentially large legacy checkpoint. Cache
+	// status reads; explicit recovery/continuation still validate fresh evidence.
+	if m.checkpointAt.IsZero() || time.Since(m.checkpointAt) >= 15*time.Second {
+		m.checkpointCached, m.checkpointError = m.threadsCheckpoint()
+		m.checkpointAt = time.Now()
+	}
+	if checkpoint, err := m.checkpointCached, m.checkpointError; err == nil && !checkpoint.Exported {
 		m.state.Sources["threads"].PendingAcquisition = checkpoint.RunID
 	} else {
 		m.state.Sources["threads"].PendingAcquisition = ""
@@ -205,6 +216,9 @@ func (m *Manager) Snapshot() State {
 		if b, err := os.ReadFile(filepath.Join(m.options.Directory, "runs", m.state.Active, "progress.json")); err == nil && json.Unmarshal(b, &p) == nil {
 			m.state.Progress = p
 		}
+	}
+	if m.projectSurveyLocked() {
+		m.saveLocked()
 	}
 	b, _ := json.Marshal(m.state)
 	var result State
@@ -621,6 +635,21 @@ func (m *Manager) finishLocked(r *Run, failure string) {
 	s.Completed = &now
 	s.Error = r.Error
 	s.Metrics = r.Metrics
+	lastBatch := *r
+	lastBatch.Stages = nil
+	s.LastBatch = &lastBatch
+	m.checkpointAt = time.Time{}
+	if r.Source == "threads" {
+		if r.Operation != "processing_replay" {
+			var p map[string]any
+			if b, err := os.ReadFile(filepath.Join(m.options.Directory, "runs", r.ID, "progress.json")); err == nil && json.Unmarshal(b, &p) == nil {
+				if survey, ok := p["survey"].(map[string]any); ok {
+					m.setSurveyLocked(survey)
+				}
+			}
+		}
+		m.setSurveyLocked(surveyFromMetrics(r.Metrics, r.Completed))
+	}
 	if m.state.Continuous && s.Enabled && !m.closing {
 		next := now.Add(sourceCadence(s))
 		s.Next = &next

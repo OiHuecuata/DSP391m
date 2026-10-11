@@ -289,6 +289,13 @@ class CrawlerStatusTracker:
         self._require_running()
         self._touch()
 
+    def discovery_progress(self, *, batch: dict, survey: dict | None = None) -> None:
+        """Structured navigation telemetry and last persisted coverage, in separate units."""
+        self._status.metadata["batch"] = batch
+        if survey is not None:
+            self._status.metadata["survey"] = survey
+        self._touch()
+
     def succeed(
         self,
         *,

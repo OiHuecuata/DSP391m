@@ -16,6 +16,30 @@ from orchestration.local import pipeline
 
 
 class CollectionWorkerTests(unittest.TestCase):
+    def test_structured_progress_keeps_checkpoint_and_batch_units_separate(self):
+        from dsp_collector.runtime.status import CrawlerStatusTracker
+
+        with tempfile.TemporaryDirectory() as directory:
+            tracker = CrawlerStatusTracker("threads", Path(directory) / "crawler.json")
+            tracker.start(seed_query="pickleball", sort="recent", target_count=100,
+                          query_plan_count=117528, metadata={"operation": "auto"})
+            tracker.discovery_progress(
+                batch={"requests_used": 0, "max_requests": 32, "queries_executed": 0},
+                survey={"completed_queries": 188, "candidate_queries": 117528,
+                        "survey_id": "stable", "plan_id": "plan"},
+            )
+            start = worker.crawler_progress(tracker.snapshot())
+            self.assertEqual(start["batch"]["requests_used"], 0)
+            self.assertEqual(start["survey"]["completed_queries"], 188)
+            tracker.discovery_progress(batch={"requests_used": 25,
+                                             "queries_executed": 12, "max_requests": 32})
+            live = worker.crawler_progress(tracker.snapshot())
+            self.assertEqual(live["batch"]["queries_executed"], 12)
+            self.assertEqual(live["batch"]["requests_used"], 25)
+            self.assertEqual(live["survey"], start["survey"])
+            self.assertEqual(live["operation"], "auto")
+            self.assertIsNone(live["query"])
+
     def test_failed_acquisition_is_failed_even_when_refresh_succeeds(self):
         self.assertEqual(worker.cycle_status("failed", 1), "FAILED")
         self.assertEqual(worker.cycle_status("failed", 0), "FAILED")

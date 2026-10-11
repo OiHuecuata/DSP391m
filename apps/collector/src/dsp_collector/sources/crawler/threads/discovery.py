@@ -9,6 +9,7 @@ import tempfile
 import time
 import unicodedata
 from dataclasses import dataclass
+from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 from functools import lru_cache
 from importlib.resources import files
@@ -335,6 +336,7 @@ class RequestBudget:
     duration: float | None
     used: int = 0
     started: float = 0
+    on_consume: Callable[[], None] | None = None
 
     def __post_init__(self):
         self.started = time.monotonic()
@@ -362,6 +364,8 @@ class RequestBudget:
     def consume(self):
         self.check()
         self.used += 1
+        if self.on_consume is not None:
+            self.on_consume()
 
 
 class PublicPage:

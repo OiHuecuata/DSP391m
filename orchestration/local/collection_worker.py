@@ -46,6 +46,22 @@ def cycle_status(collection_status, error_count):
     return "PARTIAL" if collection_status == "partial" or error_count else "SUCCESS"
 
 
+def crawler_progress(snapshot):
+    """Project small structured fields; coverage is independent of local attempts."""
+    metadata = snapshot.get("metadata", {})
+    return {
+        "stage": "collecting",
+        "queries_processed": snapshot["queries_processed"],
+        "query_plan_count": snapshot["query_plan_count"],
+        "discovered": snapshot["raw_count"],
+        "accepted": snapshot["collected_count"],
+        "query": (snapshot.get("current_query") or {}).get("query"),
+        "batch": metadata.get("batch"),
+        "survey": metadata.get("survey"),
+        "operation": metadata.get("operation"),
+    }
+
+
 def execute(source, run_id, directory, policy, report, update):
     with pipeline.lakehouse_lock(pipeline.resolve_config()):
         return _execute_locked(source, run_id, directory, policy, report, update)
@@ -119,17 +135,7 @@ def _execute_locked(source, run_id, directory, policy, report, update):
 
         def _persist(self):
             super()._persist()
-            s = self.snapshot()
-            update(
-                {
-                    "stage": "collecting",
-                    "queries_processed": s["queries_processed"],
-                    "query_plan_count": s["query_plan_count"],
-                    "discovered": s["raw_count"],
-                    "accepted": s["collected_count"],
-                    "query": (s.get("current_query") or {}).get("query"),
-                }
-            )
+            update(crawler_progress(self.snapshot()))
 
     manifest = directory / "collection.json"
     if (
@@ -292,6 +298,13 @@ def _execute_locked(source, run_id, directory, policy, report, update):
             "stopping_reason", bronze.get("collection_stopping_reason")
         ),
     }
+    if (
+        source == "threads"
+        and not result.get("reused_collection")
+        and isinstance(report["metrics"]["discovery"], dict)
+        and bronze.get("collected_at")
+    ):
+        report["metrics"]["discovery"]["updated_at"] = bronze["collected_at"]
     update({"stage": "collected", "metrics": report["metrics"]})
     spark = stage("spark_start", lambda: create_spark(config.spark, kafka=True))
     # SparkSession is not a wire result.
@@ -504,6 +517,8 @@ def main(argv=None):
             directory / "progress.json",
             {
                 "run_id": args.run_id,
+                "source": args.source,
+                "operation": args.operation,
                 "updated_at": datetime.now(UTC).isoformat(),
                 **current_progress,
             },
