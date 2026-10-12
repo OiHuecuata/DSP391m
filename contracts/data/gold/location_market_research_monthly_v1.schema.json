@@ -1,0 +1,177 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "location_market_research_monthly_v1",
+  "description": "Grain: location x version x VN publication month. See docs/data/silver_gold_metric_definitions.md for lineage, denominators and completeness.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "month",
+    "admin_unit_id",
+    "admin_version",
+    "venue_count",
+    "known_court_count",
+    "court_count_coverage_rate",
+    "relevant_post_count",
+    "relevant_comment_count",
+    "total_views",
+    "total_likes",
+    "total_shares",
+    "court_seeking_post_count",
+    "court_seeking_comment_count",
+    "booking_intent_content_count",
+    "capacity_complaint_count",
+    "newly_discovered_venue_count",
+    "source_count",
+    "social_coverage_status",
+    "supply_coverage_status",
+    "supply_as_of",
+    "classification_coverage_rate",
+    "schema_version",
+    "processing_version",
+    "lineage_ids",
+    "generated_at",
+    "metric_definition_id",
+    "completeness_status",
+    "source_platforms"
+  ],
+  "properties": {
+    "month": {
+      "type": "string",
+      "format": "date"
+    },
+    "admin_unit_id": {
+      "type": "string"
+    },
+    "admin_version": {
+      "type": "string"
+    },
+    "venue_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "known_court_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "court_count_coverage_rate": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1
+    },
+    "relevant_post_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "relevant_comment_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "total_views": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "total_likes": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "total_shares": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "court_seeking_post_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "court_seeking_comment_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "booking_intent_content_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "capacity_complaint_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "newly_discovered_venue_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "source_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "social_coverage_status": {
+      "type": "string"
+    },
+    "supply_coverage_status": {
+      "type": "string"
+    },
+    "supply_as_of": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date"
+    },
+    "classification_coverage_rate": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1"
+    },
+    "processing_version": {
+      "type": "string"
+    },
+    "lineage_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metric_definition_id": {
+      "type": "string"
+    },
+    "completeness_status": {
+      "type": "string"
+    },
+    "source_platforms": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

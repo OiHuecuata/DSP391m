@@ -32,11 +32,15 @@ def serving_types(kind=KIND):
             "integer": "Int64",
             "number": "Float64",
             "boolean": "Bool",
+            "array": "Array(String)",
         }[kind]
         if spec.get("format") == "date":
             mapped = "Date32"
         elif spec.get("format") == "date-time":
             mapped = "DateTime64(6, 'UTC')"
+        elif spec.get("x-dsp-decimal"):
+            precision, scale = spec["x-dsp-decimal"]
+            mapped = f"Decimal({precision}, {scale})"
         result[name] = f"Nullable({mapped})" if "null" in kinds else mapped
     return result
 

@@ -1,0 +1,134 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "silver_social_intent_evidence",
+  "description": "Grain: content x intent x explicit span x optional mention. See docs/data/silver_gold_metric_definitions.md for lineage, denominators and completeness.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "evidence_id",
+    "content_id",
+    "intent_type",
+    "participant_count_mentioned",
+    "requested_duration_minutes",
+    "requested_start_time",
+    "requested_time_precision",
+    "requested_time_text",
+    "price_budget_min_vnd",
+    "price_budget_max_vnd",
+    "intent_location_id",
+    "evidence_span",
+    "span_start",
+    "span_end",
+    "confidence",
+    "extraction_method",
+    "actual_booking_confirmed",
+    "schema_version",
+    "processing_version",
+    "lineage_ids"
+  ],
+  "properties": {
+    "evidence_id": {
+      "type": "string"
+    },
+    "content_id": {
+      "type": "string"
+    },
+    "intent_type": {
+      "type": "string"
+    },
+    "participant_count_mentioned": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "requested_duration_minutes": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "requested_start_time": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "requested_time_precision": {
+      "type": "string"
+    },
+    "requested_time_text": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "price_budget_min_vnd": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "x-dsp-decimal": [
+        20,
+        2
+      ]
+    },
+    "price_budget_max_vnd": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "x-dsp-decimal": [
+        20,
+        2
+      ]
+    },
+    "intent_location_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "evidence_span": {
+      "type": "string"
+    },
+    "span_start": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "span_end": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "confidence": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1
+    },
+    "extraction_method": {
+      "type": "string"
+    },
+    "actual_booking_confirmed": {
+      "type": "boolean"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "3"
+    },
+    "processing_version": {
+      "type": "string"
+    },
+    "lineage_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

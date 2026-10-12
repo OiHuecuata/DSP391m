@@ -1,0 +1,163 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "silver_venue_candidates",
+  "description": "Grain: evidence candidate. See docs/data/silver_gold_metric_definitions.md for lineage, denominators and completeness.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "candidate_id",
+    "venue_id",
+    "venue_name",
+    "address_text",
+    "latitude",
+    "longitude",
+    "geocoding_precision",
+    "court_count",
+    "price_min_vnd",
+    "price_max_vnd",
+    "price_unit",
+    "venue_status",
+    "source_platform",
+    "source_record_id",
+    "evidence_id",
+    "discovered_at",
+    "match_status",
+    "verification_status",
+    "confidence_score",
+    "coordinate_source",
+    "conflicting_fields",
+    "schema_version",
+    "processing_version",
+    "lineage_ids"
+  ],
+  "properties": {
+    "candidate_id": {
+      "type": "string"
+    },
+    "venue_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "venue_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "address_text": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "latitude": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": -90,
+      "maximum": 90
+    },
+    "longitude": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": -180,
+      "maximum": 180
+    },
+    "geocoding_precision": {
+      "type": "string"
+    },
+    "court_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "price_min_vnd": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "x-dsp-decimal": [
+        20,
+        2
+      ]
+    },
+    "price_max_vnd": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "x-dsp-decimal": [
+        20,
+        2
+      ]
+    },
+    "price_unit": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "venue_status": {
+      "type": "string"
+    },
+    "source_platform": {
+      "type": "string"
+    },
+    "source_record_id": {
+      "type": "string"
+    },
+    "evidence_id": {
+      "type": "string"
+    },
+    "discovered_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "match_status": {
+      "type": "string"
+    },
+    "verification_status": {
+      "type": "string"
+    },
+    "confidence_score": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1
+    },
+    "coordinate_source": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "conflicting_fields": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "3"
+    },
+    "processing_version": {
+      "type": "string"
+    },
+    "lineage_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

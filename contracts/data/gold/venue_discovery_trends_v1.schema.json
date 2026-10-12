@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "venue_discovery_trends_v1",
+  "description": "Grain: location x version x first-observed month. See docs/data/silver_gold_metric_definitions.md for lineage, denominators and completeness.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "month",
+    "admin_unit_id",
+    "admin_version",
+    "newly_discovered_venue_count",
+    "verified_discovery_count",
+    "probable_discovery_count",
+    "unverified_candidate_count",
+    "first_seen_min",
+    "first_seen_max",
+    "discovery_basis",
+    "schema_version",
+    "processing_version",
+    "lineage_ids",
+    "generated_at",
+    "metric_definition_id",
+    "completeness_status",
+    "source_platforms"
+  ],
+  "properties": {
+    "month": {
+      "type": "string",
+      "format": "date"
+    },
+    "admin_unit_id": {
+      "type": "string"
+    },
+    "admin_version": {
+      "type": "string"
+    },
+    "newly_discovered_venue_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "verified_discovery_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "probable_discovery_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "unverified_candidate_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "first_seen_min": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "first_seen_max": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "discovery_basis": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1"
+    },
+    "processing_version": {
+      "type": "string"
+    },
+    "lineage_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metric_definition_id": {
+      "type": "string"
+    },
+    "completeness_status": {
+      "type": "string"
+    },
+    "source_platforms": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

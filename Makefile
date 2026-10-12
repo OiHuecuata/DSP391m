@@ -1,5 +1,19 @@
 .DEFAULT_GOAL := help
 
+.PHONY: spark-intelligence intelligence-test intelligence-backfill load-intelligence-clickhouse
+spark-intelligence:
+	$(SPARK_PYTHON) -m dsp_spark.jobs.batch.build_intelligence
+
+intelligence-test:
+	$(SPARK_PYTHON) -m unittest discover -v -s pipelines/spark/test -p 'test_intelligence*.py'
+
+intelligence-backfill:
+	$(SPARK_PYTHON) -m dsp_spark.jobs.batch.ingest_bronze --backfill
+	$(SPARK_PYTHON) -m dsp_spark.jobs.batch.build_intelligence
+
+load-intelligence-clickhouse:
+	$(SPARK_PYTHON) -m dsp_spark.jobs.batch.load_intelligence_clickhouse
+
 GO ?= go
 NPM ?= npm
 CURL ?= curl
@@ -7,7 +21,7 @@ PYTHON ?= python3
 BACKEND_URL ?= http://localhost:8080
 KAFKA_SOCIAL_POST_TOPIC ?= $(shell PYTHONPATH=apps/collector/src poetry run python -c 'from dsp_collector.runtime.config import KAFKA_SOCIAL_POST_TOPIC; print(KAFKA_SOCIAL_POST_TOPIC)')
 
-DSP_JAVA_HOME ?= $(if $(JAVA_HOME),$(JAVA_HOME),$(CURDIR)/.local/tools/java17)
+DSP_JAVA_HOME ?= $(shell PYTHONPATH=pipelines/spark/src $(PYTHON) -c 'from dsp_spark.runtime.config import default_java_home; print(default_java_home())')
 SPARK_PYTHON = JAVA_HOME="$(DSP_JAVA_HOME)" PYTHONPATH=pipelines/spark/src:apps/collector/src poetry run python
 SPARK_ARTIFACT ?=
 AIRFLOW_COMPOSE = DSP_AIRFLOW_REPO_ROOT="$(CURDIR)" AIRFLOW_UID="$$(id -u)" docker compose --profile airflow
@@ -24,7 +38,10 @@ export DSP_AIRFLOW_TRIGGER_RUN_ID = $(AIRFLOW_RUN_ID)
 	collect-threads collect-pbplus collect-threads-kafka kafka-up kafka-down \
 	kafka-status kafka-topic kafka-consume-social kafka-logs \
 	spark-test spark-bronze-threads spark-bronze-pbplus spark-pbplus-silver \
-	spark-social-stream spark-social-stream-once delta-inspect-social delta-inspect-courts spark-gold-social delta-inspect-gold-social databricks-build-wheel databricks-validate databricks-submit-social-gold
+	spark-social-stream spark-social-stream-once delta-inspect-social \
+	delta-inspect-courts spark-gold-social delta-inspect-gold-social \
+	databricks-build-wheel databricks-validate databricks-submit-social-gold \
+	dev
 
 help:
 	@echo "Available commands:"
@@ -406,3 +423,7 @@ spark-bronze-retention-plan:
 .PHONY: spark-bronze-status
 spark-bronze-status:
 	$(SPARK_PYTHON) -m dsp_spark.jobs.batch.ingest_bronze --status-file "$(SPARK_STATUS_FILE)"
+
+dev:
+	$(MAKE) kafka-up clickhouse-up
+	JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 $(MAKE) -j2 backend-run frontend-run

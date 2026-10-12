@@ -11,12 +11,15 @@ from ...processing.aggregate.court_supply_by_location import (
     resolved_courts,
 )
 from ...processing.clean.gold import validated_gold
+from ...processing.clean.source_lifecycle import permitted_legacy_frame
 from ...runtime.config import SparkSettings
 from ...runtime.spark import create_spark
 
 
 def build_court_supply_by_location(spark, settings: SparkSettings):
-    silver = read_delta(spark, settings.paths.courts).persist()
+    silver = permitted_legacy_frame(
+        spark, settings, read_delta(spark, settings.paths.courts)
+    ).persist()
     resolved = resolved_courts(silver).persist()
     gold = None
     try:

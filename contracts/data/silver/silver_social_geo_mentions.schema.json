@@ -1,0 +1,164 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "silver_social_geo_mentions",
+  "description": "Grain: content x text span x semantic role. See docs/data/silver_gold_metric_definitions.md for lineage, denominators and completeness.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "mention_id",
+    "content_id",
+    "content_type",
+    "platform",
+    "location_text_raw",
+    "address_text_raw",
+    "location_role",
+    "old_province_id",
+    "old_district_id",
+    "old_ward_id",
+    "new_province_id",
+    "new_ward_id",
+    "latitude",
+    "longitude",
+    "resolution_precision",
+    "resolution_status",
+    "confidence",
+    "evidence_span",
+    "span_start",
+    "span_end",
+    "extraction_method",
+    "raw_admin_unit_ids",
+    "interpretation_json",
+    "source_reference",
+    "schema_version",
+    "processing_version",
+    "lineage_ids"
+  ],
+  "properties": {
+    "mention_id": {
+      "type": "string"
+    },
+    "content_id": {
+      "type": "string"
+    },
+    "content_type": {
+      "type": "string"
+    },
+    "platform": {
+      "type": "string"
+    },
+    "location_text_raw": {
+      "type": "string"
+    },
+    "address_text_raw": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "location_role": {
+      "type": "string"
+    },
+    "old_province_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "old_district_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "old_ward_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "new_province_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "new_ward_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "latitude": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": -90,
+      "maximum": 90
+    },
+    "longitude": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": -180,
+      "maximum": 180
+    },
+    "resolution_precision": {
+      "type": "string"
+    },
+    "resolution_status": {
+      "type": "string"
+    },
+    "confidence": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1
+    },
+    "evidence_span": {
+      "type": "string"
+    },
+    "span_start": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "span_end": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "extraction_method": {
+      "type": "string"
+    },
+    "raw_admin_unit_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "interpretation_json": {
+      "type": "string"
+    },
+    "source_reference": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "3"
+    },
+    "processing_version": {
+      "type": "string"
+    },
+    "lineage_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

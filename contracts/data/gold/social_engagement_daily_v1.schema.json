@@ -1,0 +1,174 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "social_engagement_daily_v1",
+  "description": "Grain: location x version x platform x VN publication date. See docs/data/silver_gold_metric_definitions.md for lineage, denominators and completeness.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "activity_date",
+    "admin_version",
+    "admin_unit_id",
+    "platform",
+    "post_count",
+    "total_views",
+    "total_likes",
+    "total_comments_reported",
+    "total_shares",
+    "avg_likes_per_post",
+    "avg_comments_per_post",
+    "median_engagement",
+    "high_engagement_post_count",
+    "posts_with_metrics_count",
+    "posts_with_views",
+    "posts_with_likes",
+    "posts_with_comments",
+    "posts_with_shares",
+    "snapshot_as_of",
+    "metric_window",
+    "high_engagement_threshold",
+    "schema_version",
+    "processing_version",
+    "lineage_ids",
+    "generated_at",
+    "metric_definition_id",
+    "completeness_status",
+    "source_platforms"
+  ],
+  "properties": {
+    "activity_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "admin_version": {
+      "type": "string"
+    },
+    "admin_unit_id": {
+      "type": "string"
+    },
+    "platform": {
+      "type": "string"
+    },
+    "post_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "total_views": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "total_likes": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "total_comments_reported": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "total_shares": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "avg_likes_per_post": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "avg_comments_per_post": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "median_engagement": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "high_engagement_post_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "posts_with_metrics_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "posts_with_views": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "posts_with_likes": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "posts_with_comments": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "posts_with_shares": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "snapshot_as_of": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "metric_window": {
+      "type": "string"
+    },
+    "high_engagement_threshold": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1"
+    },
+    "processing_version": {
+      "type": "string"
+    },
+    "lineage_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metric_definition_id": {
+      "type": "string"
+    },
+    "completeness_status": {
+      "type": "string"
+    },
+    "source_platforms": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

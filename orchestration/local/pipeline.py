@@ -557,9 +557,11 @@ def _execute_locked(config, summary, directory):
         read_gold_rows,
         replace_serving,
     )
+    from dsp_spark.io.intelligence_clickhouse import publish_intelligence
     from dsp_spark.jobs.batch.build_court_supply_by_location import (
         build_court_supply_by_location,
     )
+    from dsp_spark.jobs.batch.build_intelligence import build_intelligence
     from dsp_spark.jobs.batch.build_location_market_signal_snapshot import (
         build_location_market_signal_snapshot,
     )
@@ -661,10 +663,24 @@ def _execute_locked(config, summary, directory):
                 spark, config.spark, market_settings=config.market
             ),
         )
+        summary["intelligence"] = stage(
+            "intelligence_silver_gold",
+            lambda: build_intelligence(
+                spark,
+                config.spark,
+                excluded_runs=json.loads(
+                    os.getenv("DSP_INTELLIGENCE_EXCLUDED_RUNS", "[]")
+                ),
+            ),
+        )
         rows = read_gold_rows(spark, config.spark.paths.location_market_signal_snapshot)
         with ClickHouseClient(config.warehouse) as client:
             summary["load"] = stage(
                 "clickhouse_load", lambda: replace_serving(client, rows)
+            )
+            summary["intelligence_load"] = stage(
+                "clickhouse_intelligence",
+                lambda: publish_intelligence(spark, config.spark, client),
             )
         summary.update(
             stage("verification", lambda: verify(spark, config, collections))

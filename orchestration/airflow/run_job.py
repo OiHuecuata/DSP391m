@@ -8,12 +8,21 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
+from types import SimpleNamespace
 
 from runtime import ROOT, RunConfig, read_collection, write_report
 
-sys.path[:0] = [str(ROOT / "pipelines/spark/src"), str(ROOT / "apps/collector/src")]
+sys.path[:0] = [
+    str(ROOT),
+    str(ROOT / "pipelines/spark/src"),
+    str(ROOT / "apps/collector/src"),
+]
 
 MODULES = {
+    "build_silver_gold_intelligence": ("dsp_spark.jobs.batch.build_intelligence",),
+    "load_intelligence_clickhouse": (
+        "dsp_spark.jobs.batch.load_intelligence_clickhouse",
+    ),
     "check_social_delta": (
         "dsp_spark.jobs.batch.inspect_delta",
         "--table",
@@ -91,6 +100,19 @@ def collect(config):
 
 
 def execute(stage, config):
+    # Reuse the local control plane's cross-process writer lock. A backend cycle
+    # and an Airflow task cannot write this lake's Gold/serving simultaneously.
+    if stage in MODULES or stage in ("ingest_pbplus_bronze", "ingest_pbplus_delta"):
+        from dsp_spark.runtime.config import SparkSettings
+
+        from orchestration.local.pipeline import lakehouse_lock
+
+        with lakehouse_lock(SimpleNamespace(spark=SparkSettings.from_env())):
+            return _execute(stage, config)
+    return _execute(stage, config)
+
+
+def _execute(stage, config):
     if stage == "preflight":
         from checks import preflight
 

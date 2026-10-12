@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "social_activity_by_admin_version_daily",
+  "description": "Grain: location x version x VN publication date. See docs/data/silver_gold_metric_definitions.md for lineage, denominators and completeness.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "activity_date",
+    "admin_version",
+    "admin_unit_id",
+    "post_count",
+    "comment_count",
+    "reply_count",
+    "unique_content_count",
+    "relevant_post_count",
+    "relevant_comment_count",
+    "classified_content_count",
+    "classification_coverage_rate",
+    "geographic_interpretation",
+    "schema_version",
+    "processing_version",
+    "lineage_ids",
+    "generated_at",
+    "metric_definition_id",
+    "completeness_status",
+    "source_platforms"
+  ],
+  "properties": {
+    "activity_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "admin_version": {
+      "type": "string"
+    },
+    "admin_unit_id": {
+      "type": "string"
+    },
+    "post_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "comment_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "reply_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "unique_content_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "relevant_post_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "relevant_comment_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "classified_content_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "classification_coverage_rate": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1
+    },
+    "geographic_interpretation": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1"
+    },
+    "processing_version": {
+      "type": "string"
+    },
+    "lineage_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metric_definition_id": {
+      "type": "string"
+    },
+    "completeness_status": {
+      "type": "string"
+    },
+    "source_platforms": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

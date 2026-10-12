@@ -89,3 +89,54 @@ def replace_delta(frame: DataFrame, path: str, *, previous_schema=None) -> None:
     frame.write.format("delta").mode("overwrite").option("mergeSchema", "false").option(
         "overwriteSchema", str(migrating).lower()
     ).save(path)
+
+
+def reconcile_delta(
+    frame: DataFrame, path: str, *, keys: tuple[str, ...], previous_schema=None
+) -> None:
+    """Synchronize a validated derived snapshot by key; retain Delta history.
+
+    Update changed values, insert new keys, remove stale current projections.
+    The caller supplies the complete permitted projection, including retained
+    historical snapshot dates. Never use this for authoritative Bronze records.
+    """
+    path = storage_uri(path)
+    if not keys or any(k not in frame.columns for k in keys):
+        raise ValueError("derived reconciliation requires valid keys")
+    if (
+        frame.filter(F.expr(" OR ".join(f"`{k}` IS NULL" for k in keys)))
+        .limit(1)
+        .count()
+    ):
+        raise ValueError("derived keys must be nonnull")
+    if frame.groupBy(*keys).count().filter("count > 1").limit(1).count():
+        raise ValueError("derived keys must be unique")
+    if not DeltaTable.isDeltaTable(frame.sparkSession, path):
+        frame.write.format("delta").mode("errorifexists").option(
+            "mergeSchema", "false"
+        ).save(path)
+        return
+    existing = read_delta(frame.sparkSession, path)
+    if (
+        previous_schema is not None
+        and [(f.name, f.dataType.simpleString()) for f in existing.schema]
+        == [(f.name, f.dataType.simpleString()) for f in previous_schema]
+        and [(f.name, f.dataType.simpleString()) for f in existing.schema]
+        != [(f.name, f.dataType.simpleString()) for f in frame.schema]
+    ):
+        replace_delta(frame, path, previous_schema=previous_schema)
+        return
+    _aligned(existing, frame)
+    condition = " AND ".join(f"target.`{k}` = incoming.`{k}`" for k in keys)
+    changed = " OR ".join(
+        f"NOT (target.`{c}` <=> incoming.`{c}`)" for c in frame.columns
+    )
+    (
+        DeltaTable.forPath(frame.sparkSession, path)
+        .alias("target")
+        .merge(frame.alias("incoming"), condition)
+        .whenMatchedUpdateAll(condition=changed)
+        .whenNotMatchedInsertAll()
+        .whenNotMatchedBySourceDelete()
+        .execute()
+    )

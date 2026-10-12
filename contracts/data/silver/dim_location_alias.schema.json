@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "dim_location_alias",
+  "description": "Grain: alias x unit x effective period. See docs/data/silver_gold_metric_definitions.md for lineage, denominators and completeness.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "alias_id",
+    "alias_text",
+    "alias_type",
+    "admin_unit_id",
+    "effective_from",
+    "effective_to",
+    "source_reference",
+    "schema_version",
+    "processing_version",
+    "lineage_ids"
+  ],
+  "properties": {
+    "alias_id": {
+      "type": "string"
+    },
+    "alias_text": {
+      "type": "string"
+    },
+    "alias_type": {
+      "type": "string"
+    },
+    "admin_unit_id": {
+      "type": "string"
+    },
+    "effective_from": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date"
+    },
+    "effective_to": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date"
+    },
+    "source_reference": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "3"
+    },
+    "processing_version": {
+      "type": "string"
+    },
+    "lineage_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

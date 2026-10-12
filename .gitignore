@@ -303,3 +303,15 @@ standalone_admin_password.txt
 
 # Internal docs
 docs/data
+
+# Reviewable Silver/Gold upgrade deliverables; other documents/data stay private.
+!/docs/
+/docs/*
+!/docs/data/
+/docs/data/*
+!/docs/data/silver_gold_implementation_report.md
+!/docs/data/silver_gold_requirements_matrix.md
+!/docs/data/silver_gold_metric_definitions.md
+!/docs/data/evidence/
+/docs/data/evidence/*
+!/docs/data/evidence/silver_gold_upgrade_2026-10-12.json

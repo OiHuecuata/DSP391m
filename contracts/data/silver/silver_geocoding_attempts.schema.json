@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "silver_geocoding_attempts",
+  "description": "Grain: candidate x address x reference version. See docs/data/silver_gold_metric_definitions.md for lineage, denominators and completeness.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "attempt_id",
+    "candidate_id",
+    "query",
+    "address_hash",
+    "provider",
+    "geocoding_provider",
+    "candidate_admin_unit_ids",
+    "precision",
+    "geocoding_precision",
+    "resolution_status",
+    "coordinate_source",
+    "latitude",
+    "longitude",
+    "geocoded_at",
+    "source_reference",
+    "dependency_status",
+    "schema_version",
+    "processing_version",
+    "lineage_ids"
+  ],
+  "properties": {
+    "attempt_id": {
+      "type": "string"
+    },
+    "candidate_id": {
+      "type": "string"
+    },
+    "query": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "address_hash": {
+      "type": "string"
+    },
+    "provider": {
+      "type": "string"
+    },
+    "geocoding_provider": {
+      "type": "string"
+    },
+    "candidate_admin_unit_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "precision": {
+      "type": "string"
+    },
+    "geocoding_precision": {
+      "type": "string"
+    },
+    "resolution_status": {
+      "type": "string"
+    },
+    "coordinate_source": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "latitude": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": -90,
+      "maximum": 90
+    },
+    "longitude": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": -180,
+      "maximum": 180
+    },
+    "geocoded_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_reference": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "dependency_status": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "3"
+    },
+    "processing_version": {
+      "type": "string"
+    },
+    "lineage_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

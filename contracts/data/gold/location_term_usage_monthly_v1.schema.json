@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "location_term_usage_monthly_v1",
+  "description": "Grain: location x raw term x platform x month. See docs/data/silver_gold_metric_definitions.md for lineage, denominators and completeness.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "month",
+    "location_term_raw_normalized",
+    "canonical_location_id",
+    "term_admin_version",
+    "platform",
+    "post_mention_count",
+    "comment_mention_count",
+    "unique_content_count",
+    "term_usage_share",
+    "resolution_coverage",
+    "mention_count",
+    "schema_version",
+    "processing_version",
+    "lineage_ids",
+    "generated_at",
+    "metric_definition_id",
+    "completeness_status",
+    "source_platforms"
+  ],
+  "properties": {
+    "month": {
+      "type": "string",
+      "format": "date"
+    },
+    "location_term_raw_normalized": {
+      "type": "string"
+    },
+    "canonical_location_id": {
+      "type": "string"
+    },
+    "term_admin_version": {
+      "type": "string"
+    },
+    "platform": {
+      "type": "string"
+    },
+    "post_mention_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "comment_mention_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "unique_content_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "term_usage_share": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1
+    },
+    "resolution_coverage": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1
+    },
+    "mention_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1"
+    },
+    "processing_version": {
+      "type": "string"
+    },
+    "lineage_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metric_definition_id": {
+      "type": "string"
+    },
+    "completeness_status": {
+      "type": "string"
+    },
+    "source_platforms": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}
