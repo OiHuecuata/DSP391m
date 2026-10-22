@@ -1,0 +1,7759 @@
+{
+  "bronze_court_observations": {
+    "rows": 1687,
+    "missing_columns": [],
+    "unexpected_columns": [],
+    "nulls": {
+      "schema_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "observation_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_platform": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_record_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "record_type": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_url": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "collected_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_created_at": {
+        "count": 1687,
+        "rate": 1.0
+      },
+      "source_updated_at": {
+        "count": 1687,
+        "rate": 1.0
+      },
+      "collection_run_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "query_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "query_metadata": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "raw_payload": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "payload_hash": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "retention_policy_id": {
+        "count": 1687,
+        "rate": 1.0
+      },
+      "retention_expires_at": {
+        "count": 1687,
+        "rate": 1.0
+      },
+      "artifact_uri": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_venue_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "venue_name_raw": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "address_raw": {
+        "count": 5,
+        "rate": 0.002963841138114997
+      },
+      "court_count_raw": {
+        "count": 100,
+        "rate": 0.05927682276229994
+      },
+      "price_raw": {
+        "count": 1687,
+        "rate": 1.0
+      },
+      "amenities_raw": {
+        "count": 25,
+        "rate": 0.014819205690574985
+      },
+      "opening_hours_raw": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "venue_status_raw": {
+        "count": 1687,
+        "rate": 1.0
+      },
+      "description_raw": {
+        "count": 1350,
+        "rate": 0.8002371072910492
+      },
+      "latitude_raw": {
+        "count": 1687,
+        "rate": 1.0
+      },
+      "longitude_raw": {
+        "count": 1687,
+        "rate": 1.0
+      },
+      "ingested_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "ingestion_metadata": {
+        "count": 1687,
+        "rate": 1.0
+      }
+    },
+    "empty_values": {
+      "schema_version": 0,
+      "observation_id": 0,
+      "source_platform": 0,
+      "source_record_id": 0,
+      "record_type": 0,
+      "source_url": 0,
+      "collected_at": 0,
+      "source_created_at": 0,
+      "source_updated_at": 0,
+      "collection_run_id": 0,
+      "query_id": 0,
+      "query_metadata": 0,
+      "raw_payload": 0,
+      "payload_hash": 0,
+      "retention_policy_id": 0,
+      "retention_expires_at": 0,
+      "artifact_uri": 0,
+      "source_venue_id": 0,
+      "venue_name_raw": 0,
+      "address_raw": 0,
+      "court_count_raw": 0,
+      "price_raw": 0,
+      "amenities_raw": 0,
+      "opening_hours_raw": 0,
+      "venue_status_raw": 0,
+      "description_raw": 0,
+      "latitude_raw": 0,
+      "longitude_raw": 0,
+      "ingested_at": 0,
+      "ingestion_metadata": 0
+    },
+    "numeric": {},
+    "categories": {
+      "source_platform": {
+        "pbplus": 1687
+      },
+      "record_type": {
+        "Venue": 1687
+      }
+    },
+    "dates": {
+      "collected_at": {
+        "min": "2026-10-05T08:31:45.874770Z",
+        "max": "2026-10-10T16:15:13.228355Z",
+        "distinct": 6
+      },
+      "ingested_at": {
+        "min": "2026-10-10T11:09:20.073864Z",
+        "max": "2026-10-10T16:15:27.401694Z",
+        "distinct": 1687
+      }
+    },
+    "grain": [
+      "observation_id"
+    ],
+    "duplicate_keys": 0
+  },
+  "bronze_social_posts": {
+    "rows": 1446,
+    "missing_columns": [],
+    "unexpected_columns": [],
+    "nulls": {
+      "schema_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "observation_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_platform": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_record_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "record_type": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_url": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "collected_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_created_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_updated_at": {
+        "count": 1446,
+        "rate": 1.0
+      },
+      "collection_run_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "query_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "query_metadata": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "raw_payload": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "payload_hash": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "retention_policy_id": {
+        "count": 1446,
+        "rate": 1.0
+      },
+      "retention_expires_at": {
+        "count": 1446,
+        "rate": 1.0
+      },
+      "artifact_uri": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "native_post_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "content_type": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "parent_content_id": {
+        "count": 1446,
+        "rate": 1.0
+      },
+      "title_raw": {
+        "count": 231,
+        "rate": 0.15975103734439833
+      },
+      "text_raw": {
+        "count": 1215,
+        "rate": 0.8402489626556017
+      },
+      "description_raw": {
+        "count": 231,
+        "rate": 0.15975103734439833
+      },
+      "language_raw": {
+        "count": 231,
+        "rate": 0.15975103734439833
+      },
+      "source_permalink": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "published_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "ingested_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "ingestion_metadata": {
+        "count": 1446,
+        "rate": 1.0
+      }
+    },
+    "empty_values": {
+      "schema_version": 0,
+      "observation_id": 0,
+      "source_platform": 0,
+      "source_record_id": 0,
+      "record_type": 0,
+      "source_url": 0,
+      "collected_at": 0,
+      "source_created_at": 0,
+      "source_updated_at": 0,
+      "collection_run_id": 0,
+      "query_id": 0,
+      "query_metadata": 0,
+      "raw_payload": 0,
+      "payload_hash": 0,
+      "retention_policy_id": 0,
+      "retention_expires_at": 0,
+      "artifact_uri": 0,
+      "native_post_id": 0,
+      "content_type": 0,
+      "parent_content_id": 0,
+      "title_raw": 0,
+      "text_raw": 0,
+      "description_raw": 188,
+      "language_raw": 0,
+      "source_permalink": 0,
+      "published_at": 0,
+      "ingested_at": 0,
+      "ingestion_metadata": 0
+    },
+    "numeric": {},
+    "categories": {
+      "source_platform": {
+        "threads": 231,
+        "youtube": 1215
+      },
+      "record_type": {
+        "Post": 231,
+        "Video": 1215
+      },
+      "content_type": {
+        "post": 231,
+        "video": 1215
+      },
+      "language_raw": {
+        "NULL": 231,
+        "vi": 1092,
+        "en": 71,
+        "ko": 17,
+        "id": 35
+      }
+    },
+    "dates": {
+      "collected_at": {
+        "min": "2026-10-07T22:24:47.159178Z",
+        "max": "2026-10-12T05:28:49.458043Z",
+        "distinct": 30
+      },
+      "source_created_at": {
+        "min": "2024-08-04T18:09:06.000000Z",
+        "max": "2026-10-12T05:00:13.000000Z",
+        "distinct": 356
+      },
+      "published_at": {
+        "min": "2024-08-04T18:09:06.000000Z",
+        "max": "2026-10-12T05:00:13.000000Z",
+        "distinct": 356
+      },
+      "ingested_at": {
+        "min": "2026-10-10T11:09:46.886759Z",
+        "max": "2026-10-12T05:29:06.780032Z",
+        "distinct": 1446
+      }
+    },
+    "grain": [
+      "observation_id"
+    ],
+    "duplicate_keys": 0
+  },
+  "bronze_social_comments": {
+    "rows": 17,
+    "missing_columns": [],
+    "unexpected_columns": [],
+    "nulls": {
+      "schema_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "observation_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_platform": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_record_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "record_type": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_url": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "collected_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_created_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_updated_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "collection_run_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "query_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "query_metadata": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "raw_payload": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "payload_hash": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "retention_policy_id": {
+        "count": 17,
+        "rate": 1.0
+      },
+      "retention_expires_at": {
+        "count": 17,
+        "rate": 1.0
+      },
+      "artifact_uri": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "native_comment_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "native_post_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "parent_comment_id": {
+        "count": 13,
+        "rate": 0.7647058823529411
+      },
+      "comment_text_raw": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "published_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "updated_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "is_reply": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "ingested_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "ingestion_metadata": {
+        "count": 17,
+        "rate": 1.0
+      }
+    },
+    "empty_values": {
+      "schema_version": 0,
+      "observation_id": 0,
+      "source_platform": 0,
+      "source_record_id": 0,
+      "record_type": 0,
+      "source_url": 0,
+      "collected_at": 0,
+      "source_created_at": 0,
+      "source_updated_at": 0,
+      "collection_run_id": 0,
+      "query_id": 0,
+      "query_metadata": 0,
+      "raw_payload": 0,
+      "payload_hash": 0,
+      "retention_policy_id": 0,
+      "retention_expires_at": 0,
+      "artifact_uri": 0,
+      "native_comment_id": 0,
+      "native_post_id": 0,
+      "parent_comment_id": 0,
+      "comment_text_raw": 0,
+      "published_at": 0,
+      "updated_at": 0,
+      "is_reply": 0,
+      "ingested_at": 0,
+      "ingestion_metadata": 0
+    },
+    "numeric": {},
+    "categories": {
+      "source_platform": {
+        "youtube": 17
+      },
+      "record_type": {
+        "Comment": 17
+      },
+      "is_reply": {
+        "False": 13,
+        "True": 4
+      }
+    },
+    "dates": {
+      "collected_at": {
+        "min": "2026-10-08T01:52:49.576451Z",
+        "max": "2026-10-12T05:28:49.458043Z",
+        "distinct": 9
+      },
+      "source_created_at": {
+        "min": "2026-10-07T07:45:38.000000Z",
+        "max": "2026-10-12T03:57:14.000000Z",
+        "distinct": 7
+      },
+      "source_updated_at": {
+        "min": "2026-10-07T07:45:38.000000Z",
+        "max": "2026-10-12T03:57:14.000000Z",
+        "distinct": 7
+      },
+      "published_at": {
+        "min": "2026-10-07T07:45:38.000000Z",
+        "max": "2026-10-12T03:57:14.000000Z",
+        "distinct": 7
+      },
+      "updated_at": {
+        "min": "2026-10-07T07:45:38.000000Z",
+        "max": "2026-10-12T03:57:14.000000Z",
+        "distinct": 7
+      },
+      "ingested_at": {
+        "min": "2026-10-10T11:11:02.440810Z",
+        "max": "2026-10-12T05:29:06.858882Z",
+        "distinct": 17
+      }
+    },
+    "grain": [
+      "observation_id"
+    ],
+    "duplicate_keys": 0
+  },
+  "bronze_engagement_snapshots": {
+    "rows": 1463,
+    "missing_columns": [],
+    "unexpected_columns": [],
+    "nulls": {
+      "schema_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "observation_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_platform": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_record_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "record_type": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_url": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "collected_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_created_at": {
+        "count": 948,
+        "rate": 0.6479835953520164
+      },
+      "source_updated_at": {
+        "count": 1458,
+        "rate": 0.9965823650034177
+      },
+      "collection_run_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "query_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "query_metadata": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "raw_payload": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "payload_hash": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "retention_policy_id": {
+        "count": 1463,
+        "rate": 1.0
+      },
+      "retention_expires_at": {
+        "count": 1463,
+        "rate": 1.0
+      },
+      "artifact_uri": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "native_content_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "content_type": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "metric_scope": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "observed_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "view_count": {
+        "count": 248,
+        "rate": 0.1695146958304853
+      },
+      "like_count": {
+        "count": 5,
+        "rate": 0.003417634996582365
+      },
+      "comment_count": {
+        "count": 249,
+        "rate": 0.17019822282980177
+      },
+      "share_count": {
+        "count": 1463,
+        "rate": 1.0
+      },
+      "repost_count": {
+        "count": 1238,
+        "rate": 0.8462064251537936
+      },
+      "quote_count": {
+        "count": 1232,
+        "rate": 0.8421052631578947
+      },
+      "reply_count": {
+        "count": 1232,
+        "rate": 0.8421052631578947
+      },
+      "metric_availability": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "ingested_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "ingestion_metadata": {
+        "count": 1463,
+        "rate": 1.0
+      }
+    },
+    "empty_values": {
+      "schema_version": 0,
+      "observation_id": 0,
+      "source_platform": 0,
+      "source_record_id": 0,
+      "record_type": 0,
+      "source_url": 0,
+      "collected_at": 0,
+      "source_created_at": 0,
+      "source_updated_at": 0,
+      "collection_run_id": 0,
+      "query_id": 0,
+      "query_metadata": 0,
+      "raw_payload": 0,
+      "payload_hash": 0,
+      "retention_policy_id": 0,
+      "retention_expires_at": 0,
+      "artifact_uri": 0,
+      "native_content_id": 0,
+      "content_type": 0,
+      "metric_scope": 0,
+      "observed_at": 0,
+      "view_count": 0,
+      "like_count": 0,
+      "comment_count": 0,
+      "share_count": 0,
+      "repost_count": 0,
+      "quote_count": 0,
+      "reply_count": 0,
+      "metric_availability": 0,
+      "ingested_at": 0,
+      "ingestion_metadata": 0
+    },
+    "numeric": {
+      "view_count": {
+        "n": 1215,
+        "min": 0,
+        "max": 194506,
+        "mean": 3842.60987654321,
+        "median": 501,
+        "p5": 2.0,
+        "p25": 87.0,
+        "p75": 1359.5,
+        "p90": 4693.200000000007,
+        "p95": 8556.699999999995,
+        "p99": 155026.2599999965
+      },
+      "like_count": {
+        "n": 1458,
+        "min": 0,
+        "max": 4617,
+        "mean": 24.122770919067214,
+        "median": 3.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 10.0,
+        "p90": 31.299999999999955,
+        "p95": 50.29999999999973,
+        "p99": 489.9900000000059
+      },
+      "comment_count": {
+        "n": 1214,
+        "min": 0,
+        "max": 36,
+        "mean": 0.2742998352553542,
+        "median": 0.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 1.0,
+        "p95": 2.0,
+        "p99": 4.0
+      },
+      "repost_count": {
+        "n": 225,
+        "min": 0,
+        "max": 230,
+        "mean": 6.773333333333333,
+        "median": 0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 1.0,
+        "p95": 70.0,
+        "p99": 142.19999999999914
+      },
+      "quote_count": {
+        "n": 231,
+        "min": 0,
+        "max": 8,
+        "mean": 0.13852813852813853,
+        "median": 0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 0.0,
+        "p95": 1.0,
+        "p99": 4.499999999999943
+      },
+      "reply_count": {
+        "n": 231,
+        "min": 1,
+        "max": 63,
+        "mean": 12.805194805194805,
+        "median": 8,
+        "p5": 1.0,
+        "p25": 3.0,
+        "p75": 18.0,
+        "p90": 31.0,
+        "p95": 36.0,
+        "p99": 63.0
+      }
+    },
+    "categories": {
+      "source_platform": {
+        "threads": 231,
+        "youtube": 1232
+      },
+      "record_type": {
+        "Metric": 1463
+      },
+      "content_type": {
+        "post": 231,
+        "video": 1215,
+        "comment": 17
+      },
+      "metric_scope": {
+        "cumulative": 1463
+      }
+    },
+    "dates": {
+      "collected_at": {
+        "min": "2026-10-07T22:24:47.159178Z",
+        "max": "2026-10-12T05:28:49.458043Z",
+        "distinct": 30
+      },
+      "source_created_at": {
+        "min": "2024-09-12T12:07:20.000000Z",
+        "max": "2026-10-12T05:00:13.000000Z",
+        "distinct": 186
+      },
+      "source_updated_at": {
+        "min": "2026-10-10T08:39:26.000000Z",
+        "max": "2026-10-12T03:57:14.000000Z",
+        "distinct": 5
+      },
+      "observed_at": {
+        "min": "2026-10-07T22:24:47.159178Z",
+        "max": "2026-10-12T05:28:49.458043Z",
+        "distinct": 30
+      },
+      "ingested_at": {
+        "min": "2026-10-10T11:09:46.931973Z",
+        "max": "2026-10-12T05:29:06.878665Z",
+        "distinct": 1463
+      }
+    },
+    "grain": [
+      "observation_id"
+    ],
+    "duplicate_keys": 0
+  },
+  "bronze_collection_runs": {
+    "rows": 60,
+    "missing_columns": [],
+    "unexpected_columns": [],
+    "nulls": {
+      "schema_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "observation_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_platform": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_record_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "record_type": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_url": {
+        "count": 60,
+        "rate": 1.0
+      },
+      "collected_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_created_at": {
+        "count": 60,
+        "rate": 1.0
+      },
+      "source_updated_at": {
+        "count": 60,
+        "rate": 1.0
+      },
+      "collection_run_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "query_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "query_metadata": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "raw_payload": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "payload_hash": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "retention_policy_id": {
+        "count": 60,
+        "rate": 1.0
+      },
+      "retention_expires_at": {
+        "count": 60,
+        "rate": 1.0
+      },
+      "artifact_uri": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "started_at": {
+        "count": 27,
+        "rate": 0.45
+      },
+      "ended_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "execution_status": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "records_returned": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "records_accepted": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "records_rejected": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "errors_json": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "requests_json": {
+        "count": 45,
+        "rate": 0.75
+      },
+      "stopping_reason": {
+        "count": 6,
+        "rate": 0.1
+      },
+      "ingestion_metadata": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "ingested_at": {
+        "count": 0,
+        "rate": 0.0
+      }
+    },
+    "empty_values": {
+      "schema_version": 0,
+      "observation_id": 0,
+      "source_platform": 0,
+      "source_record_id": 0,
+      "record_type": 0,
+      "source_url": 0,
+      "collected_at": 0,
+      "source_created_at": 0,
+      "source_updated_at": 0,
+      "collection_run_id": 0,
+      "query_id": 0,
+      "query_metadata": 0,
+      "raw_payload": 0,
+      "payload_hash": 0,
+      "retention_policy_id": 0,
+      "retention_expires_at": 0,
+      "artifact_uri": 0,
+      "started_at": 0,
+      "ended_at": 0,
+      "execution_status": 0,
+      "records_returned": 0,
+      "records_accepted": 0,
+      "records_rejected": 0,
+      "errors_json": 0,
+      "requests_json": 0,
+      "stopping_reason": 0,
+      "ingestion_metadata": 0,
+      "ingested_at": 0
+    },
+    "numeric": {
+      "records_returned": {
+        "n": 60,
+        "min": 0,
+        "max": 337,
+        "mean": 52.5,
+        "median": 7.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 100.0,
+        "p90": 102.1,
+        "p95": 337.0,
+        "p99": 337.0
+      },
+      "records_accepted": {
+        "n": 60,
+        "min": 0,
+        "max": 337,
+        "mean": 52.5,
+        "median": 7.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 100.0,
+        "p90": 102.1,
+        "p95": 337.0,
+        "p99": 337.0
+      },
+      "records_rejected": {
+        "n": 60,
+        "min": 0,
+        "max": 0,
+        "mean": 0,
+        "median": 0.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 0.0,
+        "p95": 0.0,
+        "p99": 0.0
+      }
+    },
+    "categories": {
+      "source_platform": {
+        "threads": 39,
+        "youtube": 15,
+        "pbplus": 6
+      },
+      "record_type": {
+        "Run": 60
+      },
+      "execution_status": {
+        "partial": 38,
+        "success": 22
+      }
+    },
+    "dates": {
+      "collected_at": {
+        "min": "2026-10-05T08:31:45.874770Z",
+        "max": "2026-10-12T05:28:49.458043Z",
+        "distinct": 60
+      },
+      "started_at": {
+        "min": "2026-10-10T15:48:16.729076Z",
+        "max": "2026-10-12T05:28:16.087550Z",
+        "distinct": 33
+      },
+      "ended_at": {
+        "min": "2026-10-05T08:31:45.874770Z",
+        "max": "2026-10-12T05:28:49.458043Z",
+        "distinct": 60
+      },
+      "ingested_at": {
+        "min": "2026-10-10T11:09:20.335094Z",
+        "max": "2026-10-12T05:29:06.964442Z",
+        "distinct": 60
+      }
+    },
+    "grain": [
+      "observation_id"
+    ],
+    "duplicate_keys": 0
+  },
+  "bronze_source_changes": {
+    "rows": 1697,
+    "missing_columns": [],
+    "unexpected_columns": [],
+    "nulls": {
+      "schema_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "observation_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_platform": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_record_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "record_type": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_url": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "collected_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_created_at": {
+        "count": 674,
+        "rate": 0.3971714790807307
+      },
+      "source_updated_at": {
+        "count": 1690,
+        "rate": 0.995875073659399
+      },
+      "collection_run_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "query_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "query_metadata": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "raw_payload": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "payload_hash": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "retention_policy_id": {
+        "count": 1697,
+        "rate": 1.0
+      },
+      "retention_expires_at": {
+        "count": 1697,
+        "rate": 1.0
+      },
+      "artifact_uri": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "change_type": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "previous_payload_hash": {
+        "count": 700,
+        "rate": 0.41249263406010606
+      },
+      "current_payload_hash": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "previous_observation_id": {
+        "count": 700,
+        "rate": 0.41249263406010606
+      },
+      "entity_record_type": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "evidence_json": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "ingested_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "ingestion_metadata": {
+        "count": 1697,
+        "rate": 1.0
+      }
+    },
+    "empty_values": {
+      "schema_version": 0,
+      "observation_id": 0,
+      "source_platform": 0,
+      "source_record_id": 0,
+      "record_type": 0,
+      "source_url": 0,
+      "collected_at": 0,
+      "source_created_at": 0,
+      "source_updated_at": 0,
+      "collection_run_id": 0,
+      "query_id": 0,
+      "query_metadata": 0,
+      "raw_payload": 0,
+      "payload_hash": 0,
+      "retention_policy_id": 0,
+      "retention_expires_at": 0,
+      "artifact_uri": 0,
+      "change_type": 0,
+      "previous_payload_hash": 0,
+      "current_payload_hash": 0,
+      "previous_observation_id": 0,
+      "entity_record_type": 0,
+      "evidence_json": 0,
+      "ingested_at": 0,
+      "ingestion_metadata": 0
+    },
+    "numeric": {},
+    "categories": {
+      "source_platform": {
+        "pbplus": 674,
+        "youtube": 792,
+        "threads": 231
+      },
+      "record_type": {
+        "Change": 1697
+      },
+      "change_type": {
+        "changed": 997,
+        "new": 700
+      },
+      "entity_record_type": {
+        "Venue": 674,
+        "Video": 785,
+        "Comment": 7,
+        "Post": 231
+      }
+    },
+    "dates": {
+      "collected_at": {
+        "min": "2026-10-05T15:31:45.874770Z",
+        "max": "2026-10-12T05:28:49.458043Z",
+        "distinct": 32
+      },
+      "source_created_at": {
+        "min": "2024-08-05T01:09:06.000000Z",
+        "max": "2026-10-12T05:00:13.000000Z",
+        "distinct": 439
+      },
+      "source_updated_at": {
+        "min": "2026-10-07T14:45:38.000000Z",
+        "max": "2026-10-12T03:57:14.000000Z",
+        "distinct": 7
+      },
+      "ingested_at": {
+        "min": "2026-10-10T15:52:41.234246Z",
+        "max": "2026-10-12T05:29:06.858882Z",
+        "distinct": 1697
+      }
+    },
+    "grain": [
+      "observation_id"
+    ],
+    "duplicate_keys": 0
+  },
+  "silver_venue_candidates": {
+    "rows": 1743,
+    "missing_columns": [],
+    "unexpected_columns": [],
+    "nulls": {
+      "candidate_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "venue_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "venue_name": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "address_text": {
+        "count": 28,
+        "rate": 0.01606425702811245
+      },
+      "latitude": {
+        "count": 1743,
+        "rate": 1.0
+      },
+      "longitude": {
+        "count": 1743,
+        "rate": 1.0
+      },
+      "geocoding_precision": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "court_count": {
+        "count": 156,
+        "rate": 0.08950086058519793
+      },
+      "price_min_vnd": {
+        "count": 1743,
+        "rate": 1.0
+      },
+      "price_max_vnd": {
+        "count": 1743,
+        "rate": 1.0
+      },
+      "price_unit": {
+        "count": 1743,
+        "rate": 1.0
+      },
+      "venue_status": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_platform": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_record_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "evidence_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "discovered_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "match_status": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "verification_status": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "confidence_score": {
+        "count": 1743,
+        "rate": 1.0
+      },
+      "coordinate_source": {
+        "count": 1743,
+        "rate": 1.0
+      },
+      "conflicting_fields": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "schema_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "processing_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "lineage_ids": {
+        "count": 0,
+        "rate": 0.0
+      }
+    },
+    "empty_values": {
+      "candidate_id": 0,
+      "venue_id": 0,
+      "venue_name": 0,
+      "address_text": 0,
+      "latitude": 0,
+      "longitude": 0,
+      "geocoding_precision": 0,
+      "court_count": 0,
+      "price_min_vnd": 0,
+      "price_max_vnd": 0,
+      "price_unit": 0,
+      "venue_status": 0,
+      "source_platform": 0,
+      "source_record_id": 0,
+      "evidence_id": 0,
+      "discovered_at": 0,
+      "match_status": 0,
+      "verification_status": 0,
+      "confidence_score": 0,
+      "coordinate_source": 0,
+      "conflicting_fields": 1743,
+      "schema_version": 0,
+      "processing_version": 0,
+      "lineage_ids": 0
+    },
+    "numeric": {
+      "court_count": {
+        "n": 1587,
+        "min": 1,
+        "max": 912,
+        "mean": 8.2703213610586,
+        "median": 4,
+        "p5": 2.0,
+        "p25": 3.0,
+        "p75": 7.0,
+        "p90": 10.0,
+        "p95": 12.0,
+        "p99": 17.0
+      }
+    },
+    "categories": {
+      "geocoding_precision": {
+        "UNRESOLVED": 1743
+      },
+      "price_unit": {
+        "NULL": 1743
+      },
+      "venue_status": {
+        "UNKNOWN": 1743
+      },
+      "source_platform": {
+        "pbplus": 1687,
+        "youtube": 48,
+        "threads": 8
+      },
+      "match_status": {
+        "MATCHED": 1405,
+        "NEW": 338
+      },
+      "verification_status": {
+        "PROBABLE": 1682,
+        "UNVERIFIED": 61
+      },
+      "coordinate_source": {
+        "NULL": 1743
+      },
+      "conflicting_fields": {}
+    },
+    "dates": {
+      "discovered_at": {
+        "min": "2026-10-05T08:31:45.874770Z",
+        "max": "2026-10-12T05:28:49.458043Z",
+        "distinct": 26
+      }
+    },
+    "grain": [
+      "candidate_id"
+    ],
+    "duplicate_keys": 0
+  },
+  "silver_court_venues": {
+    "rows": 350,
+    "missing_columns": [],
+    "unexpected_columns": [],
+    "nulls": {
+      "venue_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "venue_name": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "address_normalized": {
+        "count": 7,
+        "rate": 0.02
+      },
+      "latitude": {
+        "count": 350,
+        "rate": 1.0
+      },
+      "longitude": {
+        "count": 350,
+        "rate": 1.0
+      },
+      "coordinate_source": {
+        "count": 350,
+        "rate": 1.0
+      },
+      "geocoding_precision": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "old_province_id": {
+        "count": 332,
+        "rate": 0.9485714285714286
+      },
+      "old_district_id": {
+        "count": 350,
+        "rate": 1.0
+      },
+      "old_ward_id": {
+        "count": 350,
+        "rate": 1.0
+      },
+      "new_province_id": {
+        "count": 24,
+        "rate": 0.06857142857142857
+      },
+      "new_ward_id": {
+        "count": 349,
+        "rate": 0.9971428571428571
+      },
+      "court_count": {
+        "count": 33,
+        "rate": 0.09428571428571429
+      },
+      "court_count_status": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "price_min_vnd": {
+        "count": 350,
+        "rate": 1.0
+      },
+      "price_max_vnd": {
+        "count": 350,
+        "rate": 1.0
+      },
+      "price_unit": {
+        "count": 350,
+        "rate": 1.0
+      },
+      "is_indoor": {
+        "count": 350,
+        "rate": 1.0
+      },
+      "has_lighting": {
+        "count": 350,
+        "rate": 1.0
+      },
+      "has_parking": {
+        "count": 350,
+        "rate": 1.0
+      },
+      "venue_status": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "verification_status": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "first_seen_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "last_seen_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "conflicting_fields": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "evidence_ids": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_platforms": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "schema_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "processing_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "lineage_ids": {
+        "count": 0,
+        "rate": 0.0
+      }
+    },
+    "empty_values": {
+      "venue_id": 0,
+      "venue_name": 0,
+      "address_normalized": 0,
+      "latitude": 0,
+      "longitude": 0,
+      "coordinate_source": 0,
+      "geocoding_precision": 0,
+      "old_province_id": 0,
+      "old_district_id": 0,
+      "old_ward_id": 0,
+      "new_province_id": 0,
+      "new_ward_id": 0,
+      "court_count": 0,
+      "court_count_status": 0,
+      "price_min_vnd": 0,
+      "price_max_vnd": 0,
+      "price_unit": 0,
+      "is_indoor": 0,
+      "has_lighting": 0,
+      "has_parking": 0,
+      "venue_status": 0,
+      "verification_status": 0,
+      "first_seen_at": 0,
+      "last_seen_at": 0,
+      "source_count": 0,
+      "conflicting_fields": 350,
+      "evidence_ids": 0,
+      "source_platforms": 0,
+      "schema_version": 0,
+      "processing_version": 0,
+      "lineage_ids": 0
+    },
+    "numeric": {
+      "court_count": {
+        "n": 317,
+        "min": 1,
+        "max": 912,
+        "mean": 8.268138801261829,
+        "median": 4,
+        "p5": 2.0,
+        "p25": 3.0,
+        "p75": 7.0,
+        "p90": 9.400000000000034,
+        "p95": 12.0,
+        "p99": 16.839999999999975
+      },
+      "source_count": {
+        "n": 350,
+        "min": 1,
+        "max": 1,
+        "mean": 1,
+        "median": 1.0,
+        "p5": 1.0,
+        "p25": 1.0,
+        "p75": 1.0,
+        "p90": 1.0,
+        "p95": 1.0,
+        "p99": 1.0
+      }
+    },
+    "categories": {
+      "coordinate_source": {
+        "NULL": 350
+      },
+      "geocoding_precision": {
+        "UNRESOLVED": 350
+      },
+      "court_count_status": {
+        "KNOWN": 317,
+        "UNKNOWN": 33
+      },
+      "price_unit": {
+        "NULL": 350
+      },
+      "venue_status": {
+        "UNKNOWN": 350
+      },
+      "verification_status": {
+        "PROBABLE": 336,
+        "UNVERIFIED": 14
+      },
+      "conflicting_fields": {},
+      "source_platforms": {
+        "pbplus": 337,
+        "youtube": 10,
+        "threads": 3
+      }
+    },
+    "dates": {
+      "first_seen_at": {
+        "min": "2026-10-05T08:31:45.874770Z",
+        "max": "2026-10-12T05:28:49.458043Z",
+        "distinct": 9
+      },
+      "last_seen_at": {
+        "min": "2026-10-08T03:56:01.467580Z",
+        "max": "2026-10-12T05:28:49.458043Z",
+        "distinct": 9
+      }
+    },
+    "grain": [
+      "venue_id"
+    ],
+    "duplicate_keys": 0
+  },
+  "silver_venue_evidence": {
+    "rows": 1743,
+    "missing_columns": [],
+    "unexpected_columns": [],
+    "nulls": {
+      "evidence_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "candidate_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "venue_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "content_id": {
+        "count": 1687,
+        "rate": 0.9678714859437751
+      },
+      "source_platform": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_record_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_url": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "observed_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "evidence_type": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "evidence_span": {
+        "count": 1350,
+        "rate": 0.774526678141136
+      },
+      "extraction_method": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "attributes_json": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "schema_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "processing_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "lineage_ids": {
+        "count": 0,
+        "rate": 0.0
+      }
+    },
+    "empty_values": {
+      "evidence_id": 0,
+      "candidate_id": 0,
+      "venue_id": 0,
+      "content_id": 0,
+      "source_platform": 0,
+      "source_record_id": 0,
+      "source_url": 0,
+      "observed_at": 0,
+      "evidence_type": 0,
+      "evidence_span": 0,
+      "extraction_method": 0,
+      "attributes_json": 0,
+      "schema_version": 0,
+      "processing_version": 0,
+      "lineage_ids": 0
+    },
+    "numeric": {},
+    "categories": {
+      "source_platform": {
+        "pbplus": 1687,
+        "youtube": 48,
+        "threads": 8
+      },
+      "extraction_method": {
+        "SOURCE_FIELDS": 1687,
+        "SOCIAL_RULE_UNCALIBRATED": 56
+      }
+    },
+    "dates": {
+      "observed_at": {
+        "min": "2026-10-05T08:31:45.874770Z",
+        "max": "2026-10-12T05:28:49.458043Z",
+        "distinct": 26
+      }
+    },
+    "grain": [
+      "evidence_id"
+    ],
+    "duplicate_keys": 0
+  },
+  "silver_venue_source_links": {
+    "rows": 350,
+    "missing_columns": [],
+    "unexpected_columns": [],
+    "nulls": {
+      "source_platform": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_record_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "record_type": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "venue_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "first_seen_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "last_seen_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "match_method": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "evidence_ids": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "schema_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "processing_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "lineage_ids": {
+        "count": 0,
+        "rate": 0.0
+      }
+    },
+    "empty_values": {
+      "source_platform": 0,
+      "source_record_id": 0,
+      "record_type": 0,
+      "venue_id": 0,
+      "first_seen_at": 0,
+      "last_seen_at": 0,
+      "match_method": 0,
+      "evidence_ids": 0,
+      "schema_version": 0,
+      "processing_version": 0,
+      "lineage_ids": 0
+    },
+    "numeric": {},
+    "categories": {
+      "source_platform": {
+        "pbplus": 337,
+        "threads": 3,
+        "youtube": 10
+      },
+      "record_type": {
+        "Venue": 337,
+        "Post": 3,
+        "Video": 10
+      },
+      "match_method": {
+        "NAME_NUMBERED_ADDRESS": 317,
+        "PERSISTENT_SOURCE_ID": 33
+      }
+    },
+    "dates": {
+      "first_seen_at": {
+        "min": "2026-10-05T08:31:45.874770Z",
+        "max": "2026-10-12T05:28:49.458043Z",
+        "distinct": 9
+      },
+      "last_seen_at": {
+        "min": "2026-10-08T03:56:01.467580Z",
+        "max": "2026-10-12T05:28:49.458043Z",
+        "distinct": 9
+      }
+    },
+    "grain": [
+      "source_platform",
+      "source_record_id",
+      "record_type"
+    ],
+    "duplicate_keys": 0
+  },
+  "silver_social_posts": {
+    "rows": 356,
+    "missing_columns": [],
+    "unexpected_columns": [],
+    "nulls": {
+      "post_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "content_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "platform": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_record_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_url": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "content_type": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "parent_post_id": {
+        "count": 356,
+        "rate": 1.0
+      },
+      "text_normalized": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "published_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "published_date_vn": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "language": {
+        "count": 51,
+        "rate": 0.14325842696629212
+      },
+      "is_pickleball_related": {
+        "count": 3,
+        "rate": 0.008426966292134831
+      },
+      "is_commercial": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "intent_labels": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "topic_labels": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "sentiment": {
+        "count": 355,
+        "rate": 0.9971910112359551
+      },
+      "relevance_confidence": {
+        "count": 356,
+        "rate": 1.0
+      },
+      "classification_confidence": {
+        "count": 356,
+        "rate": 1.0
+      },
+      "classification_status": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "extraction_method": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "is_duplicate": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "duplicate_group_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "text_hash": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "first_seen_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "last_seen_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "mentioned_venue_ids": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "schema_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "processing_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "lineage_ids": {
+        "count": 0,
+        "rate": 0.0
+      }
+    },
+    "empty_values": {
+      "post_id": 0,
+      "content_id": 0,
+      "platform": 0,
+      "source_record_id": 0,
+      "source_url": 0,
+      "content_type": 0,
+      "parent_post_id": 0,
+      "text_normalized": 0,
+      "published_at": 0,
+      "published_date_vn": 0,
+      "language": 0,
+      "is_pickleball_related": 0,
+      "is_commercial": 0,
+      "intent_labels": 0,
+      "topic_labels": 202,
+      "sentiment": 0,
+      "relevance_confidence": 0,
+      "classification_confidence": 0,
+      "classification_status": 0,
+      "extraction_method": 0,
+      "is_duplicate": 0,
+      "duplicate_group_id": 0,
+      "text_hash": 0,
+      "first_seen_at": 0,
+      "last_seen_at": 0,
+      "mentioned_venue_ids": 341,
+      "schema_version": 0,
+      "processing_version": 0,
+      "lineage_ids": 0
+    },
+    "numeric": {},
+    "categories": {
+      "platform": {
+        "threads": 51,
+        "youtube": 305
+      },
+      "content_type": {
+        "Post": 51,
+        "Video": 305
+      },
+      "language": {
+        "NULL": 51,
+        "vi": 277,
+        "en": 16,
+        "id": 8,
+        "ko": 4
+      },
+      "is_pickleball_related": {
+        "True": 336,
+        "False": 17,
+        "NULL": 3
+      },
+      "is_commercial": {
+        "False": 337,
+        "True": 19
+      },
+      "intent_labels": {
+        "GENERAL_DISCUSSION": 185,
+        "PRICE_INQUIRY": 62,
+        "SEEK_COURT": 2,
+        "SEEK_PLAYERS": 6,
+        "EVENT_TOURNAMENT": 87,
+        "SUPPLY_ADVERTISEMENT": 19,
+        "IRRELEVANT": 17,
+        "VENUE_FEEDBACK": 1
+      },
+      "topic_labels": {
+        "PRICE": 62,
+        "PLAYING_INTENT": 8,
+        "EVENT": 87,
+        "SUPPLY": 19,
+        "FACILITIES": 1
+      },
+      "sentiment": {
+        "NULL": 355,
+        "NEGATIVE": 1
+      },
+      "classification_status": {
+        "RULE_SUPPORTED_UNCALIBRATED": 353,
+        "UNCERTAIN_TOPIC": 3
+      },
+      "extraction_method": {
+        "DETERMINISTIC_RULE_UNCALIBRATED": 356
+      },
+      "is_duplicate": {
+        "False": 356
+      }
+    },
+    "dates": {
+      "published_at": {
+        "min": "2024-08-04T18:09:06.000000Z",
+        "max": "2026-10-12T05:00:13.000000Z",
+        "distinct": 354
+      },
+      "published_date_vn": {
+        "min": "2024-08-05",
+        "max": "2026-10-12",
+        "distinct": 55
+      },
+      "first_seen_at": {
+        "min": "2026-10-07T22:24:47.159178Z",
+        "max": "2026-10-12T05:28:49.458043Z",
+        "distinct": 23
+      },
+      "last_seen_at": {
+        "min": "2026-10-07T22:24:47.159178Z",
+        "max": "2026-10-12T05:28:49.458043Z",
+        "distinct": 22
+      }
+    },
+    "grain": [
+      "post_id"
+    ],
+    "duplicate_keys": 0
+  },
+  "silver_social_comments": {
+    "rows": 7,
+    "missing_columns": [],
+    "unexpected_columns": [],
+    "nulls": {
+      "comment_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "content_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "post_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "parent_comment_id": {
+        "count": 5,
+        "rate": 0.7142857142857143
+      },
+      "platform": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_record_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_url": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "content_type": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "comment_text_normalized": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "published_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "published_date_vn": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "is_reply": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "is_pickleball_related": {
+        "count": 1,
+        "rate": 0.14285714285714285
+      },
+      "is_commercial": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "intent_labels": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "topic_labels": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "sentiment": {
+        "count": 7,
+        "rate": 1.0
+      },
+      "classification_confidence": {
+        "count": 7,
+        "rate": 1.0
+      },
+      "classification_status": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "extraction_method": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "text_hash": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "first_seen_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "last_seen_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "mentioned_venue_ids": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "is_duplicate": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "duplicate_group_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "schema_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "processing_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "lineage_ids": {
+        "count": 0,
+        "rate": 0.0
+      }
+    },
+    "empty_values": {
+      "comment_id": 0,
+      "content_id": 0,
+      "post_id": 0,
+      "parent_comment_id": 0,
+      "platform": 0,
+      "source_record_id": 0,
+      "source_url": 0,
+      "content_type": 0,
+      "comment_text_normalized": 0,
+      "published_at": 0,
+      "published_date_vn": 0,
+      "is_reply": 0,
+      "is_pickleball_related": 0,
+      "is_commercial": 0,
+      "intent_labels": 0,
+      "topic_labels": 6,
+      "sentiment": 0,
+      "classification_confidence": 0,
+      "classification_status": 0,
+      "extraction_method": 0,
+      "text_hash": 0,
+      "first_seen_at": 0,
+      "last_seen_at": 0,
+      "mentioned_venue_ids": 7,
+      "is_duplicate": 0,
+      "duplicate_group_id": 0,
+      "schema_version": 0,
+      "processing_version": 0,
+      "lineage_ids": 0
+    },
+    "numeric": {},
+    "categories": {
+      "platform": {
+        "youtube": 7
+      },
+      "content_type": {
+        "Comment": 5,
+        "Reply": 2
+      },
+      "is_reply": {
+        "False": 5,
+        "True": 2
+      },
+      "is_pickleball_related": {
+        "False": 6,
+        "NULL": 1
+      },
+      "is_commercial": {
+        "False": 7
+      },
+      "intent_labels": {
+        "IRRELEVANT": 6,
+        "SEEK_COURT": 1
+      },
+      "topic_labels": {
+        "PLAYING_INTENT": 1
+      },
+      "sentiment": {
+        "NULL": 7
+      },
+      "classification_status": {
+        "RULE_SUPPORTED_UNCALIBRATED": 6,
+        "UNCERTAIN_TOPIC": 1
+      },
+      "extraction_method": {
+        "DETERMINISTIC_RULE_UNCALIBRATED": 7
+      },
+      "is_duplicate": {
+        "False": 7
+      }
+    },
+    "dates": {
+      "published_at": {
+        "min": "2026-10-07T07:45:38.000000Z",
+        "max": "2026-10-12T03:57:14.000000Z",
+        "distinct": 7
+      },
+      "published_date_vn": {
+        "min": "2026-10-07",
+        "max": "2026-10-12",
+        "distinct": 3
+      },
+      "first_seen_at": {
+        "min": "2026-10-08T01:52:49.576451Z",
+        "max": "2026-10-12T05:28:49.458043Z",
+        "distinct": 4
+      },
+      "last_seen_at": {
+        "min": "2026-10-08T02:04:24.801961Z",
+        "max": "2026-10-12T05:28:49.458043Z",
+        "distinct": 3
+      }
+    },
+    "grain": [
+      "comment_id"
+    ],
+    "duplicate_keys": 0
+  },
+  "silver_social_engagement_snapshots": {
+    "rows": 1463,
+    "missing_columns": [],
+    "unexpected_columns": [],
+    "nulls": {
+      "snapshot_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "content_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "content_type": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "platform": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "observed_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "observed_date_vn": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "metric_scope": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "views": {
+        "count": 248,
+        "rate": 0.1695146958304853
+      },
+      "likes": {
+        "count": 5,
+        "rate": 0.003417634996582365
+      },
+      "comments": {
+        "count": 249,
+        "rate": 0.17019822282980177
+      },
+      "shares": {
+        "count": 1463,
+        "rate": 1.0
+      },
+      "reposts": {
+        "count": 1238,
+        "rate": 0.8462064251537936
+      },
+      "quotes": {
+        "count": 1232,
+        "rate": 0.8421052631578947
+      },
+      "replies": {
+        "count": 1232,
+        "rate": 0.8421052631578947
+      },
+      "content_age_hours": {
+        "count": 4,
+        "rate": 0.002734107997265892
+      },
+      "engagement_total": {
+        "count": 1463,
+        "rate": 1.0
+      },
+      "engagement_rate": {
+        "count": 1463,
+        "rate": 1.0
+      },
+      "engagement_rate_basis": {
+        "count": 1463,
+        "rate": 1.0
+      },
+      "metrics_available": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "metric_availability_json": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "snapshot_status": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "previous_snapshot_id": {
+        "count": 367,
+        "rate": 0.2508544087491456
+      },
+      "elapsed_hours": {
+        "count": 367,
+        "rate": 0.2508544087491456
+      },
+      "delta_views": {
+        "count": 557,
+        "rate": 0.38072453861927547
+      },
+      "delta_likes": {
+        "count": 370,
+        "rate": 0.252904989747095
+      },
+      "delta_comments": {
+        "count": 557,
+        "rate": 0.38072453861927547
+      },
+      "delta_shares": {
+        "count": 1463,
+        "rate": 1.0
+      },
+      "views_per_hour": {
+        "count": 557,
+        "rate": 0.38072453861927547
+      },
+      "delta_status": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "schema_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "processing_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "lineage_ids": {
+        "count": 0,
+        "rate": 0.0
+      }
+    },
+    "empty_values": {
+      "snapshot_id": 0,
+      "content_id": 0,
+      "content_type": 0,
+      "platform": 0,
+      "observed_at": 0,
+      "observed_date_vn": 0,
+      "metric_scope": 0,
+      "views": 0,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "reposts": 0,
+      "quotes": 0,
+      "replies": 0,
+      "content_age_hours": 0,
+      "engagement_total": 0,
+      "engagement_rate": 0,
+      "engagement_rate_basis": 0,
+      "metrics_available": 0,
+      "metric_availability_json": 0,
+      "snapshot_status": 0,
+      "previous_snapshot_id": 0,
+      "elapsed_hours": 0,
+      "delta_views": 0,
+      "delta_likes": 0,
+      "delta_comments": 0,
+      "delta_shares": 0,
+      "views_per_hour": 0,
+      "delta_status": 0,
+      "schema_version": 0,
+      "processing_version": 0,
+      "lineage_ids": 0
+    },
+    "numeric": {
+      "views": {
+        "n": 1215,
+        "min": 0,
+        "max": 194506,
+        "mean": 3842.60987654321,
+        "median": 501,
+        "p5": 2.0,
+        "p25": 87.0,
+        "p75": 1359.5,
+        "p90": 4693.200000000007,
+        "p95": 8556.699999999995,
+        "p99": 155026.2599999965
+      },
+      "likes": {
+        "n": 1458,
+        "min": 0,
+        "max": 4617,
+        "mean": 24.122770919067214,
+        "median": 3.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 10.0,
+        "p90": 31.299999999999955,
+        "p95": 50.29999999999973,
+        "p99": 489.9900000000059
+      },
+      "comments": {
+        "n": 1214,
+        "min": 0,
+        "max": 36,
+        "mean": 0.2742998352553542,
+        "median": 0.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 1.0,
+        "p95": 2.0,
+        "p99": 4.0
+      },
+      "reposts": {
+        "n": 225,
+        "min": 0,
+        "max": 230,
+        "mean": 6.773333333333333,
+        "median": 0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 1.0,
+        "p95": 70.0,
+        "p99": 142.19999999999914
+      },
+      "quotes": {
+        "n": 231,
+        "min": 0,
+        "max": 8,
+        "mean": 0.13852813852813853,
+        "median": 0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 0.0,
+        "p95": 1.0,
+        "p99": 4.499999999999943
+      },
+      "replies": {
+        "n": 231,
+        "min": 1,
+        "max": 63,
+        "mean": 12.805194805194805,
+        "median": 8,
+        "p5": 1.0,
+        "p25": 3.0,
+        "p75": 18.0,
+        "p90": 31.0,
+        "p95": 36.0,
+        "p99": 63.0
+      },
+      "content_age_hours": {
+        "n": 1459,
+        "min": 0.05522014638888889,
+        "max": 19069.994324241943,
+        "mean": 972.9161815646265,
+        "median": 24.93829808527778,
+        "p5": 1.5366703978055556,
+        "p25": 12.556634718472221,
+        "p75": 48.87664591013889,
+        "p90": 3589.929779472389,
+        "p95": 7396.865724529527,
+        "p99": 18130.94121419503
+      },
+      "elapsed_hours": {
+        "n": 1096,
+        "min": 0.04325285555555556,
+        "max": 75.26406500694443,
+        "mean": 4.525479186037105,
+        "median": 0.4396052511111111,
+        "p5": 0.07730087472222222,
+        "p25": 0.26208417854166666,
+        "p75": 3.6572802027777778,
+        "p90": 7.944975470833333,
+        "p95": 25.734022388055557,
+        "p99": 53.20144337194445
+      },
+      "delta_views": {
+        "n": 906,
+        "min": -37,
+        "max": 19036,
+        "mean": 152.2207505518764,
+        "median": 0.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 33.75,
+        "p90": 212.0,
+        "p95": 578.25,
+        "p99": 2431.4500000000044
+      },
+      "delta_likes": {
+        "n": 1093,
+        "min": -1,
+        "max": 111,
+        "mean": 0.6120768526989936,
+        "median": 0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 1.0,
+        "p95": 2.0,
+        "p99": 11.239999999999782
+      },
+      "delta_comments": {
+        "n": 906,
+        "min": 0,
+        "max": 1,
+        "mean": 0.009933774834437087,
+        "median": 0.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 0.0,
+        "p95": 0.0,
+        "p99": 0.0
+      },
+      "views_per_hour": {
+        "n": 906,
+        "min": -107.88535797820683,
+        "max": 969.0512088362831,
+        "mean": 36.189283284872126,
+        "median": 0.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 16.063849839937937,
+        "p90": 101.1596856279034,
+        "p95": 210.26787396639295,
+        "p99": 617.6895670640723
+      }
+    },
+    "categories": {
+      "content_type": {
+        "video": 1215,
+        "post": 231,
+        "comment": 17
+      },
+      "platform": {
+        "youtube": 1232,
+        "threads": 231
+      },
+      "metric_scope": {
+        "cumulative": 1463
+      },
+      "metrics_available": {
+        "comments": 1214,
+        "likes": 1458,
+        "views": 1215,
+        "quotes": 231,
+        "replies": 231,
+        "reposts": 225
+      },
+      "snapshot_status": {
+        "AVAILABLE": 1459,
+        "INVALID_TIME": 4
+      },
+      "delta_status": {
+        "AVAILABLE": 1071,
+        "NO_PREDECESSOR": 367,
+        "SOURCE_CORRECTION": 25
+      }
+    },
+    "dates": {
+      "observed_at": {
+        "min": "2026-10-07T22:24:47.159178Z",
+        "max": "2026-10-12T05:28:49.458043Z",
+        "distinct": 30
+      },
+      "observed_date_vn": {
+        "min": "2026-10-08",
+        "max": "2026-10-12",
+        "distinct": 4
+      }
+    },
+    "grain": [
+      "snapshot_id"
+    ],
+    "duplicate_keys": 0
+  },
+  "silver_social_geo_mentions": {
+    "rows": 284,
+    "missing_columns": [],
+    "unexpected_columns": [],
+    "nulls": {
+      "mention_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "content_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "content_type": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "platform": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "location_text_raw": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "address_text_raw": {
+        "count": 284,
+        "rate": 1.0
+      },
+      "location_role": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "old_province_id": {
+        "count": 268,
+        "rate": 0.9436619718309859
+      },
+      "old_district_id": {
+        "count": 284,
+        "rate": 1.0
+      },
+      "old_ward_id": {
+        "count": 284,
+        "rate": 1.0
+      },
+      "new_province_id": {
+        "count": 39,
+        "rate": 0.13732394366197184
+      },
+      "new_ward_id": {
+        "count": 284,
+        "rate": 1.0
+      },
+      "latitude": {
+        "count": 284,
+        "rate": 1.0
+      },
+      "longitude": {
+        "count": 284,
+        "rate": 1.0
+      },
+      "resolution_precision": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "resolution_status": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "confidence": {
+        "count": 284,
+        "rate": 1.0
+      },
+      "evidence_span": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "span_start": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "span_end": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "extraction_method": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "raw_admin_unit_ids": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "interpretation_json": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_reference": {
+        "count": 28,
+        "rate": 0.09859154929577464
+      },
+      "schema_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "processing_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "lineage_ids": {
+        "count": 0,
+        "rate": 0.0
+      }
+    },
+    "empty_values": {
+      "mention_id": 0,
+      "content_id": 0,
+      "content_type": 0,
+      "platform": 0,
+      "location_text_raw": 0,
+      "address_text_raw": 0,
+      "location_role": 0,
+      "old_province_id": 0,
+      "old_district_id": 0,
+      "old_ward_id": 0,
+      "new_province_id": 0,
+      "new_ward_id": 0,
+      "latitude": 0,
+      "longitude": 0,
+      "resolution_precision": 0,
+      "resolution_status": 0,
+      "confidence": 0,
+      "evidence_span": 0,
+      "span_start": 0,
+      "span_end": 0,
+      "extraction_method": 0,
+      "raw_admin_unit_ids": 39,
+      "interpretation_json": 0,
+      "source_reference": 0,
+      "schema_version": 0,
+      "processing_version": 0,
+      "lineage_ids": 0
+    },
+    "numeric": {
+      "span_start": {
+        "n": 284,
+        "min": 0,
+        "max": 1400,
+        "mean": 318.83098591549293,
+        "median": 240.0,
+        "p5": 19.3,
+        "p25": 111.75,
+        "p75": 367.5,
+        "p90": 828.7,
+        "p95": 980.7999999999997,
+        "p99": 1359.2300000000002
+      },
+      "span_end": {
+        "n": 284,
+        "min": 7,
+        "max": 1407,
+        "mean": 325.9964788732394,
+        "median": 246.0,
+        "p5": 26.15,
+        "p25": 119.5,
+        "p75": 374.25,
+        "p90": 835.0,
+        "p95": 986.9499999999998,
+        "p99": 1366.2300000000002
+      }
+    },
+    "categories": {
+      "content_type": {
+        "Video": 229,
+        "Post": 55
+      },
+      "platform": {
+        "youtube": 229,
+        "threads": 55
+      },
+      "resolution_precision": {
+        "UNRESOLVED": 39,
+        "PROVINCE": 245
+      },
+      "resolution_status": {
+        "UNRESOLVED": 39,
+        "RESOLVED": 245
+      },
+      "extraction_method": {
+        "GAZETTEER_RULE_UNCALIBRATED": 284
+      }
+    },
+    "dates": {},
+    "grain": [
+      "mention_id"
+    ],
+    "duplicate_keys": 0
+  },
+  "silver_geocoding_attempts": {
+    "rows": 1743,
+    "missing_columns": [],
+    "unexpected_columns": [],
+    "nulls": {
+      "attempt_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "candidate_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "query": {
+        "count": 28,
+        "rate": 0.01606425702811245
+      },
+      "address_hash": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "provider": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "geocoding_provider": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "candidate_admin_unit_ids": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "precision": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "geocoding_precision": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "resolution_status": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "coordinate_source": {
+        "count": 1743,
+        "rate": 1.0
+      },
+      "latitude": {
+        "count": 1743,
+        "rate": 1.0
+      },
+      "longitude": {
+        "count": 1743,
+        "rate": 1.0
+      },
+      "geocoded_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_reference": {
+        "count": 50,
+        "rate": 0.02868617326448652
+      },
+      "dependency_status": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "schema_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "processing_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "lineage_ids": {
+        "count": 0,
+        "rate": 0.0
+      }
+    },
+    "empty_values": {
+      "attempt_id": 0,
+      "candidate_id": 0,
+      "query": 0,
+      "address_hash": 0,
+      "provider": 0,
+      "geocoding_provider": 0,
+      "candidate_admin_unit_ids": 56,
+      "precision": 0,
+      "geocoding_precision": 0,
+      "resolution_status": 0,
+      "coordinate_source": 0,
+      "latitude": 0,
+      "longitude": 0,
+      "geocoded_at": 0,
+      "source_reference": 0,
+      "dependency_status": 0,
+      "schema_version": 0,
+      "processing_version": 0,
+      "lineage_ids": 0
+    },
+    "numeric": {},
+    "categories": {
+      "provider": {
+        "REPOSITORY_GAZETTEER": 1743
+      },
+      "geocoding_precision": {
+        "UNRESOLVED": 1743
+      },
+      "resolution_status": {
+        "ADMIN_ONLY": 1687,
+        "UNRESOLVED": 56
+      },
+      "coordinate_source": {
+        "NULL": 1743
+      },
+      "dependency_status": {
+        "POI_GEOCODER_UNAVAILABLE": 1743
+      }
+    },
+    "dates": {
+      "geocoded_at": {
+        "min": "2026-10-05T08:31:45.874770Z",
+        "max": "2026-10-12T05:28:49.458043Z",
+        "distinct": 26
+      }
+    },
+    "grain": [
+      "attempt_id"
+    ],
+    "duplicate_keys": 0
+  },
+  "silver_social_intent_evidence": {
+    "rows": 474,
+    "missing_columns": [],
+    "unexpected_columns": [],
+    "nulls": {
+      "evidence_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "content_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "intent_type": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "participant_count_mentioned": {
+        "count": 472,
+        "rate": 0.9957805907172996
+      },
+      "requested_duration_minutes": {
+        "count": 470,
+        "rate": 0.9915611814345991
+      },
+      "requested_start_time": {
+        "count": 474,
+        "rate": 1.0
+      },
+      "requested_time_precision": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "requested_time_text": {
+        "count": 448,
+        "rate": 0.9451476793248945
+      },
+      "price_budget_min_vnd": {
+        "count": 474,
+        "rate": 1.0
+      },
+      "price_budget_max_vnd": {
+        "count": 474,
+        "rate": 1.0
+      },
+      "intent_location_id": {
+        "count": 347,
+        "rate": 0.7320675105485233
+      },
+      "evidence_span": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "span_start": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "span_end": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "confidence": {
+        "count": 474,
+        "rate": 1.0
+      },
+      "extraction_method": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "actual_booking_confirmed": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "schema_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "processing_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "lineage_ids": {
+        "count": 0,
+        "rate": 0.0
+      }
+    },
+    "empty_values": {
+      "evidence_id": 0,
+      "content_id": 0,
+      "intent_type": 0,
+      "participant_count_mentioned": 0,
+      "requested_duration_minutes": 0,
+      "requested_start_time": 0,
+      "requested_time_precision": 0,
+      "requested_time_text": 0,
+      "price_budget_min_vnd": 0,
+      "price_budget_max_vnd": 0,
+      "intent_location_id": 0,
+      "evidence_span": 0,
+      "span_start": 0,
+      "span_end": 0,
+      "confidence": 0,
+      "extraction_method": 0,
+      "actual_booking_confirmed": 0,
+      "schema_version": 0,
+      "processing_version": 0,
+      "lineage_ids": 0
+    },
+    "numeric": {
+      "participant_count_mentioned": {
+        "n": 2,
+        "min": 1,
+        "max": 8,
+        "mean": 4.5,
+        "median": 4.5,
+        "p5": 1.35,
+        "p25": 2.75,
+        "p75": 6.25,
+        "p90": 7.3,
+        "p95": 7.6499999999999995,
+        "p99": 7.93
+      },
+      "requested_duration_minutes": {
+        "n": 4,
+        "min": 60,
+        "max": 240,
+        "mean": 150,
+        "median": 150.0,
+        "p5": 69.0,
+        "p25": 105.0,
+        "p75": 195.0,
+        "p90": 222.0,
+        "p95": 230.99999999999997,
+        "p99": 238.2
+      },
+      "span_start": {
+        "n": 474,
+        "min": 0,
+        "max": 1485,
+        "mean": 149.10759493670886,
+        "median": 13.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 190.75,
+        "p90": 428.7,
+        "p95": 750.6999999999958,
+        "p99": 1188.7199999999975
+      },
+      "span_end": {
+        "n": 474,
+        "min": 8,
+        "max": 1712,
+        "mean": 327.1054852320675,
+        "median": 204.0,
+        "p5": 23.650000000000002,
+        "p25": 96.25,
+        "p75": 434.75,
+        "p90": 753.6999999999998,
+        "p95": 1160.8499999999997,
+        "p99": 1629.119999999999
+      }
+    },
+    "categories": {
+      "requested_time_precision": {
+        "NOT_MENTIONED": 448,
+        "TEXT_ONLY_UNRESOLVED": 26
+      },
+      "extraction_method": {
+        "DETERMINISTIC_RULE_UNCALIBRATED": 474
+      },
+      "actual_booking_confirmed": {
+        "False": 474
+      }
+    },
+    "dates": {},
+    "grain": [
+      "evidence_id"
+    ],
+    "duplicate_keys": 0
+  },
+  "dim_admin_unit": {
+    "rows": 100,
+    "missing_columns": [],
+    "unexpected_columns": [],
+    "nulls": {
+      "admin_unit_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "admin_code": {
+        "count": 100,
+        "rate": 1.0
+      },
+      "admin_name": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "admin_level": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "admin_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "parent_admin_unit_id": {
+        "count": 97,
+        "rate": 0.97
+      },
+      "geometry": {
+        "count": 100,
+        "rate": 1.0
+      },
+      "valid_from": {
+        "count": 63,
+        "rate": 0.63
+      },
+      "valid_to": {
+        "count": 37,
+        "rate": 0.37
+      },
+      "source_reference": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "reference_status": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "schema_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "processing_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "lineage_ids": {
+        "count": 0,
+        "rate": 0.0
+      }
+    },
+    "empty_values": {
+      "admin_unit_id": 0,
+      "admin_code": 0,
+      "admin_name": 0,
+      "admin_level": 0,
+      "admin_version": 0,
+      "parent_admin_unit_id": 0,
+      "geometry": 0,
+      "valid_from": 0,
+      "valid_to": 0,
+      "source_reference": 0,
+      "reference_status": 0,
+      "schema_version": 0,
+      "processing_version": 0,
+      "lineage_ids": 0
+    },
+    "numeric": {},
+    "categories": {
+      "admin_level": {
+        "PROVINCE": 97,
+        "WARD": 3
+      },
+      "admin_version": {
+        "VN_ADMIN_POST_2025": 37,
+        "VN_ADMIN_PRE_2025": 63
+      },
+      "reference_status": {
+        "CURATED_INTERNAL_IDS_NO_BOUNDARIES": 100
+      }
+    },
+    "dates": {
+      "valid_from": {
+        "min": "2025-07-01",
+        "max": "2025-07-01",
+        "distinct": 1
+      },
+      "valid_to": {
+        "min": "2025-06-30",
+        "max": "2025-06-30",
+        "distinct": 1
+      }
+    },
+    "grain": [
+      "admin_unit_id"
+    ],
+    "duplicate_keys": 0
+  },
+  "bridge_admin_crosswalk": {
+    "rows": 63,
+    "missing_columns": [],
+    "unexpected_columns": [],
+    "nulls": {
+      "old_admin_unit_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "new_admin_unit_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "relation_type": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "mapping_method": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "overlap_area_ratio": {
+        "count": 63,
+        "rate": 1.0
+      },
+      "mapping_confidence": {
+        "count": 63,
+        "rate": 1.0
+      },
+      "source_reference": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "schema_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "processing_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "lineage_ids": {
+        "count": 0,
+        "rate": 0.0
+      }
+    },
+    "empty_values": {
+      "old_admin_unit_id": 0,
+      "new_admin_unit_id": 0,
+      "relation_type": 0,
+      "mapping_method": 0,
+      "overlap_area_ratio": 0,
+      "mapping_confidence": 0,
+      "source_reference": 0,
+      "schema_version": 0,
+      "processing_version": 0,
+      "lineage_ids": 0
+    },
+    "numeric": {},
+    "categories": {
+      "relation_type": {
+        "MERGED": 52,
+        "UNCHANGED": 11
+      },
+      "mapping_method": {
+        "REPOSITORY_PROVINCE_REFERENCE": 63
+      }
+    },
+    "dates": {},
+    "grain": [
+      "old_admin_unit_id",
+      "new_admin_unit_id"
+    ],
+    "duplicate_keys": 0
+  },
+  "dim_location_alias": {
+    "rows": 170,
+    "missing_columns": [],
+    "unexpected_columns": [],
+    "nulls": {
+      "alias_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "alias_text": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "alias_type": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "admin_unit_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "effective_from": {
+        "count": 170,
+        "rate": 1.0
+      },
+      "effective_to": {
+        "count": 170,
+        "rate": 1.0
+      },
+      "source_reference": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "schema_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "processing_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "lineage_ids": {
+        "count": 0,
+        "rate": 0.0
+      }
+    },
+    "empty_values": {
+      "alias_id": 0,
+      "alias_text": 0,
+      "alias_type": 0,
+      "admin_unit_id": 0,
+      "effective_from": 0,
+      "effective_to": 0,
+      "source_reference": 0,
+      "schema_version": 0,
+      "processing_version": 0,
+      "lineage_ids": 0
+    },
+    "numeric": {},
+    "categories": {
+      "alias_type": {
+        "COLLOQUIAL": 68,
+        "OFFICIAL": 100,
+        "HISTORICAL": 2
+      }
+    },
+    "dates": {},
+    "grain": [
+      "alias_id"
+    ],
+    "duplicate_keys": 0
+  },
+  "court_supply_by_admin_version_v2": {
+    "rows": 22,
+    "missing_columns": [],
+    "unexpected_columns": [],
+    "nulls": {
+      "snapshot_date": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "admin_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "admin_unit_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "venue_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "known_court_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "known_count_venue_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "unknown_count_venue_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "conflicting_count_venue_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "court_count_coverage_rate": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "verified_venue_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "probable_venue_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "price_min_vnd": {
+        "count": 22,
+        "rate": 1.0
+      },
+      "price_median_vnd": {
+        "count": 22,
+        "rate": 1.0
+      },
+      "priced_venue_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "price_unit": {
+        "count": 22,
+        "rate": 1.0
+      },
+      "venue_last_observed_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "unverified_candidate_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "schema_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "processing_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "lineage_ids": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "generated_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "metric_definition_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "completeness_status": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_platforms": {
+        "count": 0,
+        "rate": 0.0
+      }
+    },
+    "empty_values": {
+      "snapshot_date": 0,
+      "admin_version": 0,
+      "admin_unit_id": 0,
+      "venue_count": 0,
+      "known_court_count": 0,
+      "known_count_venue_count": 0,
+      "unknown_count_venue_count": 0,
+      "conflicting_count_venue_count": 0,
+      "court_count_coverage_rate": 0,
+      "verified_venue_count": 0,
+      "probable_venue_count": 0,
+      "price_min_vnd": 0,
+      "price_median_vnd": 0,
+      "priced_venue_count": 0,
+      "price_unit": 0,
+      "venue_last_observed_at": 0,
+      "unverified_candidate_count": 0,
+      "schema_version": 0,
+      "processing_version": 0,
+      "lineage_ids": 0,
+      "generated_at": 0,
+      "metric_definition_id": 0,
+      "completeness_status": 0,
+      "source_platforms": 0
+    },
+    "numeric": {
+      "venue_count": {
+        "n": 22,
+        "min": 1,
+        "max": 336,
+        "mean": 31.136363636363637,
+        "median": 6.0,
+        "p5": 1.0,
+        "p25": 2.0,
+        "p75": 9.75,
+        "p90": 96.10000000000016,
+        "p95": 134.39999999999998,
+        "p99": 293.99999999999983
+      },
+      "known_court_count": {
+        "n": 22,
+        "min": 3,
+        "max": 2617,
+        "mean": 241.22727272727272,
+        "median": 27.0,
+        "p5": 3.05,
+        "p25": 10.0,
+        "p75": 47.25,
+        "p90": 517.6000000000009,
+        "p95": 1535.7499999999993,
+        "p99": 2400.699999999999
+      },
+      "known_count_venue_count": {
+        "n": 22,
+        "min": 1,
+        "max": 316,
+        "mean": 29.318181818181817,
+        "median": 6.0,
+        "p5": 1.0,
+        "p25": 2.0,
+        "p75": 9.75,
+        "p90": 96.10000000000016,
+        "p95": 115.39999999999999,
+        "p99": 273.99999999999983
+      },
+      "unknown_count_venue_count": {
+        "n": 22,
+        "min": 0,
+        "max": 20,
+        "mean": 1.8181818181818181,
+        "median": 0.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 0.0,
+        "p95": 18.999999999999986,
+        "p99": 20.0
+      },
+      "conflicting_count_venue_count": {
+        "n": 22,
+        "min": 0,
+        "max": 0,
+        "mean": 0,
+        "median": 0.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 0.0,
+        "p95": 0.0,
+        "p99": 0.0
+      },
+      "court_count_coverage_rate": {
+        "n": 22,
+        "min": 0.8529411764705882,
+        "max": 1.0,
+        "mean": 0.9906098803157627,
+        "median": 1.0,
+        "p5": 0.9434523809523809,
+        "p25": 1.0,
+        "p75": 1.0,
+        "p90": 1.0,
+        "p95": 1.0,
+        "p99": 1.0
+      },
+      "verified_venue_count": {
+        "n": 22,
+        "min": 0,
+        "max": 0,
+        "mean": 0,
+        "median": 0.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 0.0,
+        "p95": 0.0,
+        "p99": 0.0
+      },
+      "probable_venue_count": {
+        "n": 22,
+        "min": 1,
+        "max": 336,
+        "mean": 31.136363636363637,
+        "median": 6.0,
+        "p5": 1.0,
+        "p25": 2.0,
+        "p75": 9.75,
+        "p90": 96.10000000000016,
+        "p95": 134.39999999999998,
+        "p99": 293.99999999999983
+      },
+      "priced_venue_count": {
+        "n": 22,
+        "min": 0,
+        "max": 0,
+        "mean": 0,
+        "median": 0.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 0.0,
+        "p95": 0.0,
+        "p99": 0.0
+      },
+      "unverified_candidate_count": {
+        "n": 22,
+        "min": 0,
+        "max": 0,
+        "mean": 0,
+        "median": 0.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 0.0,
+        "p95": 0.0,
+        "p99": 0.0
+      }
+    },
+    "categories": {
+      "admin_version": {
+        "NATIONAL": 1,
+        "UNRESOLVED": 1,
+        "VN_ADMIN_POST_2025": 13,
+        "VN_ADMIN_PRE_2025": 7
+      },
+      "price_unit": {
+        "NULL": 22
+      },
+      "completeness_status": {
+        "OBSERVED_SAMPLE_PARTIAL": 22
+      },
+      "source_platforms": {
+        "pbplus": 22
+      }
+    },
+    "dates": {
+      "snapshot_date": {
+        "min": "2026-10-12",
+        "max": "2026-10-12",
+        "distinct": 1
+      },
+      "venue_last_observed_at": {
+        "min": "2026-10-10T16:15:13.228355Z",
+        "max": "2026-10-10T16:15:13.228355Z",
+        "distinct": 1
+      },
+      "generated_at": {
+        "min": "2026-10-12T05:28:49.458043Z",
+        "max": "2026-10-12T05:28:49.458043Z",
+        "distinct": 1
+      }
+    },
+    "grain": [
+      "snapshot_date",
+      "admin_version",
+      "admin_unit_id"
+    ],
+    "duplicate_keys": 0
+  },
+  "social_engagement_daily_v1": {
+    "rows": 167,
+    "missing_columns": [],
+    "unexpected_columns": [],
+    "nulls": {
+      "activity_date": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "admin_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "admin_unit_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "platform": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "post_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "total_views": {
+        "count": 98,
+        "rate": 0.5868263473053892
+      },
+      "total_likes": {
+        "count": 2,
+        "rate": 0.011976047904191617
+      },
+      "total_comments_reported": {
+        "count": 98,
+        "rate": 0.5868263473053892
+      },
+      "total_shares": {
+        "count": 167,
+        "rate": 1.0
+      },
+      "avg_likes_per_post": {
+        "count": 2,
+        "rate": 0.011976047904191617
+      },
+      "avg_comments_per_post": {
+        "count": 98,
+        "rate": 0.5868263473053892
+      },
+      "median_engagement": {
+        "count": 167,
+        "rate": 1.0
+      },
+      "high_engagement_post_count": {
+        "count": 167,
+        "rate": 1.0
+      },
+      "posts_with_metrics_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "posts_with_views": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "posts_with_likes": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "posts_with_comments": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "posts_with_shares": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "snapshot_as_of": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "metric_window": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "high_engagement_threshold": {
+        "count": 167,
+        "rate": 1.0
+      },
+      "schema_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "processing_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "lineage_ids": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "generated_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "metric_definition_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "completeness_status": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_platforms": {
+        "count": 0,
+        "rate": 0.0
+      }
+    },
+    "empty_values": {
+      "activity_date": 0,
+      "admin_version": 0,
+      "admin_unit_id": 0,
+      "platform": 0,
+      "post_count": 0,
+      "total_views": 0,
+      "total_likes": 0,
+      "total_comments_reported": 0,
+      "total_shares": 0,
+      "avg_likes_per_post": 0,
+      "avg_comments_per_post": 0,
+      "median_engagement": 0,
+      "high_engagement_post_count": 0,
+      "posts_with_metrics_count": 0,
+      "posts_with_views": 0,
+      "posts_with_likes": 0,
+      "posts_with_comments": 0,
+      "posts_with_shares": 0,
+      "snapshot_as_of": 0,
+      "metric_window": 0,
+      "high_engagement_threshold": 0,
+      "schema_version": 0,
+      "processing_version": 0,
+      "lineage_ids": 0,
+      "generated_at": 0,
+      "metric_definition_id": 0,
+      "completeness_status": 0,
+      "source_platforms": 0
+    },
+    "numeric": {
+      "post_count": {
+        "n": 167,
+        "min": 1,
+        "max": 58,
+        "mean": 4.161676646706587,
+        "median": 1,
+        "p5": 1.0,
+        "p25": 1.0,
+        "p75": 2.0,
+        "p90": 8.400000000000006,
+        "p95": 26.399999999999977,
+        "p99": 48.34
+      },
+      "total_views": {
+        "n": 69,
+        "min": 0,
+        "max": 340712,
+        "mean": 34820.115942028984,
+        "median": 2868,
+        "p5": 59.000000000000014,
+        "p25": 695.0,
+        "p75": 34278.0,
+        "p90": 121243.80000000002,
+        "p95": 194506.0,
+        "p99": 282436.6799999994
+      },
+      "total_likes": {
+        "n": 165,
+        "min": 0,
+        "max": 4617,
+        "mean": 191.44242424242424,
+        "median": 12,
+        "p5": 0.0,
+        "p25": 3.0,
+        "p75": 71.0,
+        "p90": 499.1999999999998,
+        "p95": 564.9999999999997,
+        "p99": 4617.0
+      },
+      "total_comments_reported": {
+        "n": 69,
+        "min": 0,
+        "max": 46,
+        "mean": 2.8260869565217392,
+        "median": 0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 3.0,
+        "p90": 5.400000000000006,
+        "p95": 8.0,
+        "p99": 44.639999999999986
+      },
+      "avg_likes_per_post": {
+        "n": 165,
+        "min": 0.0,
+        "max": 4617.0,
+        "mean": 153.34823923819792,
+        "median": 7.0,
+        "p5": 0.0,
+        "p25": 2.5,
+        "p75": 27.0,
+        "p90": 245.09999999999945,
+        "p95": 543.0,
+        "p99": 4617.0
+      },
+      "avg_comments_per_post": {
+        "n": 69,
+        "min": 0.0,
+        "max": 7.0,
+        "mean": 0.653708492962951,
+        "median": 0.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.22448979591836735,
+        "p90": 2.5333333333333337,
+        "p95": 4.0,
+        "p99": 7.0
+      },
+      "posts_with_metrics_count": {
+        "n": 167,
+        "min": 1,
+        "max": 58,
+        "mean": 4.161676646706587,
+        "median": 1,
+        "p5": 1.0,
+        "p25": 1.0,
+        "p75": 2.0,
+        "p90": 8.400000000000006,
+        "p95": 26.399999999999977,
+        "p99": 48.34
+      },
+      "posts_with_views": {
+        "n": 167,
+        "min": 0,
+        "max": 58,
+        "mean": 3.5089820359281436,
+        "median": 0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 1.0,
+        "p90": 8.400000000000006,
+        "p95": 26.399999999999977,
+        "p99": 48.34
+      },
+      "posts_with_likes": {
+        "n": 167,
+        "min": 0,
+        "max": 58,
+        "mean": 4.131736526946108,
+        "median": 1,
+        "p5": 1.0,
+        "p25": 1.0,
+        "p75": 2.0,
+        "p90": 8.400000000000006,
+        "p95": 26.399999999999977,
+        "p99": 48.34
+      },
+      "posts_with_comments": {
+        "n": 167,
+        "min": 0,
+        "max": 58,
+        "mean": 3.497005988023952,
+        "median": 0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 1.0,
+        "p90": 8.400000000000006,
+        "p95": 26.399999999999977,
+        "p99": 47.68000000000001
+      },
+      "posts_with_shares": {
+        "n": 167,
+        "min": 0,
+        "max": 0,
+        "mean": 0,
+        "median": 0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 0.0,
+        "p95": 0.0,
+        "p99": 0.0
+      }
+    },
+    "categories": {
+      "admin_version": {
+        "NATIONAL": 58,
+        "VN_ADMIN_POST_2025": 78,
+        "VN_ADMIN_PRE_2025": 12,
+        "UNRESOLVED": 19
+      },
+      "platform": {
+        "threads": 98,
+        "youtube": 69
+      },
+      "completeness_status": {
+        "METRIC_DEFINITION_UNCONFIRMED_PARTIAL": 167
+      },
+      "source_platforms": {
+        "threads": 98,
+        "youtube": 69
+      }
+    },
+    "dates": {
+      "activity_date": {
+        "min": "2024-08-05",
+        "max": "2026-10-12",
+        "distinct": 55
+      },
+      "snapshot_as_of": {
+        "min": "2026-10-07T22:24:47.159178Z",
+        "max": "2026-10-12T05:28:49.458043Z",
+        "distinct": 17
+      },
+      "generated_at": {
+        "min": "2026-10-12T05:28:49.458043Z",
+        "max": "2026-10-12T05:28:49.458043Z",
+        "distinct": 1
+      }
+    },
+    "grain": [
+      "activity_date",
+      "admin_version",
+      "admin_unit_id",
+      "platform"
+    ],
+    "duplicate_keys": 0
+  },
+  "social_intent_daily_v2": {
+    "rows": 243,
+    "missing_columns": [],
+    "unexpected_columns": [],
+    "nulls": {
+      "activity_date": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "admin_unit_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "admin_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "platform": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "intent_type": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "post_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "comment_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "reply_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "evidence_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "resolved_content_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "high_confidence_count": {
+        "count": 243,
+        "rate": 1.0
+      },
+      "unique_content_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "schema_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "processing_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "lineage_ids": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "generated_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "metric_definition_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "completeness_status": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_platforms": {
+        "count": 0,
+        "rate": 0.0
+      }
+    },
+    "empty_values": {
+      "activity_date": 0,
+      "admin_unit_id": 0,
+      "admin_version": 0,
+      "platform": 0,
+      "intent_type": 0,
+      "post_count": 0,
+      "comment_count": 0,
+      "reply_count": 0,
+      "evidence_count": 0,
+      "resolved_content_count": 0,
+      "high_confidence_count": 0,
+      "unique_content_count": 0,
+      "schema_version": 0,
+      "processing_version": 0,
+      "lineage_ids": 0,
+      "generated_at": 0,
+      "metric_definition_id": 0,
+      "completeness_status": 0,
+      "source_platforms": 0
+    },
+    "numeric": {
+      "post_count": {
+        "n": 243,
+        "min": 0,
+        "max": 36,
+        "mean": 3.094650205761317,
+        "median": 1,
+        "p5": 1.0,
+        "p25": 1.0,
+        "p75": 2.0,
+        "p90": 8.0,
+        "p95": 14.0,
+        "p99": 30.0
+      },
+      "comment_count": {
+        "n": 243,
+        "min": 0,
+        "max": 1,
+        "mean": 0.00823045267489712,
+        "median": 0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 0.0,
+        "p95": 0.0,
+        "p99": 0.0
+      },
+      "reply_count": {
+        "n": 243,
+        "min": 0,
+        "max": 0,
+        "mean": 0,
+        "median": 0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 0.0,
+        "p95": 0.0,
+        "p99": 0.0
+      },
+      "evidence_count": {
+        "n": 243,
+        "min": 1,
+        "max": 36,
+        "mean": 3.8641975308641974,
+        "median": 1,
+        "p5": 1.0,
+        "p25": 1.0,
+        "p75": 2.0,
+        "p90": 12.0,
+        "p95": 18.899999999999977,
+        "p99": 30.0
+      },
+      "resolved_content_count": {
+        "n": 243,
+        "min": 0,
+        "max": 28,
+        "mean": 1.6378600823045268,
+        "median": 1,
+        "p5": 0.0,
+        "p25": 1.0,
+        "p75": 1.0,
+        "p90": 3.0,
+        "p95": 5.0,
+        "p99": 15.159999999999968
+      },
+      "unique_content_count": {
+        "n": 243,
+        "min": 1,
+        "max": 36,
+        "mean": 3.102880658436214,
+        "median": 1,
+        "p5": 1.0,
+        "p25": 1.0,
+        "p75": 2.0,
+        "p90": 8.0,
+        "p95": 14.0,
+        "p99": 30.0
+      }
+    },
+    "categories": {
+      "admin_version": {
+        "NATIONAL": 86,
+        "VN_ADMIN_POST_2025": 110,
+        "VN_ADMIN_PRE_2025": 13,
+        "UNRESOLVED": 34
+      },
+      "platform": {
+        "threads": 101,
+        "youtube": 142
+      },
+      "completeness_status": {
+        "RULE_UNCALIBRATED_PARTIAL": 243
+      },
+      "source_platforms": {
+        "threads": 101,
+        "youtube": 142
+      }
+    },
+    "dates": {
+      "activity_date": {
+        "min": "2024-08-05",
+        "max": "2026-10-12",
+        "distinct": 55
+      },
+      "generated_at": {
+        "min": "2026-10-12T05:28:49.458043Z",
+        "max": "2026-10-12T05:28:49.458043Z",
+        "distinct": 1
+      }
+    },
+    "grain": [
+      "activity_date",
+      "admin_unit_id",
+      "admin_version",
+      "platform",
+      "intent_type"
+    ],
+    "duplicate_keys": 0
+  },
+  "social_comment_analytics_daily_v1": {
+    "rows": 6,
+    "missing_columns": [],
+    "unexpected_columns": [],
+    "nulls": {
+      "activity_date": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "platform": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "admin_unit_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "admin_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "collected_comment_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "collected_reply_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "reported_comment_count": {
+        "count": 6,
+        "rate": 1.0
+      },
+      "relevant_comment_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "positive_comment_count": {
+        "count": 6,
+        "rate": 1.0
+      },
+      "negative_comment_count": {
+        "count": 6,
+        "rate": 1.0
+      },
+      "neutral_comment_count": {
+        "count": 6,
+        "rate": 1.0
+      },
+      "sentiment_classified_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "court_seeking_comment_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "booking_intent_comment_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "price_inquiry_comment_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "capacity_complaint_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "comments_with_resolved_geo": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "court_seeking_comment_share": {
+        "count": 6,
+        "rate": 1.0
+      },
+      "source_collection_status": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "schema_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "processing_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "lineage_ids": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "generated_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "metric_definition_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "completeness_status": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_platforms": {
+        "count": 0,
+        "rate": 0.0
+      }
+    },
+    "empty_values": {
+      "activity_date": 0,
+      "platform": 0,
+      "admin_unit_id": 0,
+      "admin_version": 0,
+      "collected_comment_count": 0,
+      "collected_reply_count": 0,
+      "reported_comment_count": 0,
+      "relevant_comment_count": 0,
+      "positive_comment_count": 0,
+      "negative_comment_count": 0,
+      "neutral_comment_count": 0,
+      "sentiment_classified_count": 0,
+      "court_seeking_comment_count": 0,
+      "booking_intent_comment_count": 0,
+      "price_inquiry_comment_count": 0,
+      "capacity_complaint_count": 0,
+      "comments_with_resolved_geo": 0,
+      "court_seeking_comment_share": 0,
+      "source_collection_status": 0,
+      "schema_version": 0,
+      "processing_version": 0,
+      "lineage_ids": 0,
+      "generated_at": 0,
+      "metric_definition_id": 0,
+      "completeness_status": 0,
+      "source_platforms": 0
+    },
+    "numeric": {
+      "collected_comment_count": {
+        "n": 6,
+        "min": 1,
+        "max": 2,
+        "mean": 1.6666666666666667,
+        "median": 2.0,
+        "p5": 1.0,
+        "p25": 1.25,
+        "p75": 2.0,
+        "p90": 2.0,
+        "p95": 2.0,
+        "p99": 2.0
+      },
+      "collected_reply_count": {
+        "n": 6,
+        "min": 0,
+        "max": 1,
+        "mean": 0.6666666666666666,
+        "median": 1.0,
+        "p5": 0.0,
+        "p25": 0.25,
+        "p75": 1.0,
+        "p90": 1.0,
+        "p95": 1.0,
+        "p99": 1.0
+      },
+      "relevant_comment_count": {
+        "n": 6,
+        "min": 0,
+        "max": 0,
+        "mean": 0,
+        "median": 0.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 0.0,
+        "p95": 0.0,
+        "p99": 0.0
+      },
+      "sentiment_classified_count": {
+        "n": 6,
+        "min": 0,
+        "max": 0,
+        "mean": 0,
+        "median": 0.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 0.0,
+        "p95": 0.0,
+        "p99": 0.0
+      },
+      "court_seeking_comment_count": {
+        "n": 6,
+        "min": 0,
+        "max": 0,
+        "mean": 0,
+        "median": 0.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 0.0,
+        "p95": 0.0,
+        "p99": 0.0
+      },
+      "booking_intent_comment_count": {
+        "n": 6,
+        "min": 0,
+        "max": 0,
+        "mean": 0,
+        "median": 0.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 0.0,
+        "p95": 0.0,
+        "p99": 0.0
+      },
+      "price_inquiry_comment_count": {
+        "n": 6,
+        "min": 0,
+        "max": 0,
+        "mean": 0,
+        "median": 0.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 0.0,
+        "p95": 0.0,
+        "p99": 0.0
+      },
+      "capacity_complaint_count": {
+        "n": 6,
+        "min": 0,
+        "max": 0,
+        "mean": 0,
+        "median": 0.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 0.0,
+        "p95": 0.0,
+        "p99": 0.0
+      },
+      "comments_with_resolved_geo": {
+        "n": 6,
+        "min": 0,
+        "max": 0,
+        "mean": 0,
+        "median": 0.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 0.0,
+        "p95": 0.0,
+        "p99": 0.0
+      }
+    },
+    "categories": {
+      "platform": {
+        "youtube": 6
+      },
+      "admin_version": {
+        "NATIONAL": 3,
+        "UNRESOLVED": 3
+      },
+      "completeness_status": {
+        "OBSERVED_SAMPLE_PARTIAL": 6
+      },
+      "source_platforms": {
+        "youtube": 6
+      }
+    },
+    "dates": {
+      "activity_date": {
+        "min": "2026-10-07",
+        "max": "2026-10-12",
+        "distinct": 3
+      },
+      "generated_at": {
+        "min": "2026-10-12T05:28:49.458043Z",
+        "max": "2026-10-12T05:28:49.458043Z",
+        "distinct": 1
+      }
+    },
+    "grain": [
+      "activity_date",
+      "platform",
+      "admin_unit_id",
+      "admin_version"
+    ],
+    "duplicate_keys": 0
+  },
+  "social_activity_by_admin_version_daily": {
+    "rows": 162,
+    "missing_columns": [],
+    "unexpected_columns": [],
+    "nulls": {
+      "activity_date": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "admin_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "admin_unit_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "post_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "comment_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "reply_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "unique_content_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "relevant_post_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "relevant_comment_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "classified_content_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "classification_coverage_rate": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "geographic_interpretation": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "schema_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "processing_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "lineage_ids": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "generated_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "metric_definition_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "completeness_status": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_platforms": {
+        "count": 0,
+        "rate": 0.0
+      }
+    },
+    "empty_values": {
+      "activity_date": 0,
+      "admin_version": 0,
+      "admin_unit_id": 0,
+      "post_count": 0,
+      "comment_count": 0,
+      "reply_count": 0,
+      "unique_content_count": 0,
+      "relevant_post_count": 0,
+      "relevant_comment_count": 0,
+      "classified_content_count": 0,
+      "classification_coverage_rate": 0,
+      "geographic_interpretation": 0,
+      "schema_version": 0,
+      "processing_version": 0,
+      "lineage_ids": 0,
+      "generated_at": 0,
+      "metric_definition_id": 0,
+      "completeness_status": 0,
+      "source_platforms": 0
+    },
+    "numeric": {
+      "post_count": {
+        "n": 162,
+        "min": 1,
+        "max": 66,
+        "mean": 4.537037037037037,
+        "median": 1.0,
+        "p5": 1.0,
+        "p25": 1.0,
+        "p75": 2.0,
+        "p90": 8.900000000000006,
+        "p95": 29.849999999999966,
+        "p99": 52.77999999999997
+      },
+      "comment_count": {
+        "n": 162,
+        "min": 0,
+        "max": 2,
+        "mean": 0.06172839506172839,
+        "median": 0.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 0.0,
+        "p95": 0.0,
+        "p99": 2.0
+      },
+      "reply_count": {
+        "n": 162,
+        "min": 0,
+        "max": 1,
+        "mean": 0.024691358024691357,
+        "median": 0.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 0.0,
+        "p95": 0.0,
+        "p99": 1.0
+      },
+      "unique_content_count": {
+        "n": 162,
+        "min": 1,
+        "max": 68,
+        "mean": 4.6234567901234565,
+        "median": 1.0,
+        "p5": 1.0,
+        "p25": 1.0,
+        "p75": 2.0,
+        "p90": 9.900000000000006,
+        "p95": 29.849999999999966,
+        "p99": 53.559999999999945
+      },
+      "relevant_post_count": {
+        "n": 162,
+        "min": 1,
+        "max": 58,
+        "mean": 4.290123456790123,
+        "median": 1.0,
+        "p5": 1.0,
+        "p25": 1.0,
+        "p75": 2.0,
+        "p90": 8.900000000000006,
+        "p95": 26.899999999999977,
+        "p99": 49.559999999999945
+      },
+      "relevant_comment_count": {
+        "n": 162,
+        "min": 0,
+        "max": 0,
+        "mean": 0,
+        "median": 0.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 0.0,
+        "p95": 0.0,
+        "p99": 0.0
+      },
+      "classified_content_count": {
+        "n": 162,
+        "min": 1,
+        "max": 68,
+        "mean": 4.574074074074074,
+        "median": 1.0,
+        "p5": 1.0,
+        "p25": 1.0,
+        "p75": 2.0,
+        "p90": 9.900000000000006,
+        "p95": 29.849999999999966,
+        "p99": 52.559999999999945
+      },
+      "classification_coverage_rate": {
+        "n": 162,
+        "min": 0.6666666666666666,
+        "max": 1.0,
+        "mean": 0.9969094237885088,
+        "median": 1.0,
+        "p5": 1.0,
+        "p25": 1.0,
+        "p75": 1.0,
+        "p90": 1.0,
+        "p95": 1.0,
+        "p99": 1.0
+      }
+    },
+    "categories": {
+      "admin_version": {
+        "NATIONAL": 55,
+        "VN_ADMIN_POST_2025": 76,
+        "VN_ADMIN_PRE_2025": 12,
+        "UNRESOLVED": 19
+      },
+      "completeness_status": {
+        "OBSERVED_SAMPLE_PARTIAL": 162
+      },
+      "source_platforms": {
+        "threads": 98,
+        "youtube": 69
+      }
+    },
+    "dates": {
+      "activity_date": {
+        "min": "2024-08-05",
+        "max": "2026-10-12",
+        "distinct": 55
+      },
+      "generated_at": {
+        "min": "2026-10-12T05:28:49.458043Z",
+        "max": "2026-10-12T05:28:49.458043Z",
+        "distinct": 1
+      }
+    },
+    "grain": [
+      "activity_date",
+      "admin_version",
+      "admin_unit_id"
+    ],
+    "duplicate_keys": 0
+  },
+  "national_location_coverage_v1": {
+    "rows": 983,
+    "missing_columns": [],
+    "unexpected_columns": [],
+    "nulls": {
+      "admin_unit_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "admin_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_platform": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "period_start": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "period_end": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "planned_queries": {
+        "count": 983,
+        "rate": 1.0
+      },
+      "successful_queries": {
+        "count": 857,
+        "rate": 0.8718209562563581
+      },
+      "failed_queries": {
+        "count": 857,
+        "rate": 0.8718209562563581
+      },
+      "records_returned": {
+        "count": 857,
+        "rate": 0.8718209562563581
+      },
+      "records_accepted": {
+        "count": 857,
+        "rate": 0.8718209562563581
+      },
+      "resolved_records": {
+        "count": 973,
+        "rate": 0.9898270600203459
+      },
+      "last_success_at": {
+        "count": 963,
+        "rate": 0.9796541200406917
+      },
+      "collection_status": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "query_success_rate": {
+        "count": 983,
+        "rate": 1.0
+      },
+      "geo_resolution_rate": {
+        "count": 974,
+        "rate": 0.9908443540183113
+      },
+      "query_evidence_status": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "collection_run_ids": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "schema_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "processing_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "lineage_ids": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "generated_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "metric_definition_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "completeness_status": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_platforms": {
+        "count": 0,
+        "rate": 0.0
+      }
+    },
+    "empty_values": {
+      "admin_unit_id": 0,
+      "admin_version": 0,
+      "source_platform": 0,
+      "period_start": 0,
+      "period_end": 0,
+      "planned_queries": 0,
+      "successful_queries": 0,
+      "failed_queries": 0,
+      "records_returned": 0,
+      "records_accepted": 0,
+      "resolved_records": 0,
+      "last_success_at": 0,
+      "collection_status": 0,
+      "query_success_rate": 0,
+      "geo_resolution_rate": 0,
+      "query_evidence_status": 0,
+      "collection_run_ids": 857,
+      "schema_version": 0,
+      "processing_version": 0,
+      "lineage_ids": 857,
+      "generated_at": 0,
+      "metric_definition_id": 0,
+      "completeness_status": 0,
+      "source_platforms": 857
+    },
+    "numeric": {
+      "successful_queries": {
+        "n": 126,
+        "min": 0,
+        "max": 732,
+        "mean": 17.96825396825397,
+        "median": 11.0,
+        "p5": 4.0,
+        "p25": 10.0,
+        "p75": 11.0,
+        "p90": 11.0,
+        "p95": 13.0,
+        "p99": 197.5
+      },
+      "failed_queries": {
+        "n": 126,
+        "min": 0,
+        "max": 1,
+        "mean": 0.007936507936507936,
+        "median": 0.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 0.0,
+        "p95": 0.0,
+        "p99": 0.0
+      },
+      "records_returned": {
+        "n": 126,
+        "min": 0,
+        "max": 1013,
+        "mean": 32.523809523809526,
+        "median": 0.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 18.0,
+        "p95": 261.75,
+        "p99": 405.0
+      },
+      "records_accepted": {
+        "n": 126,
+        "min": 0,
+        "max": 1013,
+        "mean": 26.603174603174605,
+        "median": 0.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 10.0,
+        "p95": 191.5,
+        "p99": 405.0
+      },
+      "resolved_records": {
+        "n": 10,
+        "min": 0,
+        "max": 985,
+        "mean": 226.5,
+        "median": 140.5,
+        "p5": 4.5,
+        "p25": 55.75,
+        "p75": 292.5,
+        "p90": 393.69999999999976,
+        "p95": 689.3499999999992,
+        "p99": 925.8700000000001
+      },
+      "geo_resolution_rate": {
+        "n": 9,
+        "min": 0.33004926108374383,
+        "max": 1.0,
+        "mean": 0.6849769588591833,
+        "median": 0.8416289592760181,
+        "p5": 0.33385510182158584,
+        "p25": 0.3656716417910448,
+        "p75": 0.973293768545994,
+        "p90": 0.9786350148367953,
+        "p95": 0.9893175074183976,
+        "p99": 0.9978635014836795
+      }
+    },
+    "categories": {
+      "admin_version": {
+        "NATIONAL": 10,
+        "VN_ADMIN_POST_2025": 343,
+        "VN_ADMIN_PRE_2025": 630
+      },
+      "source_platform": {
+        "pbplus": 294,
+        "threads": 297,
+        "youtube": 392
+      },
+      "collection_status": {
+        "PARTIAL": 126,
+        "MISSING": 857
+      },
+      "query_evidence_status": {
+        "QUERY_OBSERVATIONS_PLAN_UNKNOWN": 126,
+        "NO_QUERY_EVIDENCE": 857
+      },
+      "completeness_status": {
+        "PIPELINE_COVERAGE_NOT_MARKET_COVERAGE": 983
+      },
+      "source_platforms": {
+        "pbplus": 3,
+        "threads": 119,
+        "youtube": 4
+      }
+    },
+    "dates": {
+      "period_start": {
+        "min": "2026-10-05",
+        "max": "2026-10-12",
+        "distinct": 5
+      },
+      "period_end": {
+        "min": "2026-10-05",
+        "max": "2026-10-12",
+        "distinct": 5
+      },
+      "last_success_at": {
+        "min": "2026-10-05T08:31:45.874770Z",
+        "max": "2026-10-12T05:28:49.458043Z",
+        "distinct": 9
+      },
+      "generated_at": {
+        "min": "2026-10-12T05:28:49.458043Z",
+        "max": "2026-10-12T05:28:49.458043Z",
+        "distinct": 1
+      }
+    },
+    "grain": [
+      "admin_unit_id",
+      "admin_version",
+      "source_platform",
+      "period_start",
+      "period_end"
+    ],
+    "duplicate_keys": 0
+  },
+  "venue_community_feedback_weekly_v1": {
+    "rows": 14,
+    "missing_columns": [],
+    "unexpected_columns": [],
+    "nulls": {
+      "venue_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "week_start": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "mentioning_post_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "mentioning_comment_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "positive_feedback_count": {
+        "count": 14,
+        "rate": 1.0
+      },
+      "negative_feedback_count": {
+        "count": 14,
+        "rate": 1.0
+      },
+      "price_complaint_count": {
+        "count": 14,
+        "rate": 1.0
+      },
+      "facility_complaint_count": {
+        "count": 14,
+        "rate": 1.0
+      },
+      "booking_difficulty_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "service_complaint_count": {
+        "count": 14,
+        "rate": 1.0
+      },
+      "source_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "classified_evidence_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "sentiment_coverage_rate": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "schema_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "processing_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "lineage_ids": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "generated_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "metric_definition_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "completeness_status": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_platforms": {
+        "count": 0,
+        "rate": 0.0
+      }
+    },
+    "empty_values": {
+      "venue_id": 0,
+      "week_start": 0,
+      "mentioning_post_count": 0,
+      "mentioning_comment_count": 0,
+      "positive_feedback_count": 0,
+      "negative_feedback_count": 0,
+      "price_complaint_count": 0,
+      "facility_complaint_count": 0,
+      "booking_difficulty_count": 0,
+      "service_complaint_count": 0,
+      "source_count": 0,
+      "classified_evidence_count": 0,
+      "sentiment_coverage_rate": 0,
+      "schema_version": 0,
+      "processing_version": 0,
+      "lineage_ids": 0,
+      "generated_at": 0,
+      "metric_definition_id": 0,
+      "completeness_status": 0,
+      "source_platforms": 0
+    },
+    "numeric": {
+      "mentioning_post_count": {
+        "n": 14,
+        "min": 1,
+        "max": 2,
+        "mean": 1.0714285714285714,
+        "median": 1.0,
+        "p5": 1.0,
+        "p25": 1.0,
+        "p75": 1.0,
+        "p90": 1.0,
+        "p95": 1.3499999999999996,
+        "p99": 1.8699999999999992
+      },
+      "mentioning_comment_count": {
+        "n": 14,
+        "min": 0,
+        "max": 0,
+        "mean": 0,
+        "median": 0.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 0.0,
+        "p95": 0.0,
+        "p99": 0.0
+      },
+      "booking_difficulty_count": {
+        "n": 14,
+        "min": 0,
+        "max": 0,
+        "mean": 0,
+        "median": 0.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 0.0,
+        "p95": 0.0,
+        "p99": 0.0
+      },
+      "source_count": {
+        "n": 14,
+        "min": 1,
+        "max": 1,
+        "mean": 1,
+        "median": 1.0,
+        "p5": 1.0,
+        "p25": 1.0,
+        "p75": 1.0,
+        "p90": 1.0,
+        "p95": 1.0,
+        "p99": 1.0
+      },
+      "classified_evidence_count": {
+        "n": 14,
+        "min": 0,
+        "max": 0,
+        "mean": 0,
+        "median": 0.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 0.0,
+        "p95": 0.0,
+        "p99": 0.0
+      },
+      "sentiment_coverage_rate": {
+        "n": 14,
+        "min": 0.0,
+        "max": 0.0,
+        "mean": 0.0,
+        "median": 0.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 0.0,
+        "p95": 0.0,
+        "p99": 0.0
+      }
+    },
+    "categories": {
+      "completeness_status": {
+        "RULE_SAMPLE_NOT_OBJECTIVE_VENUE_SCORE": 14
+      },
+      "source_platforms": {
+        "youtube": 7,
+        "threads": 7
+      }
+    },
+    "dates": {
+      "week_start": {
+        "min": "2025-06-02",
+        "max": "2026-10-12",
+        "distinct": 10
+      },
+      "generated_at": {
+        "min": "2026-10-12T05:28:49.458043Z",
+        "max": "2026-10-12T05:28:49.458043Z",
+        "distinct": 1
+      }
+    },
+    "grain": [
+      "venue_id",
+      "week_start"
+    ],
+    "duplicate_keys": 0
+  },
+  "location_term_usage_monthly_v1": {
+    "rows": 94,
+    "missing_columns": [],
+    "unexpected_columns": [],
+    "nulls": {
+      "month": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "location_term_raw_normalized": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "canonical_location_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "term_admin_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "platform": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "post_mention_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "comment_mention_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "unique_content_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "term_usage_share": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "resolution_coverage": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "mention_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "schema_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "processing_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "lineage_ids": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "generated_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "metric_definition_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "completeness_status": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_platforms": {
+        "count": 0,
+        "rate": 0.0
+      }
+    },
+    "empty_values": {
+      "month": 0,
+      "location_term_raw_normalized": 0,
+      "canonical_location_id": 0,
+      "term_admin_version": 0,
+      "platform": 0,
+      "post_mention_count": 0,
+      "comment_mention_count": 0,
+      "unique_content_count": 0,
+      "term_usage_share": 0,
+      "resolution_coverage": 0,
+      "mention_count": 0,
+      "schema_version": 0,
+      "processing_version": 0,
+      "lineage_ids": 0,
+      "generated_at": 0,
+      "metric_definition_id": 0,
+      "completeness_status": 0,
+      "source_platforms": 0
+    },
+    "numeric": {
+      "post_mention_count": {
+        "n": 94,
+        "min": 1,
+        "max": 103,
+        "mean": 3.021276595744681,
+        "median": 1.0,
+        "p5": 1.0,
+        "p25": 1.0,
+        "p75": 2.0,
+        "p90": 3.700000000000003,
+        "p95": 6.049999999999983,
+        "p99": 23.94999999999942
+      },
+      "comment_mention_count": {
+        "n": 94,
+        "min": 0,
+        "max": 0,
+        "mean": 0,
+        "median": 0.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 0.0,
+        "p95": 0.0,
+        "p99": 0.0
+      },
+      "unique_content_count": {
+        "n": 94,
+        "min": 1,
+        "max": 90,
+        "mean": 2.5638297872340425,
+        "median": 1.0,
+        "p5": 1.0,
+        "p25": 1.0,
+        "p75": 1.0,
+        "p90": 3.0,
+        "p95": 4.349999999999994,
+        "p99": 17.459999999999468
+      },
+      "term_usage_share": {
+        "n": 94,
+        "min": 0.03125,
+        "max": 1.0,
+        "mean": 0.5851063829787234,
+        "median": 0.6666666666666666,
+        "p5": 0.03125,
+        "p25": 0.12600806451612903,
+        "p75": 1.0,
+        "p90": 1.0,
+        "p95": 1.0,
+        "p99": 1.0
+      },
+      "resolution_coverage": {
+        "n": 94,
+        "min": 0.0,
+        "max": 1.0,
+        "mean": 0.6914893617021277,
+        "median": 1.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 1.0,
+        "p90": 1.0,
+        "p95": 1.0,
+        "p99": 1.0
+      },
+      "mention_count": {
+        "n": 94,
+        "min": 1,
+        "max": 103,
+        "mean": 3.021276595744681,
+        "median": 1.0,
+        "p5": 1.0,
+        "p25": 1.0,
+        "p75": 2.0,
+        "p90": 3.700000000000003,
+        "p95": 6.049999999999983,
+        "p99": 23.94999999999942
+      }
+    },
+    "categories": {
+      "term_admin_version": {
+        "VN_ADMIN_PRE_2025": 12,
+        "AMBIGUOUS": 29,
+        "VN_ADMIN_POST_2025": 53
+      },
+      "platform": {
+        "threads": 42,
+        "youtube": 52
+      },
+      "completeness_status": {
+        "OBSERVED_SAMPLE_PARTIAL": 94
+      },
+      "source_platforms": {
+        "threads": 42,
+        "youtube": 52
+      }
+    },
+    "dates": {
+      "month": {
+        "min": "2024-08-01",
+        "max": "2026-10-01",
+        "distinct": 20
+      },
+      "generated_at": {
+        "min": "2026-10-12T05:28:49.458043Z",
+        "max": "2026-10-12T05:28:49.458043Z",
+        "distinct": 1
+      }
+    },
+    "grain": [
+      "month",
+      "location_term_raw_normalized",
+      "canonical_location_id",
+      "term_admin_version",
+      "platform"
+    ],
+    "duplicate_keys": 0
+  },
+  "venue_discovery_trends_v1": {
+    "rows": 24,
+    "missing_columns": [],
+    "unexpected_columns": [],
+    "nulls": {
+      "month": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "admin_unit_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "admin_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "newly_discovered_venue_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "verified_discovery_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "probable_discovery_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "unverified_candidate_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "first_seen_min": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "first_seen_max": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "discovery_basis": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "schema_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "processing_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "lineage_ids": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "generated_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "metric_definition_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "completeness_status": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_platforms": {
+        "count": 0,
+        "rate": 0.0
+      }
+    },
+    "empty_values": {
+      "month": 0,
+      "admin_unit_id": 0,
+      "admin_version": 0,
+      "newly_discovered_venue_count": 0,
+      "verified_discovery_count": 0,
+      "probable_discovery_count": 0,
+      "unverified_candidate_count": 0,
+      "first_seen_min": 0,
+      "first_seen_max": 0,
+      "discovery_basis": 0,
+      "schema_version": 0,
+      "processing_version": 0,
+      "lineage_ids": 0,
+      "generated_at": 0,
+      "metric_definition_id": 0,
+      "completeness_status": 0,
+      "source_platforms": 0
+    },
+    "numeric": {
+      "newly_discovered_venue_count": {
+        "n": 24,
+        "min": 0,
+        "max": 336,
+        "mean": 28.541666666666668,
+        "median": 5.0,
+        "p5": 0.15000000000000013,
+        "p25": 1.75,
+        "p75": 9.25,
+        "p90": 80.29999999999994,
+        "p95": 131.19999999999993,
+        "p99": 289.9999999999999
+      },
+      "verified_discovery_count": {
+        "n": 24,
+        "min": 0,
+        "max": 0,
+        "mean": 0,
+        "median": 0.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 0.0,
+        "p95": 0.0,
+        "p99": 0.0
+      },
+      "probable_discovery_count": {
+        "n": 24,
+        "min": 0,
+        "max": 336,
+        "mean": 28.541666666666668,
+        "median": 5.0,
+        "p5": 0.15000000000000013,
+        "p25": 1.75,
+        "p75": 9.25,
+        "p90": 80.29999999999994,
+        "p95": 131.19999999999993,
+        "p99": 289.9999999999999
+      },
+      "unverified_candidate_count": {
+        "n": 24,
+        "min": 0,
+        "max": 14,
+        "mean": 1.1666666666666667,
+        "median": 0.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 1.0,
+        "p95": 9.499999999999979,
+        "p99": 13.309999999999999
+      }
+    },
+    "categories": {
+      "admin_version": {
+        "NATIONAL": 1,
+        "UNRESOLVED": 1,
+        "VN_ADMIN_POST_2025": 15,
+        "VN_ADMIN_PRE_2025": 7
+      },
+      "completeness_status": {
+        "OBSERVED_SAMPLE_PARTIAL": 24
+      },
+      "source_platforms": {
+        "pbplus": 22,
+        "threads": 2,
+        "youtube": 5
+      }
+    },
+    "dates": {
+      "month": {
+        "min": "2026-10-01",
+        "max": "2026-10-01",
+        "distinct": 1
+      },
+      "first_seen_min": {
+        "min": "2026-10-05T08:31:45.874770Z",
+        "max": "2026-10-10T15:52:24.018845Z",
+        "distinct": 3
+      },
+      "first_seen_max": {
+        "min": "2026-10-05T08:31:45.874770Z",
+        "max": "2026-10-12T05:28:49.458043Z",
+        "distinct": 5
+      },
+      "generated_at": {
+        "min": "2026-10-12T05:28:49.458043Z",
+        "max": "2026-10-12T05:28:49.458043Z",
+        "distinct": 1
+      }
+    },
+    "grain": [
+      "admin_unit_id",
+      "admin_version",
+      "month"
+    ],
+    "duplicate_keys": 0
+  },
+  "location_market_research_monthly_v1": {
+    "rows": 99,
+    "missing_columns": [],
+    "unexpected_columns": [],
+    "nulls": {
+      "month": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "admin_unit_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "admin_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "venue_count": {
+        "count": 77,
+        "rate": 0.7777777777777778
+      },
+      "known_court_count": {
+        "count": 77,
+        "rate": 0.7777777777777778
+      },
+      "court_count_coverage_rate": {
+        "count": 77,
+        "rate": 0.7777777777777778
+      },
+      "relevant_post_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "relevant_comment_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "total_views": {
+        "count": 73,
+        "rate": 0.7373737373737373
+      },
+      "total_likes": {
+        "count": 15,
+        "rate": 0.15151515151515152
+      },
+      "total_shares": {
+        "count": 99,
+        "rate": 1.0
+      },
+      "court_seeking_post_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "court_seeking_comment_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "booking_intent_content_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "capacity_complaint_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "newly_discovered_venue_count": {
+        "count": 75,
+        "rate": 0.7575757575757576
+      },
+      "source_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "social_coverage_status": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "supply_coverage_status": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "supply_as_of": {
+        "count": 77,
+        "rate": 0.7777777777777778
+      },
+      "classification_coverage_rate": {
+        "count": 14,
+        "rate": 0.1414141414141414
+      },
+      "schema_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "processing_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "lineage_ids": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "generated_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "metric_definition_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "completeness_status": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_platforms": {
+        "count": 0,
+        "rate": 0.0
+      }
+    },
+    "empty_values": {
+      "month": 0,
+      "admin_unit_id": 0,
+      "admin_version": 0,
+      "venue_count": 0,
+      "known_court_count": 0,
+      "court_count_coverage_rate": 0,
+      "relevant_post_count": 0,
+      "relevant_comment_count": 0,
+      "total_views": 0,
+      "total_likes": 0,
+      "total_shares": 0,
+      "court_seeking_post_count": 0,
+      "court_seeking_comment_count": 0,
+      "booking_intent_content_count": 0,
+      "capacity_complaint_count": 0,
+      "newly_discovered_venue_count": 0,
+      "source_count": 0,
+      "social_coverage_status": 0,
+      "supply_coverage_status": 0,
+      "supply_as_of": 0,
+      "classification_coverage_rate": 0,
+      "schema_version": 0,
+      "processing_version": 0,
+      "lineage_ids": 0,
+      "generated_at": 0,
+      "metric_definition_id": 0,
+      "completeness_status": 0,
+      "source_platforms": 0
+    },
+    "numeric": {
+      "venue_count": {
+        "n": 22,
+        "min": 1,
+        "max": 336,
+        "mean": 31.136363636363637,
+        "median": 6.0,
+        "p5": 1.0,
+        "p25": 2.0,
+        "p75": 9.75,
+        "p90": 96.10000000000016,
+        "p95": 134.39999999999998,
+        "p99": 293.99999999999983
+      },
+      "known_court_count": {
+        "n": 22,
+        "min": 3,
+        "max": 2617,
+        "mean": 241.22727272727272,
+        "median": 27.0,
+        "p5": 3.05,
+        "p25": 10.0,
+        "p75": 47.25,
+        "p90": 517.6000000000009,
+        "p95": 1535.7499999999993,
+        "p99": 2400.699999999999
+      },
+      "court_count_coverage_rate": {
+        "n": 22,
+        "min": 0.8529411764705882,
+        "max": 1.0,
+        "mean": 0.9906098803157627,
+        "median": 1.0,
+        "p5": 0.9434523809523809,
+        "p25": 1.0,
+        "p75": 1.0,
+        "p90": 1.0,
+        "p95": 1.0,
+        "p99": 1.0
+      },
+      "relevant_post_count": {
+        "n": 99,
+        "min": 0,
+        "max": 283,
+        "mean": 7.02020202020202,
+        "median": 1,
+        "p5": 0.0,
+        "p25": 1.0,
+        "p75": 2.0,
+        "p90": 4.200000000000003,
+        "p95": 8.299999999999983,
+        "p99": 162.45999999999952
+      },
+      "relevant_comment_count": {
+        "n": 99,
+        "min": 0,
+        "max": 0,
+        "mean": 0,
+        "median": 0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 0.0,
+        "p95": 0.0,
+        "p99": 0.0
+      },
+      "total_views": {
+        "n": 26,
+        "min": 0,
+        "max": 726452,
+        "mean": 92407.23076923077,
+        "median": 1518.0,
+        "p5": 35.75,
+        "p25": 1108.25,
+        "p75": 145254.25,
+        "p90": 274491.0,
+        "p95": 352310.75,
+        "p99": 637778.5
+      },
+      "total_likes": {
+        "n": 84,
+        "min": 0,
+        "max": 4617,
+        "mean": 376.04761904761904,
+        "median": 18.0,
+        "p5": 0.0,
+        "p25": 4.0,
+        "p75": 116.25,
+        "p90": 1059.100000000002,
+        "p95": 2127.3999999999996,
+        "p99": 4617.0
+      },
+      "court_seeking_post_count": {
+        "n": 99,
+        "min": 0,
+        "max": 1,
+        "mean": 0.050505050505050504,
+        "median": 0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 0.0,
+        "p95": 0.09999999999999432,
+        "p99": 1.0
+      },
+      "court_seeking_comment_count": {
+        "n": 99,
+        "min": 0,
+        "max": 0,
+        "mean": 0,
+        "median": 0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 0.0,
+        "p95": 0.0,
+        "p99": 0.0
+      },
+      "booking_intent_content_count": {
+        "n": 99,
+        "min": 0,
+        "max": 0,
+        "mean": 0,
+        "median": 0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 0.0,
+        "p95": 0.0,
+        "p99": 0.0
+      },
+      "capacity_complaint_count": {
+        "n": 99,
+        "min": 0,
+        "max": 0,
+        "mean": 0,
+        "median": 0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 0.0,
+        "p95": 0.0,
+        "p99": 0.0
+      },
+      "newly_discovered_venue_count": {
+        "n": 24,
+        "min": 0,
+        "max": 336,
+        "mean": 28.541666666666668,
+        "median": 5.0,
+        "p5": 0.15000000000000013,
+        "p25": 1.75,
+        "p75": 9.25,
+        "p90": 80.29999999999994,
+        "p95": 131.19999999999993,
+        "p99": 289.9999999999999
+      },
+      "source_count": {
+        "n": 99,
+        "min": 1,
+        "max": 3,
+        "mean": 1.1515151515151516,
+        "median": 1,
+        "p5": 1.0,
+        "p25": 1.0,
+        "p75": 1.0,
+        "p90": 2.0,
+        "p95": 2.0,
+        "p99": 3.0
+      },
+      "classification_coverage_rate": {
+        "n": 85,
+        "min": 0.8888888888888888,
+        "max": 1.0,
+        "mean": 0.9983512544802867,
+        "median": 1.0,
+        "p5": 1.0,
+        "p25": 1.0,
+        "p75": 1.0,
+        "p90": 1.0,
+        "p95": 1.0,
+        "p99": 1.0
+      }
+    },
+    "categories": {
+      "admin_version": {
+        "NATIONAL": 22,
+        "VN_ADMIN_POST_2025": 51,
+        "VN_ADMIN_PRE_2025": 18,
+        "UNRESOLVED": 8
+      },
+      "social_coverage_status": {
+        "OBSERVED_SAMPLE_PARTIAL": 85,
+        "NO_CONTENT_OBSERVED": 14
+      },
+      "supply_coverage_status": {
+        "HISTORICAL_SUPPLY_SNAPSHOT_MISSING": 77,
+        "OBSERVED_AS_OF_SNAPSHOT": 22
+      },
+      "completeness_status": {
+        "OBSERVED_SAMPLE_PARTIAL": 99
+      },
+      "source_platforms": {
+        "threads": 66,
+        "youtube": 26,
+        "pbplus": 22
+      }
+    },
+    "dates": {
+      "month": {
+        "min": "2024-08-01",
+        "max": "2026-10-01",
+        "distinct": 22
+      },
+      "supply_as_of": {
+        "min": "2026-10-12",
+        "max": "2026-10-12",
+        "distinct": 1
+      },
+      "generated_at": {
+        "min": "2026-10-12T05:28:49.458043Z",
+        "max": "2026-10-12T05:28:49.458043Z",
+        "distinct": 1
+      }
+    },
+    "grain": [
+      "month",
+      "admin_unit_id",
+      "admin_version"
+    ],
+    "duplicate_keys": 0
+  },
+  "court_supply_by_location": {
+    "rows": 8,
+    "missing_columns": [],
+    "unexpected_columns": [],
+    "nulls": {
+      "schema_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "location_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "location_name": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "venue_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "known_court_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "venues_with_known_court_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "venues_without_known_court_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "latest_source_observed_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "gold_generated_at": {
+        "count": 0,
+        "rate": 0.0
+      }
+    },
+    "empty_values": {
+      "schema_version": 0,
+      "location_id": 0,
+      "location_name": 0,
+      "venue_count": 0,
+      "known_court_count": 0,
+      "venues_with_known_court_count": 0,
+      "venues_without_known_court_count": 0,
+      "latest_source_observed_at": 0,
+      "gold_generated_at": 0
+    },
+    "numeric": {
+      "venue_count": {
+        "n": 8,
+        "min": 1,
+        "max": 126,
+        "mean": 35.625,
+        "median": 11.0,
+        "p5": 1.7000000000000002,
+        "p25": 4.5,
+        "p75": 44.0,
+        "p90": 110.6,
+        "p95": 118.29999999999998,
+        "p99": 124.46
+      },
+      "known_court_count": {
+        "n": 8,
+        "min": 4,
+        "max": 1524,
+        "mean": 292.75,
+        "median": 54.5,
+        "p5": 7.15,
+        "p25": 25.75,
+        "p75": 222.5,
+        "p90": 840.7999999999998,
+        "p95": 1182.3999999999996,
+        "p99": 1455.6799999999998
+      },
+      "venues_with_known_court_count": {
+        "n": 8,
+        "min": 1,
+        "max": 107,
+        "mean": 33.25,
+        "median": 11.0,
+        "p5": 1.7000000000000002,
+        "p25": 4.5,
+        "p75": 44.0,
+        "p90": 104.9,
+        "p95": 105.95,
+        "p99": 106.78999999999999
+      },
+      "venues_without_known_court_count": {
+        "n": 8,
+        "min": 0,
+        "max": 19,
+        "mean": 2.375,
+        "median": 0.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 5.699999999999997,
+        "p95": 12.34999999999999,
+        "p99": 17.669999999999995
+      }
+    },
+    "categories": {},
+    "dates": {
+      "latest_source_observed_at": {
+        "min": "2026-10-10T16:15:13.228355Z",
+        "max": "2026-10-10T16:15:13.228355Z",
+        "distinct": 1
+      },
+      "gold_generated_at": {
+        "min": "2026-10-12T05:29:57.740764Z",
+        "max": "2026-10-12T05:29:57.740764Z",
+        "distinct": 1
+      }
+    },
+    "grain": [
+      "location_id"
+    ],
+    "duplicate_keys": 0
+  },
+  "social_activity_daily": {
+    "rows": 47,
+    "missing_columns": [],
+    "unexpected_columns": [],
+    "nulls": {
+      "schema_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "activity_date": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "location_id": {
+        "count": 5,
+        "rate": 0.10638297872340426
+      },
+      "location_name": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "post_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "like_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "reply_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "repost_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "quote_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "engagement_total": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "first_published_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "last_published_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "gold_generated_at": {
+        "count": 0,
+        "rate": 0.0
+      }
+    },
+    "empty_values": {
+      "schema_version": 0,
+      "activity_date": 0,
+      "location_id": 0,
+      "location_name": 0,
+      "post_count": 0,
+      "like_count": 0,
+      "reply_count": 0,
+      "repost_count": 0,
+      "quote_count": 0,
+      "engagement_total": 0,
+      "first_published_at": 0,
+      "last_published_at": 0,
+      "gold_generated_at": 0
+    },
+    "numeric": {
+      "post_count": {
+        "n": 47,
+        "min": 1,
+        "max": 2,
+        "mean": 1.0851063829787233,
+        "median": 1,
+        "p5": 1.0,
+        "p25": 1.0,
+        "p75": 1.0,
+        "p90": 1.0,
+        "p95": 2.0,
+        "p99": 2.0
+      },
+      "like_count": {
+        "n": 47,
+        "min": 0,
+        "max": 4617,
+        "mean": 144.91489361702128,
+        "median": 7,
+        "p5": 1.0,
+        "p25": 3.0,
+        "p75": 24.0,
+        "p90": 91.79999999999993,
+        "p95": 515.0999999999996,
+        "p99": 2754.9199999999964
+      },
+      "reply_count": {
+        "n": 47,
+        "min": 1,
+        "max": 63,
+        "mean": 13.872340425531915,
+        "median": 9,
+        "p5": 1.0,
+        "p25": 3.0,
+        "p75": 18.5,
+        "p90": 31.4,
+        "p95": 37.599999999999966,
+        "p99": 58.85999999999999
+      },
+      "repost_count": {
+        "n": 47,
+        "min": 0,
+        "max": 165,
+        "mean": 6.085106382978723,
+        "median": 0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 1.0,
+        "p95": 2.6999999999999957,
+        "p99": 140.61999999999995
+      },
+      "quote_count": {
+        "n": 47,
+        "min": 0,
+        "max": 6,
+        "mean": 0.14893617021276595,
+        "median": 0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 0.0,
+        "p95": 0.0,
+        "p99": 3.6999999999999957
+      },
+      "engagement_total": {
+        "n": 47,
+        "min": 1,
+        "max": 4842,
+        "mean": 165.0212765957447,
+        "median": 18,
+        "p5": 3.0,
+        "p25": 8.0,
+        "p75": 48.0,
+        "p90": 126.39999999999992,
+        "p95": 528.1999999999996,
+        "p99": 2934.3799999999965
+      }
+    },
+    "categories": {},
+    "dates": {
+      "activity_date": {
+        "min": "2024-08-04",
+        "max": "2026-10-07",
+        "distinct": 39
+      },
+      "first_published_at": {
+        "min": "2024-08-04T18:09:06.000000Z",
+        "max": "2026-10-07T14:57:02.000000Z",
+        "distinct": 43
+      },
+      "last_published_at": {
+        "min": "2024-08-04T18:09:06.000000Z",
+        "max": "2026-10-07T16:43:31.000000Z",
+        "distinct": 43
+      },
+      "gold_generated_at": {
+        "min": "2026-10-12T05:29:48.801134Z",
+        "max": "2026-10-12T05:29:48.801134Z",
+        "distinct": 1
+      }
+    },
+    "grain": [
+      "activity_date",
+      "location_id"
+    ],
+    "duplicate_keys": 0
+  },
+  "location_market_signal_snapshot": {
+    "rows": 8,
+    "missing_columns": [],
+    "unexpected_columns": [],
+    "nulls": {
+      "schema_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "snapshot_date": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "window_start_date": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "window_end_date": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "window_days": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "location_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "location_name": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "social_post_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "social_like_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "social_reply_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "social_repost_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "social_quote_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "social_engagement_total": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "venue_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "known_court_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "venues_with_known_court_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "venues_without_known_court_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "court_count_coverage_ratio": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "has_social_signal": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "has_supply_signal": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "social_activity_per_venue": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "social_engagement_per_venue": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "gold_generated_at": {
+        "count": 0,
+        "rate": 0.0
+      }
+    },
+    "empty_values": {
+      "schema_version": 0,
+      "snapshot_date": 0,
+      "window_start_date": 0,
+      "window_end_date": 0,
+      "window_days": 0,
+      "location_id": 0,
+      "location_name": 0,
+      "social_post_count": 0,
+      "social_like_count": 0,
+      "social_reply_count": 0,
+      "social_repost_count": 0,
+      "social_quote_count": 0,
+      "social_engagement_total": 0,
+      "venue_count": 0,
+      "known_court_count": 0,
+      "venues_with_known_court_count": 0,
+      "venues_without_known_court_count": 0,
+      "court_count_coverage_ratio": 0,
+      "has_social_signal": 0,
+      "has_supply_signal": 0,
+      "social_activity_per_venue": 0,
+      "social_engagement_per_venue": 0,
+      "gold_generated_at": 0
+    },
+    "numeric": {
+      "window_days": {
+        "n": 8,
+        "min": 30,
+        "max": 30,
+        "mean": 30,
+        "median": 30.0,
+        "p5": 30.0,
+        "p25": 30.0,
+        "p75": 30.0,
+        "p90": 30.0,
+        "p95": 30.0,
+        "p99": 30.0
+      },
+      "social_post_count": {
+        "n": 8,
+        "min": 0,
+        "max": 3,
+        "mean": 0.5,
+        "median": 0.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.25,
+        "p90": 1.5999999999999996,
+        "p95": 2.299999999999999,
+        "p99": 2.8599999999999994
+      },
+      "social_like_count": {
+        "n": 8,
+        "min": 0,
+        "max": 5,
+        "mean": 0.625,
+        "median": 0.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 1.4999999999999991,
+        "p95": 3.2499999999999973,
+        "p99": 4.649999999999999
+      },
+      "social_reply_count": {
+        "n": 8,
+        "min": 0,
+        "max": 8,
+        "mean": 1.125,
+        "median": 0.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.25,
+        "p90": 3.0999999999999988,
+        "p95": 5.549999999999996,
+        "p99": 7.509999999999998
+      },
+      "social_repost_count": {
+        "n": 8,
+        "min": 0,
+        "max": 0,
+        "mean": 0,
+        "median": 0.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 0.0,
+        "p95": 0.0,
+        "p99": 0.0
+      },
+      "social_quote_count": {
+        "n": 8,
+        "min": 0,
+        "max": 0,
+        "mean": 0,
+        "median": 0.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 0.0,
+        "p95": 0.0,
+        "p99": 0.0
+      },
+      "social_engagement_total": {
+        "n": 8,
+        "min": 0,
+        "max": 13,
+        "mean": 1.75,
+        "median": 0.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.25,
+        "p90": 4.599999999999998,
+        "p95": 8.799999999999994,
+        "p99": 12.159999999999997
+      },
+      "venue_count": {
+        "n": 8,
+        "min": 1,
+        "max": 126,
+        "mean": 35.625,
+        "median": 11.0,
+        "p5": 1.7000000000000002,
+        "p25": 4.5,
+        "p75": 44.0,
+        "p90": 110.6,
+        "p95": 118.29999999999998,
+        "p99": 124.46
+      },
+      "known_court_count": {
+        "n": 8,
+        "min": 4,
+        "max": 1524,
+        "mean": 292.75,
+        "median": 54.5,
+        "p5": 7.15,
+        "p25": 25.75,
+        "p75": 222.5,
+        "p90": 840.7999999999998,
+        "p95": 1182.3999999999996,
+        "p99": 1455.6799999999998
+      },
+      "venues_with_known_court_count": {
+        "n": 8,
+        "min": 1,
+        "max": 107,
+        "mean": 33.25,
+        "median": 11.0,
+        "p5": 1.7000000000000002,
+        "p25": 4.5,
+        "p75": 44.0,
+        "p90": 104.9,
+        "p95": 105.95,
+        "p99": 106.78999999999999
+      },
+      "venues_without_known_court_count": {
+        "n": 8,
+        "min": 0,
+        "max": 19,
+        "mean": 2.375,
+        "median": 0.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 5.699999999999997,
+        "p95": 12.34999999999999,
+        "p99": 17.669999999999995
+      },
+      "court_count_coverage_ratio": {
+        "n": 8,
+        "min": 0.8492063492063492,
+        "max": 1.0,
+        "mean": 0.9811507936507936,
+        "median": 1.0,
+        "p5": 0.901984126984127,
+        "p25": 1.0,
+        "p75": 1.0,
+        "p90": 1.0,
+        "p95": 1.0,
+        "p99": 1.0
+      },
+      "social_activity_per_venue": {
+        "n": 8,
+        "min": 0.0,
+        "max": 0.041666666666666664,
+        "mean": 0.008814102564102564,
+        "median": 0.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.007211538461538462,
+        "p90": 0.03269230769230769,
+        "p95": 0.03717948717948717,
+        "p99": 0.040769230769230766
+      },
+      "social_engagement_per_venue": {
+        "n": 8,
+        "min": 0.0,
+        "max": 0.125,
+        "mean": 0.020833333333333332,
+        "median": 0.0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.010416666666666666,
+        "p90": 0.06666666666666665,
+        "p95": 0.0958333333333333,
+        "p99": 0.11916666666666664
+      }
+    },
+    "categories": {},
+    "dates": {
+      "snapshot_date": {
+        "min": "2026-10-07",
+        "max": "2026-10-07",
+        "distinct": 1
+      },
+      "window_start_date": {
+        "min": "2026-09-08",
+        "max": "2026-09-08",
+        "distinct": 1
+      },
+      "window_end_date": {
+        "min": "2026-10-07",
+        "max": "2026-10-07",
+        "distinct": 1
+      },
+      "gold_generated_at": {
+        "min": "2026-10-12T05:30:01.270843Z",
+        "max": "2026-10-12T05:30:01.270843Z",
+        "distinct": 1
+      }
+    },
+    "grain": [
+      "snapshot_date",
+      "location_id"
+    ],
+    "duplicate_keys": 0
+  },
+  "courts": {
+    "rows": 1687,
+    "missing_columns": [],
+    "unexpected_columns": [
+      "address",
+      "address_source",
+      "collected_at",
+      "court_name",
+      "geo_status",
+      "geocoded_at",
+      "has_media",
+      "lakehouse_ingested_at",
+      "latitude",
+      "longitude",
+      "normalized_at",
+      "number_of_courts",
+      "record_id",
+      "run_id",
+      "schema_version",
+      "source",
+      "source_artifact_uri",
+      "source_code",
+      "source_record_id",
+      "source_url"
+    ],
+    "nulls": {
+      "schema_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "record_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_record_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_url": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_code": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "court_name": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "number_of_courts": {
+        "count": 100,
+        "rate": 0.05927682276229994
+      },
+      "has_media": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "address": {
+        "count": 5,
+        "rate": 0.002963841138114997
+      },
+      "latitude": {
+        "count": 1687,
+        "rate": 1.0
+      },
+      "longitude": {
+        "count": 1687,
+        "rate": 1.0
+      },
+      "address_source": {
+        "count": 1687,
+        "rate": 1.0
+      },
+      "geo_status": {
+        "count": 1687,
+        "rate": 1.0
+      },
+      "run_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "collected_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "geocoded_at": {
+        "count": 1687,
+        "rate": 1.0
+      },
+      "normalized_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "lakehouse_ingested_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_artifact_uri": {
+        "count": 0,
+        "rate": 0.0
+      }
+    },
+    "empty_values": {
+      "schema_version": 0,
+      "record_id": 0,
+      "source": 0,
+      "source_record_id": 0,
+      "source_url": 0,
+      "source_code": 0,
+      "court_name": 0,
+      "number_of_courts": 0,
+      "has_media": 0,
+      "address": 0,
+      "latitude": 0,
+      "longitude": 0,
+      "address_source": 0,
+      "geo_status": 0,
+      "run_id": 0,
+      "collected_at": 0,
+      "geocoded_at": 0,
+      "normalized_at": 0,
+      "lakehouse_ingested_at": 0,
+      "source_artifact_uri": 0
+    },
+    "numeric": {
+      "number_of_courts": {
+        "n": 1587,
+        "min": 1,
+        "max": 912,
+        "mean": 8.2703213610586,
+        "median": 4,
+        "p5": 2.0,
+        "p25": 3.0,
+        "p75": 7.0,
+        "p90": 10.0,
+        "p95": 12.0,
+        "p99": 17.0
+      }
+    },
+    "categories": {
+      "source": {
+        "pbplus": 1687
+      }
+    },
+    "dates": {
+      "collected_at": {
+        "min": "2026-10-05T08:31:45.874770Z",
+        "max": "2026-10-10T16:15:13.228355Z",
+        "distinct": 6
+      },
+      "normalized_at": {
+        "min": "2026-10-05T08:31:45.905729Z",
+        "max": "2026-10-10T16:15:13.264899Z",
+        "distinct": 1687
+      },
+      "lakehouse_ingested_at": {
+        "min": "2026-10-06T04:14:48.132155Z",
+        "max": "2026-10-10T16:15:44.857889Z",
+        "distinct": 6
+      }
+    }
+  },
+  "social_posts": {
+    "rows": 1153,
+    "missing_columns": [],
+    "unexpected_columns": [
+      "author_full_name",
+      "author_id",
+      "author_is_verified",
+      "author_username",
+      "categories",
+      "collected_at",
+      "detail_error",
+      "detail_status",
+      "detected_locations",
+      "emitted_at",
+      "event_id",
+      "has_media",
+      "is_reply",
+      "kafka_offset",
+      "kafka_partition",
+      "kafka_timestamp",
+      "kafka_topic",
+      "lakehouse_ingested_at",
+      "language_hint",
+      "like_count",
+      "matched_queries",
+      "media_type",
+      "normalized_at",
+      "parent_record_id",
+      "published_at",
+      "query_contexts",
+      "quote_count",
+      "record_id",
+      "relevance_signals",
+      "reply_count",
+      "repost_count",
+      "run_id",
+      "schema_version",
+      "source",
+      "source_code",
+      "source_record_id",
+      "source_url",
+      "tags",
+      "text",
+      "topic_score",
+      "video_duration",
+      "vietnam_score",
+      "view_count"
+    ],
+    "nulls": {
+      "schema_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "record_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_record_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_url": {
+        "count": 1,
+        "rate": 0.0008673026886383347
+      },
+      "source_code": {
+        "count": 916,
+        "rate": 0.7944492627927147
+      },
+      "text": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "published_at": {
+        "count": 1,
+        "rate": 0.0008673026886383347
+      },
+      "author_id": {
+        "count": 1,
+        "rate": 0.0008673026886383347
+      },
+      "author_username": {
+        "count": 916,
+        "rate": 0.7944492627927147
+      },
+      "author_full_name": {
+        "count": 24,
+        "rate": 0.020815264527320035
+      },
+      "author_is_verified": {
+        "count": 916,
+        "rate": 0.7944492627927147
+      },
+      "like_count": {
+        "count": 4,
+        "rate": 0.003469210754553339
+      },
+      "reply_count": {
+        "count": 2,
+        "rate": 0.0017346053772766695
+      },
+      "repost_count": {
+        "count": 916,
+        "rate": 0.7944492627927147
+      },
+      "quote_count": {
+        "count": 916,
+        "rate": 0.7944492627927147
+      },
+      "is_reply": {
+        "count": 1,
+        "rate": 0.0008673026886383347
+      },
+      "media_type": {
+        "count": 916,
+        "rate": 0.7944492627927147
+      },
+      "has_media": {
+        "count": 1,
+        "rate": 0.0008673026886383347
+      },
+      "run_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "collected_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "normalized_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "matched_queries": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "query_contexts": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "categories": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "detected_locations": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "vietnam_score": {
+        "count": 916,
+        "rate": 0.7944492627927147
+      },
+      "topic_score": {
+        "count": 916,
+        "rate": 0.7944492627927147
+      },
+      "language_hint": {
+        "count": 916,
+        "rate": 0.7944492627927147
+      },
+      "relevance_signals": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "detail_status": {
+        "count": 1111,
+        "rate": 0.9635732870771899
+      },
+      "detail_error": {
+        "count": 1111,
+        "rate": 0.9635732870771899
+      },
+      "event_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "emitted_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "kafka_topic": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "kafka_partition": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "kafka_offset": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "kafka_timestamp": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "lakehouse_ingested_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "view_count": {
+        "count": 238,
+        "rate": 0.20641803989592367
+      },
+      "parent_record_id": {
+        "count": 1153,
+        "rate": 1.0
+      },
+      "video_duration": {
+        "count": 238,
+        "rate": 0.20641803989592367
+      },
+      "tags": {
+        "count": 885,
+        "rate": 0.7675628794449263
+      }
+    },
+    "empty_values": {
+      "schema_version": 0,
+      "record_id": 0,
+      "source": 0,
+      "source_record_id": 0,
+      "source_url": 0,
+      "source_code": 0,
+      "text": 0,
+      "published_at": 0,
+      "author_id": 0,
+      "author_username": 0,
+      "author_full_name": 0,
+      "author_is_verified": 0,
+      "like_count": 0,
+      "reply_count": 0,
+      "repost_count": 0,
+      "quote_count": 0,
+      "is_reply": 0,
+      "media_type": 0,
+      "has_media": 0,
+      "run_id": 0,
+      "collected_at": 0,
+      "normalized_at": 0,
+      "matched_queries": 1,
+      "query_contexts": 916,
+      "categories": 609,
+      "detected_locations": 414,
+      "vietnam_score": 0,
+      "topic_score": 0,
+      "language_hint": 0,
+      "relevance_signals": 916,
+      "detail_status": 0,
+      "detail_error": 0,
+      "event_id": 0,
+      "emitted_at": 0,
+      "kafka_topic": 0,
+      "kafka_partition": 0,
+      "kafka_offset": 0,
+      "kafka_timestamp": 0,
+      "lakehouse_ingested_at": 0,
+      "view_count": 0,
+      "parent_record_id": 0,
+      "video_duration": 0,
+      "tags": 0
+    },
+    "numeric": {
+      "like_count": {
+        "n": 1149,
+        "min": 0,
+        "max": 4617,
+        "mean": 27.028720626631852,
+        "median": 3,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 10.0,
+        "p90": 32.0,
+        "p95": 61.0,
+        "p99": 543.0
+      },
+      "reply_count": {
+        "n": 1151,
+        "min": 0,
+        "max": 63,
+        "mean": 2.794092093831451,
+        "median": 0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 1.0,
+        "p90": 8.0,
+        "p95": 18.0,
+        "p99": 36.0
+      },
+      "repost_count": {
+        "n": 237,
+        "min": 0,
+        "max": 230,
+        "mean": 6.434599156118144,
+        "median": 0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 1.0,
+        "p95": 70.0,
+        "p99": 130.7999999999987
+      },
+      "quote_count": {
+        "n": 237,
+        "min": 0,
+        "max": 8,
+        "mean": 0.1350210970464135,
+        "median": 0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 0.0,
+        "p95": 1.0,
+        "p99": 4.199999999999932
+      },
+      "media_type": {
+        "n": 237,
+        "min": 1,
+        "max": 19,
+        "mean": 13.046413502109704,
+        "median": 19,
+        "p5": 1.0,
+        "p25": 8.0,
+        "p75": 19.0,
+        "p90": 19.0,
+        "p95": 19.0,
+        "p99": 19.0
+      },
+      "vietnam_score": {
+        "n": 237,
+        "min": 3,
+        "max": 8,
+        "mean": 7.6455696202531644,
+        "median": 8,
+        "p5": 4.0,
+        "p25": 8.0,
+        "p75": 8.0,
+        "p90": 8.0,
+        "p95": 8.0,
+        "p99": 8.0
+      },
+      "topic_score": {
+        "n": 237,
+        "min": 3,
+        "max": 7,
+        "mean": 3.590717299578059,
+        "median": 3,
+        "p5": 3.0,
+        "p25": 3.0,
+        "p75": 5.0,
+        "p90": 5.0,
+        "p95": 5.0,
+        "p99": 7.0
+      },
+      "kafka_partition": {
+        "n": 1153,
+        "min": 0,
+        "max": 2,
+        "mean": 1,
+        "median": 1,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 2.0,
+        "p90": 2.0,
+        "p95": 2.0,
+        "p99": 2.0
+      },
+      "kafka_offset": {
+        "n": 1153,
+        "min": 0,
+        "max": 880,
+        "mean": 362.25672159583695,
+        "median": 300,
+        "p5": 30.0,
+        "p25": 119.0,
+        "p75": 611.0,
+        "p90": 768.8,
+        "p95": 846.0,
+        "p99": 868.48
+      },
+      "view_count": {
+        "n": 915,
+        "min": 0,
+        "max": 194506,
+        "mean": 3614.1770491803277,
+        "median": 470,
+        "p5": 2.0,
+        "p25": 84.0,
+        "p75": 1275.5,
+        "p90": 4146.2000000000035,
+        "p95": 8470.799999999996,
+        "p99": 149522.72000000102
+      }
+    },
+    "categories": {
+      "source": {
+        "youtube": 915,
+        "threads": 238
+      },
+      "is_reply": {
+        "False": 1152,
+        "NULL": 1
+      }
+    },
+    "dates": {
+      "published_at": {
+        "min": "2024-08-04T18:09:06.000000Z",
+        "max": "2026-10-12T05:00:13.000000Z",
+        "distinct": 333
+      },
+      "collected_at": {
+        "min": "2026-10-05T00:00:00.000000Z",
+        "max": "2026-10-12T05:28:49.458043Z",
+        "distinct": 29
+      },
+      "normalized_at": {
+        "min": "2026-10-05T09:43:28.113704Z",
+        "max": "2026-10-12T05:28:49.458043Z",
+        "distinct": 250
+      },
+      "emitted_at": {
+        "min": "2026-10-05T09:43:28.115296Z",
+        "max": "2026-10-12T05:29:26.358816Z",
+        "distinct": 1153
+      },
+      "lakehouse_ingested_at": {
+        "min": "2026-10-06T04:14:36.072427Z",
+        "max": "2026-10-12T05:29:43.196154Z",
+        "distinct": 27
+      }
+    }
+  },
+  "social_comments": {
+    "rows": 15,
+    "missing_columns": [],
+    "unexpected_columns": [
+      "author_full_name",
+      "author_id",
+      "author_is_verified",
+      "author_username",
+      "categories",
+      "collected_at",
+      "detail_error",
+      "detail_status",
+      "detected_locations",
+      "emitted_at",
+      "event_id",
+      "has_media",
+      "is_reply",
+      "kafka_offset",
+      "kafka_partition",
+      "kafka_timestamp",
+      "kafka_topic",
+      "lakehouse_ingested_at",
+      "language_hint",
+      "like_count",
+      "matched_queries",
+      "media_type",
+      "normalized_at",
+      "parent_record_id",
+      "published_at",
+      "query_contexts",
+      "quote_count",
+      "record_id",
+      "relevance_signals",
+      "reply_count",
+      "repost_count",
+      "run_id",
+      "schema_version",
+      "source",
+      "source_code",
+      "source_record_id",
+      "source_url",
+      "tags",
+      "text",
+      "topic_score",
+      "video_duration",
+      "vietnam_score",
+      "view_count"
+    ],
+    "nulls": {
+      "schema_version": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "record_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_record_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_url": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "source_code": {
+        "count": 15,
+        "rate": 1.0
+      },
+      "text": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "published_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "author_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "author_username": {
+        "count": 15,
+        "rate": 1.0
+      },
+      "author_full_name": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "author_is_verified": {
+        "count": 15,
+        "rate": 1.0
+      },
+      "like_count": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "reply_count": {
+        "count": 15,
+        "rate": 1.0
+      },
+      "repost_count": {
+        "count": 15,
+        "rate": 1.0
+      },
+      "quote_count": {
+        "count": 15,
+        "rate": 1.0
+      },
+      "is_reply": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "media_type": {
+        "count": 15,
+        "rate": 1.0
+      },
+      "has_media": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "run_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "collected_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "normalized_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "matched_queries": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "query_contexts": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "categories": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "detected_locations": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "vietnam_score": {
+        "count": 15,
+        "rate": 1.0
+      },
+      "topic_score": {
+        "count": 15,
+        "rate": 1.0
+      },
+      "language_hint": {
+        "count": 15,
+        "rate": 1.0
+      },
+      "relevance_signals": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "detail_status": {
+        "count": 15,
+        "rate": 1.0
+      },
+      "detail_error": {
+        "count": 15,
+        "rate": 1.0
+      },
+      "event_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "emitted_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "kafka_topic": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "kafka_partition": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "kafka_offset": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "kafka_timestamp": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "lakehouse_ingested_at": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "view_count": {
+        "count": 15,
+        "rate": 1.0
+      },
+      "parent_record_id": {
+        "count": 0,
+        "rate": 0.0
+      },
+      "video_duration": {
+        "count": 15,
+        "rate": 1.0
+      },
+      "tags": {
+        "count": 15,
+        "rate": 1.0
+      }
+    },
+    "empty_values": {
+      "schema_version": 0,
+      "record_id": 0,
+      "source": 0,
+      "source_record_id": 0,
+      "source_url": 0,
+      "source_code": 0,
+      "text": 0,
+      "published_at": 0,
+      "author_id": 0,
+      "author_username": 0,
+      "author_full_name": 0,
+      "author_is_verified": 0,
+      "like_count": 0,
+      "reply_count": 0,
+      "repost_count": 0,
+      "quote_count": 0,
+      "is_reply": 0,
+      "media_type": 0,
+      "has_media": 0,
+      "run_id": 0,
+      "collected_at": 0,
+      "normalized_at": 0,
+      "matched_queries": 0,
+      "query_contexts": 15,
+      "categories": 12,
+      "detected_locations": 15,
+      "vietnam_score": 0,
+      "topic_score": 0,
+      "language_hint": 0,
+      "relevance_signals": 15,
+      "detail_status": 0,
+      "detail_error": 0,
+      "event_id": 0,
+      "emitted_at": 0,
+      "kafka_topic": 0,
+      "kafka_partition": 0,
+      "kafka_offset": 0,
+      "kafka_timestamp": 0,
+      "lakehouse_ingested_at": 0,
+      "view_count": 0,
+      "parent_record_id": 0,
+      "video_duration": 0,
+      "tags": 0
+    },
+    "numeric": {
+      "like_count": {
+        "n": 15,
+        "min": 0,
+        "max": 1,
+        "mean": 0.2,
+        "median": 0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p90": 1.0,
+        "p95": 1.0,
+        "p99": 1.0
+      },
+      "kafka_partition": {
+        "n": 15,
+        "min": 0,
+        "max": 2,
+        "mean": 0.4666666666666667,
+        "median": 0,
+        "p5": 0.0,
+        "p25": 0.0,
+        "p75": 0.5,
+        "p90": 2.0,
+        "p95": 2.0,
+        "p99": 2.0
+      },
+      "kafka_offset": {
+        "n": 15,
+        "min": 23,
+        "max": 882,
+        "mean": 363.53333333333336,
+        "median": 347,
+        "p5": 23.7,
+        "p25": 39.0,
+        "p75": 549.0,
+        "p90": 874.6,
+        "p95": 881.3,
+        "p99": 881.86
+      }
+    },
+    "categories": {
+      "source": {
+        "youtube_comment": 15
+      },
+      "is_reply": {
+        "True": 4,
+        "False": 11
+      }
+    },
+    "dates": {
+      "published_at": {
+        "min": "2026-10-07T07:45:38.000000Z",
+        "max": "2026-10-12T03:57:14.000000Z",
+        "distinct": 7
+      },
+      "collected_at": {
+        "min": "2026-10-08T01:52:49.576451Z",
+        "max": "2026-10-12T05:28:49.458043Z",
+        "distinct": 7
+      },
+      "normalized_at": {
+        "min": "2026-10-08T01:52:49.576451Z",
+        "max": "2026-10-12T05:28:49.458043Z",
+        "distinct": 7
+      },
+      "emitted_at": {
+        "min": "2026-10-08T01:53:06.905891Z",
+        "max": "2026-10-12T05:29:26.361367Z",
+        "distinct": 15
+      },
+      "lakehouse_ingested_at": {
+        "min": "2026-10-08T01:56:35.482020Z",
+        "max": "2026-10-12T05:29:45.806613Z",
+        "distinct": 7
+      }
+    }
+  }
+}

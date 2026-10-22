@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "requested_datasets": 32,
+  "contract_rows": 17093,
+  "new_independent_checks": 1954,
+  "legacy_independent_checks": 347,
+  "manifest_checks": 29,
+  "populated_sql_queries": 14,
+  "static_charts": 2,
+  "relative_links": "VALID"
+}

@@ -315,3 +315,9 @@ docs/data
 !/docs/data/evidence/
 /docs/data/evidence/*
 !/docs/data/evidence/silver_gold_upgrade_2026-10-12.json
+
+# Reproducible read-only EDA reports, aggregate evidence and queries.
+!/docs/eda/
+!/docs/eda/**
+/docs/eda/**/__pycache__/
+/docs/eda/**/*.py[codz]

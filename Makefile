@@ -1,5 +1,39 @@
 .DEFAULT_GOAL := help
 
+# Dedicated EDA deployment; overlay preserves the existing project and volumes.
+SUPERSET_PYTHON ?= .venv/bin/python
+SUPERSET_COMPOSE = docker compose --env-file .local/superset/.env -f docker-compose.yaml -f infra/superset/compose.yaml --profile superset
+.PHONY: superset-up superset-init superset-seed superset-status superset-verify superset-logs superset-down superset-restart
+superset-up:
+	$(SUPERSET_PYTHON) infra/superset/local.py prepare
+	$(SUPERSET_COMPOSE) config --quiet
+	$(SUPERSET_COMPOSE) build superset
+	$(SUPERSET_COMPOSE) up -d --wait --wait-timeout 180 superset-db superset-cache
+	$(SUPERSET_PYTHON) infra/superset/local.py metadata
+	$(SUPERSET_PYTHON) infra/superset/local.py reader
+	$(SUPERSET_COMPOSE) up -d --wait --wait-timeout 240 superset
+
+superset-init:
+	$(SUPERSET_COMPOSE) run --rm --no-deps superset-init
+
+superset-seed:
+	$(SUPERSET_COMPOSE) exec -T superset python /app/dsp-superset/provision.py
+
+superset-status:
+	$(SUPERSET_COMPOSE) ps --all superset superset-db superset-cache superset-init
+
+superset-verify:
+	$(SUPERSET_COMPOSE) exec -T superset python /app/dsp-superset/verify.py
+
+superset-logs:
+	$(SUPERSET_COMPOSE) logs --tail 100 superset superset-db superset-init
+
+superset-down:
+	$(SUPERSET_COMPOSE) stop superset superset-cache superset-db
+
+superset-restart:
+	$(SUPERSET_COMPOSE) restart superset superset-cache superset-db
+
 .PHONY: spark-intelligence intelligence-test intelligence-backfill load-intelligence-clickhouse
 spark-intelligence:
 	$(SPARK_PYTHON) -m dsp_spark.jobs.batch.build_intelligence
