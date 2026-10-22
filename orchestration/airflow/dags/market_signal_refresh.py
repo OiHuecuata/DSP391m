@@ -18,9 +18,11 @@ TASK_IDS = (
     "check_social_delta",
     "build_social_activity_gold",
     "build_market_signal_snapshot",
+    "build_silver_gold_intelligence",
     "ensure_clickhouse_ready",
     "migrate_clickhouse",
     "load_market_signals_clickhouse",
+    "load_intelligence_clickhouse",
     "validate",
 )
 
@@ -77,9 +79,11 @@ def build_dag(schedule=None):
         ] >> tasks["build_market_signal_snapshot"]
         (
             tasks["build_market_signal_snapshot"]
+            >> tasks["build_silver_gold_intelligence"]
             >> tasks["ensure_clickhouse_ready"]
             >> tasks["migrate_clickhouse"]
             >> tasks["load_market_signals_clickhouse"]
+            >> tasks["load_intelligence_clickhouse"]
             >> tasks["validate"]
         )
     return dag

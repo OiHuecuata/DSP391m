@@ -1,0 +1,181 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "silver_social_posts",
+  "description": "Grain: current source post or video. See docs/data/silver_gold_metric_definitions.md for lineage, denominators and completeness.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "post_id",
+    "content_id",
+    "platform",
+    "source_record_id",
+    "source_url",
+    "content_type",
+    "parent_post_id",
+    "text_normalized",
+    "published_at",
+    "published_date_vn",
+    "language",
+    "is_pickleball_related",
+    "is_commercial",
+    "intent_labels",
+    "topic_labels",
+    "sentiment",
+    "relevance_confidence",
+    "classification_confidence",
+    "classification_status",
+    "extraction_method",
+    "is_duplicate",
+    "duplicate_group_id",
+    "text_hash",
+    "first_seen_at",
+    "last_seen_at",
+    "mentioned_venue_ids",
+    "schema_version",
+    "processing_version",
+    "lineage_ids"
+  ],
+  "properties": {
+    "post_id": {
+      "type": "string"
+    },
+    "content_id": {
+      "type": "string"
+    },
+    "platform": {
+      "type": "string"
+    },
+    "source_record_id": {
+      "type": "string"
+    },
+    "source_url": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "content_type": {
+      "type": "string"
+    },
+    "parent_post_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "text_normalized": {
+      "type": "string"
+    },
+    "published_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "published_date_vn": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date"
+    },
+    "language": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "is_pickleball_related": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "is_commercial": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "intent_labels": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "topic_labels": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "sentiment": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "relevance_confidence": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1
+    },
+    "classification_confidence": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1
+    },
+    "classification_status": {
+      "type": "string"
+    },
+    "extraction_method": {
+      "type": "string"
+    },
+    "is_duplicate": {
+      "type": "boolean"
+    },
+    "duplicate_group_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "text_hash": {
+      "type": "string"
+    },
+    "first_seen_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_seen_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "mentioned_venue_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "3"
+    },
+    "processing_version": {
+      "type": "string"
+    },
+    "lineage_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

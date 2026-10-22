@@ -18,10 +18,12 @@ EDGES = (
     ("check_social_delta", "build_social_activity_gold"),
     ("build_court_supply_gold", "build_market_signal_snapshot"),
     ("build_social_activity_gold", "build_market_signal_snapshot"),
-    ("build_market_signal_snapshot", "ensure_clickhouse_ready"),
+    ("build_market_signal_snapshot", "build_silver_gold_intelligence"),
+    ("build_silver_gold_intelligence", "ensure_clickhouse_ready"),
     ("ensure_clickhouse_ready", "migrate_clickhouse"),
     ("migrate_clickhouse", "load_market_signals_clickhouse"),
-    ("load_market_signals_clickhouse", "validate"),
+    ("load_market_signals_clickhouse", "load_intelligence_clickhouse"),
+    ("load_intelligence_clickhouse", "validate"),
 )
 
 
@@ -82,7 +84,7 @@ def successful(api, conf, run_id):
     require(run["state"] == "success", f"run {run_id} failed; inspect task logs")
     tasks = {t["task_id"]: t for t in run["tasks"]}
     require(
-        len(tasks) == 12 and all(t["state"] == "success" for t in tasks.values()),
+        len(tasks) == 14 and all(t["state"] == "success" for t in tasks.values()),
         "not all batch tasks succeeded",
     )
     for parent, child in EDGES:

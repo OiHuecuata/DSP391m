@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "social_comment_analytics_daily_v1",
+  "description": "Grain: comment geography x version x platform x VN comment date. See docs/data/silver_gold_metric_definitions.md for lineage, denominators and completeness.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "activity_date",
+    "platform",
+    "admin_unit_id",
+    "admin_version",
+    "collected_comment_count",
+    "collected_reply_count",
+    "reported_comment_count",
+    "relevant_comment_count",
+    "positive_comment_count",
+    "negative_comment_count",
+    "neutral_comment_count",
+    "sentiment_classified_count",
+    "court_seeking_comment_count",
+    "booking_intent_comment_count",
+    "price_inquiry_comment_count",
+    "capacity_complaint_count",
+    "comments_with_resolved_geo",
+    "court_seeking_comment_share",
+    "source_collection_status",
+    "schema_version",
+    "processing_version",
+    "lineage_ids",
+    "generated_at",
+    "metric_definition_id",
+    "completeness_status",
+    "source_platforms"
+  ],
+  "properties": {
+    "activity_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "platform": {
+      "type": "string"
+    },
+    "admin_unit_id": {
+      "type": "string"
+    },
+    "admin_version": {
+      "type": "string"
+    },
+    "collected_comment_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "collected_reply_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "reported_comment_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "relevant_comment_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "positive_comment_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "negative_comment_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "neutral_comment_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "sentiment_classified_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "court_seeking_comment_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "booking_intent_comment_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "price_inquiry_comment_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "capacity_complaint_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "comments_with_resolved_geo": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "court_seeking_comment_share": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "source_collection_status": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1"
+    },
+    "processing_version": {
+      "type": "string"
+    },
+    "lineage_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metric_definition_id": {
+      "type": "string"
+    },
+    "completeness_status": {
+      "type": "string"
+    },
+    "source_platforms": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

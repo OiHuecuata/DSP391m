@@ -2,16 +2,29 @@
 
 import os
 import re
+import shutil
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 
 from ..io.s3 import storage_uri
+from ..processing.intelligence.catalog import GOLD, SILVER
 
 SPARK_VERSION = "4.0.2"
 DELTA_VERSION = "4.0.1"
 SCALA_BINARY_VERSION = "2.13"
 HADOOP_VERSION = "3.4.1"
+
+
+def default_java_home() -> str:
+    """Prefer configured/bundled Java, otherwise use the installed system JDK."""
+    if os.getenv("JAVA_HOME"):
+        return os.environ["JAVA_HOME"]
+    bundled = Path(__file__).resolve().parents[5] / ".local/tools/java17"
+    if (bundled / "bin/java").is_file():
+        return str(bundled)
+    executable = shutil.which("java")
+    return str(Path(executable).resolve().parent.parent) if executable else ""
 
 
 def default_base_uri() -> str:
@@ -48,6 +61,31 @@ class LakehousePaths:
     rejected_bronze: str = ""
     social_comments: str = ""
 
+    silver_venue_candidates: str = ""
+    silver_court_venues: str = ""
+    silver_venue_evidence: str = ""
+    silver_venue_source_links: str = ""
+    silver_social_posts: str = ""
+    silver_social_comments: str = ""
+    silver_social_engagement_snapshots: str = ""
+    silver_social_geo_mentions: str = ""
+    silver_geocoding_attempts: str = ""
+    silver_social_intent_evidence: str = ""
+    dim_admin_unit: str = ""
+    bridge_admin_crosswalk: str = ""
+    dim_location_alias: str = ""
+    court_supply_by_admin_version_v2: str = ""
+    social_engagement_daily_v1: str = ""
+    social_intent_daily_v2: str = ""
+    social_comment_analytics_daily_v1: str = ""
+    social_activity_by_admin_version_daily: str = ""
+    national_location_coverage_v1: str = ""
+    venue_community_feedback_weekly_v1: str = ""
+    location_term_usage_monthly_v1: str = ""
+    venue_discovery_trends_v1: str = ""
+    location_market_research_monthly_v1: str = ""
+    intelligence_manifest: str = ""
+
     def __post_init__(self):
         base = storage_uri(self.base)
         object.__setattr__(self, "base", base)
@@ -72,6 +110,12 @@ class LakehousePaths:
             "court_supply_by_location": "gold/court_supply_by_location",
             "unresolved_court_locations": "quality/unresolved_court_locations",
             "location_market_signal_snapshot": "gold/location_market_signal_snapshot",
+            **{
+                name: "silver/intelligence/" + name.removeprefix("silver_")
+                for name in SILVER
+            },
+            **{name: "gold/" + name for name in GOLD},
+            "intelligence_manifest": "quality/intelligence_manifest",
         }.items():
             object.__setattr__(
                 self, field, storage_uri(getattr(self, field) or f"{base}/{suffix}")
@@ -86,6 +130,10 @@ class LakehousePaths:
     def from_env(cls):
         return cls(
             base=os.getenv("DSP_LAKEHOUSE_BASE_URI", default_base_uri()),
+            **{
+                name: os.getenv("DSP_DELTA_" + name.upper() + "_PATH", "")
+                for name in (*SILVER, *GOLD, "intelligence_manifest")
+            },
             bronze_court_observations=os.getenv(
                 "DSP_DELTA_BRONZE_COURT_OBSERVATIONS_PATH", ""
             ),

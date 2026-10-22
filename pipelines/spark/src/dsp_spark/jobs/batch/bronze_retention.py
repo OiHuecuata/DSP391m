@@ -13,6 +13,7 @@ from dsp_collector.runtime.bronze import DATASETS, load_policies
 from pyspark.sql import functions as F
 
 from ...io.delta import read_delta
+from ...processing.intelligence.catalog import GOLD, SILVER
 from ...runtime.config import SparkSettings
 from ...runtime.spark import create_spark
 
@@ -91,6 +92,8 @@ def retention_plan(spark, settings, *, now=None, policies=None):
             "silver/social_posts",
             "silver/social_comments",
             "silver/courts",
+            *SILVER,
+            *GOLD,
             "gold",
             "ClickHouse",
         ],

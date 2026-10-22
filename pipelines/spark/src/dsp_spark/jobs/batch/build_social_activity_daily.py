@@ -16,12 +16,15 @@ from ...processing.aggregate.social_activity_daily import (
 )
 from ...processing.clean.contracts import spark_schema
 from ...processing.clean.gold import validated_gold
+from ...processing.clean.source_lifecycle import permitted_legacy_frame
 from ...runtime.config import SparkSettings
 from ...runtime.spark import create_spark
 
 
 def build_social_activity_daily(spark, settings: SparkSettings):
-    silver = read_delta(spark, settings.paths.social_posts).persist()
+    silver = permitted_legacy_frame(
+        spark, settings, read_delta(spark, settings.paths.social_posts)
+    ).persist()
     gold = None
     try:
         generated_at = (
@@ -32,7 +35,9 @@ def build_social_activity_daily(spark, settings: SparkSettings):
         source_silver = silver
         if DeltaTable.isDeltaTable(spark, settings.paths.social_comments):
             source_silver = source_silver.unionByName(
-                read_delta(spark, settings.paths.social_comments)
+                permitted_legacy_frame(
+                    spark, settings, read_delta(spark, settings.paths.social_comments)
+                )
             ).dropDuplicates(["event_id"])
         if "view_count" not in source_silver.columns:
             source_silver = source_silver.withColumn(

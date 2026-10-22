@@ -18,6 +18,8 @@ from jsonschema import Draft202012Validator, FormatChecker, ValidationError, val
 from pyspark.sql import types as T
 from referencing import Registry, Resource
 
+from ..intelligence.catalog import GOLD, SILVER
+
 CONTRACT_FILES = {
     "bronze_envelope": "data/bronze/observation.v1.schema.json",
     "bronze_court_observations": "data/bronze/court-observations.v1.schema.json",
@@ -38,6 +40,8 @@ CONTRACT_FILES = {
     "threads_bronze": "data/bronze/threads-crawl.v1.schema.json",
     "pbplus_bronze": "data/bronze/pbplus-crawl.v1.schema.json",
 }
+CONTRACT_FILES.update({name: f"data/silver/{name}.schema.json" for name in SILVER})
+CONTRACT_FILES.update({name: f"data/gold/{name}.schema.json" for name in GOLD})
 
 
 @lru_cache(maxsize=1)
@@ -104,6 +108,8 @@ def spark_schema(kind: str) -> T.StructType:
             "boolean": T.BooleanType,
         }
         if kind in scalars:
+            if kind == "number" and node.get("x-dsp-decimal"):
+                return T.DecimalType(*node["x-dsp-decimal"]), nullable
             if (
                 bronze_timestamps
                 and kind == "string"

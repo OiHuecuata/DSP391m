@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "dim_admin_unit",
+  "description": "Grain: administrative unit x version. See docs/data/silver_gold_metric_definitions.md for lineage, denominators and completeness.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "admin_unit_id",
+    "admin_code",
+    "admin_name",
+    "admin_level",
+    "admin_version",
+    "parent_admin_unit_id",
+    "geometry",
+    "valid_from",
+    "valid_to",
+    "source_reference",
+    "reference_status",
+    "schema_version",
+    "processing_version",
+    "lineage_ids"
+  ],
+  "properties": {
+    "admin_unit_id": {
+      "type": "string"
+    },
+    "admin_code": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "admin_name": {
+      "type": "string"
+    },
+    "admin_level": {
+      "type": "string"
+    },
+    "admin_version": {
+      "type": "string"
+    },
+    "parent_admin_unit_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "geometry": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "valid_from": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date"
+    },
+    "valid_to": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date"
+    },
+    "source_reference": {
+      "type": "string"
+    },
+    "reference_status": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "3"
+    },
+    "processing_version": {
+      "type": "string"
+    },
+    "lineage_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

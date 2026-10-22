@@ -4,6 +4,7 @@ import argparse
 import os
 
 from dsp_spark.jobs.batch.build_court_supply_by_location import main as court_gold_main
+from dsp_spark.jobs.batch.build_intelligence import main as intelligence_job_main
 from dsp_spark.jobs.batch.build_location_market_signal_snapshot import (
     main as market_gold_main,
 )
@@ -63,6 +64,26 @@ def run(argv, job, job_name):
             else (paths.base, paths.social_posts, paths.social_activity_daily)
         )
     )
+    if job_name == "silver_gold_intelligence":
+        from dsp_spark.processing.intelligence.catalog import GOLD, SILVER
+
+        targets = (
+            paths.base,
+            *(
+                getattr(paths, n)
+                for n in (
+                    *SILVER,
+                    *GOLD,
+                    "bronze_court_observations",
+                    "bronze_social_posts",
+                    "bronze_social_comments",
+                    "bronze_engagement_snapshots",
+                    "bronze_collection_runs",
+                    "bronze_source_changes",
+                    "intelligence_manifest",
+                )
+            ),
+        )
     if not all(path.startswith("s3a://") for path in targets):
         raise ValueError("Databricks Gold requires explicitly configured S3A paths")
     settings = SparkSettings(paths)
@@ -82,6 +103,10 @@ def run(argv, job, job_name):
             settings=settings,
             market_settings=MarketSignalSettings(int(args.window_days), args.end_date),
         )
+    elif job_name == "silver_gold_intelligence":
+        # The wrapper has already consumed its own arguments. Do not pass the
+        # wheel's --lakehouse-base-uri back into the inner batch CLI parser.
+        job([], spark=spark, settings=settings)
     else:
         job(spark=spark, settings=settings)
 
@@ -96,6 +121,10 @@ def court_supply_main(argv=None):
 
 def market_signal_main(argv=None):
     run(argv, market_gold_main, "location_market_signal_snapshot")
+
+
+def intelligence_main(argv=None):
+    run(argv, intelligence_job_main, "silver_gold_intelligence")
 
 
 if __name__ == "__main__":

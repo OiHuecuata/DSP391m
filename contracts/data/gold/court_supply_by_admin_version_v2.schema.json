@@ -1,0 +1,154 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "court_supply_by_admin_version_v2",
+  "description": "Grain: location x admin version x snapshot. See docs/data/silver_gold_metric_definitions.md for lineage, denominators and completeness.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "snapshot_date",
+    "admin_version",
+    "admin_unit_id",
+    "venue_count",
+    "known_court_count",
+    "known_count_venue_count",
+    "unknown_count_venue_count",
+    "conflicting_count_venue_count",
+    "court_count_coverage_rate",
+    "verified_venue_count",
+    "probable_venue_count",
+    "price_min_vnd",
+    "price_median_vnd",
+    "priced_venue_count",
+    "price_unit",
+    "venue_last_observed_at",
+    "unverified_candidate_count",
+    "schema_version",
+    "processing_version",
+    "lineage_ids",
+    "generated_at",
+    "metric_definition_id",
+    "completeness_status",
+    "source_platforms"
+  ],
+  "properties": {
+    "snapshot_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "admin_version": {
+      "type": "string"
+    },
+    "admin_unit_id": {
+      "type": "string"
+    },
+    "venue_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "known_court_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "known_count_venue_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "unknown_count_venue_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "conflicting_count_venue_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "court_count_coverage_rate": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1
+    },
+    "verified_venue_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "probable_venue_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "price_min_vnd": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "x-dsp-decimal": [
+        20,
+        2
+      ]
+    },
+    "price_median_vnd": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "x-dsp-decimal": [
+        20,
+        2
+      ]
+    },
+    "priced_venue_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "price_unit": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "venue_last_observed_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "unverified_candidate_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1"
+    },
+    "processing_version": {
+      "type": "string"
+    },
+    "lineage_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metric_definition_id": {
+      "type": "string"
+    },
+    "completeness_status": {
+      "type": "string"
+    },
+    "source_platforms": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

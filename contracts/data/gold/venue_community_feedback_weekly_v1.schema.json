@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "venue_community_feedback_weekly_v1",
+  "description": "Grain: canonical venue x VN publication week. See docs/data/silver_gold_metric_definitions.md for lineage, denominators and completeness.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "venue_id",
+    "week_start",
+    "mentioning_post_count",
+    "mentioning_comment_count",
+    "positive_feedback_count",
+    "negative_feedback_count",
+    "price_complaint_count",
+    "facility_complaint_count",
+    "booking_difficulty_count",
+    "service_complaint_count",
+    "source_count",
+    "classified_evidence_count",
+    "sentiment_coverage_rate",
+    "schema_version",
+    "processing_version",
+    "lineage_ids",
+    "generated_at",
+    "metric_definition_id",
+    "completeness_status",
+    "source_platforms"
+  ],
+  "properties": {
+    "venue_id": {
+      "type": "string"
+    },
+    "week_start": {
+      "type": "string",
+      "format": "date"
+    },
+    "mentioning_post_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "mentioning_comment_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "positive_feedback_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "negative_feedback_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "price_complaint_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "facility_complaint_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "booking_difficulty_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "service_complaint_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "source_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "classified_evidence_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "sentiment_coverage_rate": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1"
+    },
+    "processing_version": {
+      "type": "string"
+    },
+    "lineage_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metric_definition_id": {
+      "type": "string"
+    },
+    "completeness_status": {
+      "type": "string"
+    },
+    "source_platforms": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

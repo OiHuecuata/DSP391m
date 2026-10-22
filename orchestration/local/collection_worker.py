@@ -35,7 +35,9 @@ def load_environment():
         PBPLUS_REPLAY_PATH="",
         KAFKA_ENABLED="false",
     )
-    os.environ.setdefault("JAVA_HOME", str(ROOT / ".local/tools/java17"))
+    from dsp_spark.runtime.config import default_java_home
+
+    os.environ.setdefault("JAVA_HOME", default_java_home())
     os.environ["PYTHONPATH"] = os.pathsep.join(sys.path[:3])
 
 
@@ -89,6 +91,7 @@ def _execute_locked(source, run_id, directory, policy, report, update):
         replace_serving,
     )
     from dsp_spark.io.delta import read_delta
+    from dsp_spark.io.intelligence_clickhouse import publish_intelligence
     from dsp_spark.io.source_activity_clickhouse import (
         read_gold as read_source_gold,
     )
@@ -98,6 +101,7 @@ def _execute_locked(source, run_id, directory, policy, report, update):
     from dsp_spark.jobs.batch.build_court_supply_by_location import (
         build_court_supply_by_location,
     )
+    from dsp_spark.jobs.batch.build_intelligence import build_intelligence
     from dsp_spark.jobs.batch.build_location_market_signal_snapshot import (
         build_location_market_signal_snapshot,
     )
@@ -438,6 +442,16 @@ def _execute_locked(source, run_id, directory, policy, report, update):
                 spark, config.spark, market_settings=market_settings
             ),
         )
+        stage(
+            "intelligence_silver_gold",
+            lambda: build_intelligence(
+                spark,
+                config.spark,
+                excluded_runs=json.loads(
+                    os.getenv("DSP_INTELLIGENCE_EXCLUDED_RUNS", "[]")
+                ),
+            ),
+        )
         with ClickHouseClient(config.warehouse) as client:
             stage("clickhouse_migration", lambda: migrate(client))
             serving = read_gold_rows(
@@ -452,6 +466,10 @@ def _execute_locked(source, run_id, directory, policy, report, update):
             stage(
                 "clickhouse_sources",
                 lambda: replace_source_serving(client, source_rows),
+            )
+            stage(
+                "clickhouse_intelligence",
+                lambda: publish_intelligence(spark, config.spark, client),
             )
         rejected = (
             read_delta(spark, config.spark.paths.rejected_social).count()

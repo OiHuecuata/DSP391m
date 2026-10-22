@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "bridge_admin_crosswalk",
+  "description": "Grain: old x new unit mapping. See docs/data/silver_gold_metric_definitions.md for lineage, denominators and completeness.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "old_admin_unit_id",
+    "new_admin_unit_id",
+    "relation_type",
+    "mapping_method",
+    "overlap_area_ratio",
+    "mapping_confidence",
+    "source_reference",
+    "schema_version",
+    "processing_version",
+    "lineage_ids"
+  ],
+  "properties": {
+    "old_admin_unit_id": {
+      "type": "string"
+    },
+    "new_admin_unit_id": {
+      "type": "string"
+    },
+    "relation_type": {
+      "type": "string"
+    },
+    "mapping_method": {
+      "type": "string"
+    },
+    "overlap_area_ratio": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1
+    },
+    "mapping_confidence": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1
+    },
+    "source_reference": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "3"
+    },
+    "processing_version": {
+      "type": "string"
+    },
+    "lineage_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

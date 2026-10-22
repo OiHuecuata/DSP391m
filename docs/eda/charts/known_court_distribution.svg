@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="850" height="292" viewBox="0 0 850 292" role="img"><title>Known courts per probable venue</title><desc>316 venues with explicit counts; 20 unknown excluded; source-reported 912 retained</desc>
+<rect width="100%" height="100%" fill="white"/>
+<text x="20" y="27" font-family="sans-serif" font-size="20">Known courts per probable venue</text>
+<text x="20" y="49" font-family="sans-serif" font-size="12">316 venues with explicit counts; 20 unknown excluded; source-reported 912 retained</text>
+<text x="20" y="87" font-family="sans-serif" font-size="14">1</text>
+<rect x="235" y="70" width="39.74" height="23" fill="#246b91"/>
+<text x="284.74" y="87" font-family="sans-serif" font-size="14">12</text>
+<text x="20" y="119" font-family="sans-serif" font-size="14">2–4</text>
+<rect x="235" y="102" width="500.00" height="23" fill="#246b91"/>
+<text x="745.00" y="119" font-family="sans-serif" font-size="14">151</text>
+<text x="20" y="151" font-family="sans-serif" font-size="14">5–8</text>
+<rect x="235" y="134" width="380.79" height="23" fill="#246b91"/>
+<text x="625.79" y="151" font-family="sans-serif" font-size="14">115</text>
+<text x="20" y="183" font-family="sans-serif" font-size="14">9–16</text>
+<rect x="235" y="166" width="112.58" height="23" fill="#246b91"/>
+<text x="357.58" y="183" font-family="sans-serif" font-size="14">34</text>
+<text x="20" y="215" font-family="sans-serif" font-size="14">17–32</text>
+<rect x="235" y="198" width="9.93" height="23" fill="#246b91"/>
+<text x="254.93" y="215" font-family="sans-serif" font-size="14">3</text>
+<text x="20" y="247" font-family="sans-serif" font-size="14">&gt;32 (912 review flag)</text>
+<rect x="235" y="230" width="3.31" height="23" fill="#246b91"/>
+<text x="248.31" y="247" font-family="sans-serif" font-size="14">1</text>
+</svg>

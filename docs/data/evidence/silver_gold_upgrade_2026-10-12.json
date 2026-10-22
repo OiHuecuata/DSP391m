@@ -1,0 +1,1039 @@
+{
+  "processing_version": "requirements-v1.0-r5",
+  "as_of": "2026-10-12T01:48:51.643595Z",
+  "baseline": {
+    "bronze_court_observations": {
+      "rows": 1687,
+      "source_platform": [
+        {
+          "source_platform": "pbplus",
+          "count": 1687
+        }
+      ],
+      "record_type": [
+        {
+          "record_type": "Venue",
+          "count": 1687
+        }
+      ],
+      "distinct_source_record_id": 337,
+      "distinct_observation_id": 1687,
+      "distinct_collection_run_id": 6,
+      "collected_at_range": {
+        "min": "2026-10-05 15:31:45.874770",
+        "max": "2026-10-10 23:15:13.228355"
+      }
+    },
+    "bronze_social_posts": {
+      "rows": 1346,
+      "source_platform": [
+        {
+          "source_platform": "youtube",
+          "count": 1115
+        },
+        {
+          "source_platform": "threads",
+          "count": 231
+        }
+      ],
+      "record_type": [
+        {
+          "record_type": "Post",
+          "count": 231
+        },
+        {
+          "record_type": "Video",
+          "count": 1115
+        }
+      ],
+      "distinct_source_record_id": 302,
+      "distinct_observation_id": 1346,
+      "distinct_collection_run_id": 29,
+      "collected_at_range": {
+        "min": "2026-10-08 05:24:47.159178",
+        "max": "2026-10-11 10:44:46.977446"
+      },
+      "published_at_range": {
+        "min": "2024-08-05 01:09:06",
+        "max": "2026-10-11 10:33:28"
+      }
+    },
+    "bronze_social_comments": {
+      "rows": 14,
+      "source_platform": [
+        {
+          "source_platform": "youtube",
+          "count": 14
+        }
+      ],
+      "record_type": [
+        {
+          "record_type": "Comment",
+          "count": 14
+        }
+      ],
+      "distinct_source_record_id": 4,
+      "distinct_observation_id": 14,
+      "distinct_collection_run_id": 8,
+      "collected_at_range": {
+        "min": "2026-10-08 08:52:49.576451",
+        "max": "2026-10-11 01:59:30.443908"
+      },
+      "published_at_range": {
+        "min": "2026-10-07 14:45:38",
+        "max": "2026-10-10 18:01:06"
+      }
+    },
+    "bronze_engagement_snapshots": {
+      "rows": 1360,
+      "source_platform": [
+        {
+          "source_platform": "youtube",
+          "count": 1129
+        },
+        {
+          "source_platform": "threads",
+          "count": 231
+        }
+      ],
+      "record_type": [
+        {
+          "record_type": "Metric",
+          "count": 1360
+        }
+      ],
+      "distinct_source_record_id": 306,
+      "distinct_observation_id": 1360,
+      "distinct_collection_run_id": 29,
+      "collected_at_range": {
+        "min": "2026-10-08 05:24:47.159178",
+        "max": "2026-10-11 10:44:46.977446"
+      }
+    },
+    "bronze_collection_runs": {
+      "rows": 59,
+      "source_platform": [
+        {
+          "source_platform": "threads",
+          "count": 39
+        },
+        {
+          "source_platform": "youtube",
+          "count": 14
+        },
+        {
+          "source_platform": "pbplus",
+          "count": 6
+        }
+      ],
+      "record_type": [
+        {
+          "record_type": "Run",
+          "count": 59
+        }
+      ],
+      "distinct_source_record_id": 59,
+      "distinct_observation_id": 59,
+      "distinct_collection_run_id": 59,
+      "collected_at_range": {
+        "min": "2026-10-05 15:31:45.874770",
+        "max": "2026-10-11 11:46:47.075938"
+      }
+    },
+    "bronze_source_changes": {
+      "rows": 1594,
+      "source_platform": [
+        {
+          "source_platform": "pbplus",
+          "count": 674
+        },
+        {
+          "source_platform": "youtube",
+          "count": 689
+        },
+        {
+          "source_platform": "threads",
+          "count": 231
+        }
+      ],
+      "record_type": [
+        {
+          "record_type": "Change",
+          "count": 1594
+        }
+      ],
+      "distinct_source_record_id": 643,
+      "distinct_observation_id": 1594,
+      "distinct_collection_run_id": 31,
+      "collected_at_range": {
+        "min": "2026-10-05 22:31:45.874770",
+        "max": "2026-10-11 10:44:46.977446"
+      }
+    }
+  },
+  "before": {
+    "bronze_court_observations": {
+      "rows": 1687,
+      "duplicate_keys": 0,
+      "null_fields": {
+        "source_created_at": 1687,
+        "source_updated_at": 1687,
+        "retention_policy_id": 1687,
+        "retention_expires_at": 1687,
+        "price_raw": 1687,
+        "venue_status_raw": 1687,
+        "latitude_raw": 1687,
+        "longitude_raw": 1687,
+        "ingestion_metadata": 1687,
+        "court_count_raw": 100,
+        "amenities_raw": 25,
+        "address_raw": 5,
+        "description_raw": 1350
+      },
+      "sources": {
+        "pbplus": 1687
+      },
+      "digest": "sha256:e81a28b5a42e21a769e550c8ff3d41952da200b28a8f5f5f98d87a216ecbae56",
+      "unique_source_record_id": 337,
+      "collected_at_range": {
+        "min": "2026-10-05T08:31:45.874770Z",
+        "max": "2026-10-10T16:15:13.228355Z"
+      }
+    },
+    "bronze_social_posts": {
+      "rows": 1346,
+      "duplicate_keys": 0,
+      "null_fields": {
+        "source_updated_at": 1346,
+        "retention_policy_id": 1346,
+        "retention_expires_at": 1346,
+        "parent_content_id": 1346,
+        "title_raw": 231,
+        "description_raw": 231,
+        "language_raw": 231,
+        "ingestion_metadata": 1346,
+        "text_raw": 1115
+      },
+      "sources": {
+        "threads": 231,
+        "youtube": 1115
+      },
+      "digest": "sha256:e84a71e3f8c7c5a15db379f4174bc6c158d1d988f765e4ecba61266371144cdb",
+      "unique_source_record_id": 302,
+      "published_at_range": {
+        "min": "2024-08-04T18:09:06.000000Z",
+        "max": "2026-10-11T03:33:28.000000Z"
+      },
+      "collected_at_range": {
+        "min": "2026-10-07T22:24:47.159178Z",
+        "max": "2026-10-11T03:44:46.977446Z"
+      }
+    },
+    "bronze_social_comments": {
+      "rows": 14,
+      "duplicate_keys": 0,
+      "null_fields": {
+        "retention_policy_id": 14,
+        "retention_expires_at": 14,
+        "parent_comment_id": 11,
+        "ingestion_metadata": 14
+      },
+      "sources": {
+        "youtube": 14
+      },
+      "digest": "sha256:16db7b28713d91dbf727bae01a1986bf00f56916d6a91c40b038081287d55563",
+      "unique_source_record_id": 4,
+      "published_at_range": {
+        "min": "2026-10-07T07:45:38.000000Z",
+        "max": "2026-10-10T11:01:06.000000Z"
+      },
+      "collected_at_range": {
+        "min": "2026-10-08T01:52:49.576451Z",
+        "max": "2026-10-10T18:59:30.443908Z"
+      }
+    },
+    "bronze_engagement_snapshots": {
+      "rows": 1360,
+      "duplicate_keys": 0,
+      "null_fields": {
+        "source_created_at": 948,
+        "source_updated_at": 1358,
+        "retention_policy_id": 1360,
+        "retention_expires_at": 1360,
+        "view_count": 245,
+        "comment_count": 245,
+        "share_count": 1360,
+        "ingestion_metadata": 1360,
+        "repost_count": 1135,
+        "quote_count": 1129,
+        "reply_count": 1129,
+        "like_count": 5
+      },
+      "sources": {
+        "threads": 231,
+        "youtube": 1129
+      },
+      "digest": "sha256:3e41f8e27265ce8a747e5692832a54948404282a0b43bf0723a6c6f68532bd7c",
+      "unique_source_record_id": 306,
+      "observed_at_range": {
+        "min": "2026-10-07T22:24:47.159178Z",
+        "max": "2026-10-11T03:44:46.977446Z"
+      },
+      "collected_at_range": {
+        "min": "2026-10-07T22:24:47.159178Z",
+        "max": "2026-10-11T03:44:46.977446Z"
+      }
+    },
+    "bronze_collection_runs": {
+      "rows": 59,
+      "duplicate_keys": 0,
+      "null_fields": {
+        "source_url": 59,
+        "source_created_at": 59,
+        "source_updated_at": 59,
+        "retention_policy_id": 59,
+        "retention_expires_at": 59,
+        "requests_json": 45,
+        "started_at": 27,
+        "stopping_reason": 6
+      },
+      "sources": {
+        "threads": 39,
+        "youtube": 14,
+        "pbplus": 6
+      },
+      "digest": "sha256:7c8363a918b1519bdcbf4d8f73291d3295120d97c304f35207c057d090926b98",
+      "unique_source_record_id": 59,
+      "collected_at_range": {
+        "min": "2026-10-05T08:31:45.874770Z",
+        "max": "2026-10-11T04:46:47.075938Z"
+      }
+    },
+    "bronze_source_changes": {
+      "rows": 1594,
+      "duplicate_keys": 0,
+      "null_fields": {
+        "source_created_at": 674,
+        "source_updated_at": 1590,
+        "retention_policy_id": 1594,
+        "retention_expires_at": 1594,
+        "ingestion_metadata": 1594,
+        "previous_payload_hash": 643,
+        "previous_observation_id": 643
+      },
+      "sources": {
+        "pbplus": 674,
+        "youtube": 689,
+        "threads": 231
+      },
+      "digest": "sha256:b169150705a26303fe810e5759ad818bbe4f3e91df8672f67b05dd6a5cfa3b66",
+      "unique_source_record_id": 643,
+      "collected_at_range": {
+        "min": "2026-10-05T15:31:45.874770Z",
+        "max": "2026-10-11T03:44:46.977446Z"
+      }
+    }
+  },
+  "after": {
+    "silver_venue_candidates": {
+      "rows": 1741,
+      "duplicate_keys": 0,
+      "null_fields": {
+        "latitude": 1741,
+        "longitude": 1741,
+        "price_min_vnd": 1741,
+        "price_max_vnd": 1741,
+        "price_unit": 1741,
+        "confidence_score": 1741,
+        "coordinate_source": 1741,
+        "court_count": 154,
+        "address_text": 28
+      },
+      "sources": {
+        "pbplus": 1687,
+        "threads": 8,
+        "youtube": 46
+      },
+      "digest": "sha256:7a4a72638c64295a0b937edd1abb1edee744b689eb56aae7f3de03dfc8a7f927",
+      "unique_venue_id": 349,
+      "unique_source_record_id": 349
+    },
+    "silver_court_venues": {
+      "rows": 349,
+      "duplicate_keys": 0,
+      "null_fields": {
+        "latitude": 349,
+        "longitude": 349,
+        "coordinate_source": 349,
+        "old_province_id": 331,
+        "old_district_id": 349,
+        "old_ward_id": 349,
+        "new_ward_id": 348,
+        "price_min_vnd": 349,
+        "price_max_vnd": 349,
+        "price_unit": 349,
+        "is_indoor": 349,
+        "has_lighting": 349,
+        "has_parking": 349,
+        "court_count": 32,
+        "address_normalized": 7,
+        "new_province_id": 23
+      },
+      "sources": {
+        "MULTI_SOURCE": 349
+      },
+      "digest": "sha256:644a00163741a020690d82623e6a79c39dc41b02e2302a2767af667be29489e5",
+      "unique_venue_id": 349,
+      "first_seen_at_range": {
+        "min": "2026-10-05T08:31:45.874770Z",
+        "max": "2026-10-10T15:52:24.018845Z"
+      }
+    },
+    "silver_venue_evidence": {
+      "rows": 1741,
+      "duplicate_keys": 0,
+      "null_fields": {
+        "content_id": 1687,
+        "evidence_span": 1350
+      },
+      "sources": {
+        "pbplus": 1687,
+        "threads": 8,
+        "youtube": 46
+      },
+      "digest": "sha256:541d55e253ac77d5078e4b143ac4f84c011f83db3447796a6752ad7fcc64524b",
+      "unique_content_id": 12,
+      "unique_venue_id": 349,
+      "unique_source_record_id": 349,
+      "observed_at_range": {
+        "min": "2026-10-05T08:31:45.874770Z",
+        "max": "2026-10-11T03:44:46.977446Z"
+      }
+    },
+    "silver_venue_source_links": {
+      "rows": 349,
+      "duplicate_keys": 0,
+      "null_fields": {},
+      "sources": {
+        "pbplus": 337,
+        "threads": 3,
+        "youtube": 9
+      },
+      "digest": "sha256:ea26c5975f0982098a907bec526a85f8181a9fb794cd75f98daf5554b85ebed2",
+      "unique_venue_id": 349,
+      "unique_source_record_id": 349,
+      "first_seen_at_range": {
+        "min": "2026-10-05T08:31:45.874770Z",
+        "max": "2026-10-10T15:52:24.018845Z"
+      }
+    },
+    "silver_social_posts": {
+      "rows": 302,
+      "duplicate_keys": 0,
+      "null_fields": {
+        "parent_post_id": 302,
+        "language": 51,
+        "sentiment": 301,
+        "relevance_confidence": 302,
+        "classification_confidence": 302,
+        "is_pickleball_related": 2
+      },
+      "sources": {
+        "threads": 51,
+        "youtube": 251
+      },
+      "digest": "sha256:25ad81d54ef7a19f722f2da3d8099a01a3123b32248fbb5783d008e60cf68ca7",
+      "unique_content_id": 302,
+      "unique_source_record_id": 302,
+      "published_at_range": {
+        "min": "2024-08-04T18:09:06.000000Z",
+        "max": "2026-10-11T03:33:28.000000Z"
+      },
+      "first_seen_at_range": {
+        "min": "2026-10-07T22:24:47.159178Z",
+        "max": "2026-10-11T03:44:46.977446Z"
+      }
+    },
+    "silver_social_comments": {
+      "rows": 4,
+      "duplicate_keys": 0,
+      "null_fields": {
+        "parent_comment_id": 3,
+        "sentiment": 4,
+        "classification_confidence": 4,
+        "is_pickleball_related": 1
+      },
+      "sources": {
+        "youtube": 4
+      },
+      "digest": "sha256:e99b9de278b2b26107e1a9fba5bae2e1e2535a97ee71323a6e3d3f3aedace4e9",
+      "unique_content_id": 4,
+      "unique_source_record_id": 4,
+      "published_at_range": {
+        "min": "2026-10-07T07:45:38.000000Z",
+        "max": "2026-10-10T11:01:06.000000Z"
+      },
+      "first_seen_at_range": {
+        "min": "2026-10-08T01:52:49.576451Z",
+        "max": "2026-10-10T15:52:24.018845Z"
+      }
+    },
+    "silver_social_engagement_snapshots": {
+      "rows": 1360,
+      "duplicate_keys": 0,
+      "null_fields": {
+        "views": 245,
+        "comments": 245,
+        "shares": 1360,
+        "engagement_total": 1360,
+        "engagement_rate": 1360,
+        "engagement_rate_basis": 1360,
+        "previous_snapshot_id": 310,
+        "elapsed_hours": 310,
+        "delta_views": 500,
+        "delta_likes": 313,
+        "delta_comments": 500,
+        "delta_shares": 1360,
+        "views_per_hour": 500,
+        "reposts": 1135,
+        "quotes": 1129,
+        "replies": 1129,
+        "likes": 5,
+        "content_age_hours": 4
+      },
+      "sources": {
+        "threads": 231,
+        "youtube": 1129
+      },
+      "digest": "sha256:6aab683f7f63b30b7834ebed1f9131fcd7c656e5884ed4da546f5822a4e48d69",
+      "unique_content_id": 306,
+      "observed_at_range": {
+        "min": "2026-10-07T22:24:47.159178Z",
+        "max": "2026-10-11T03:44:46.977446Z"
+      }
+    },
+    "silver_social_geo_mentions": {
+      "rows": 233,
+      "duplicate_keys": 0,
+      "null_fields": {
+        "address_text_raw": 233,
+        "old_district_id": 233,
+        "old_ward_id": 233,
+        "new_ward_id": 233,
+        "latitude": 233,
+        "longitude": 233,
+        "confidence": 233,
+        "old_province_id": 218,
+        "new_province_id": 30,
+        "source_reference": 22
+      },
+      "sources": {
+        "threads": 55,
+        "youtube": 178
+      },
+      "digest": "sha256:310bb9404839196b4ab19b47b8dd18791ea6cf1e462b17fc51091092b0e50ace",
+      "unique_content_id": 144,
+      "resolution_status": {
+        "RESOLVED": 203,
+        "UNRESOLVED": 30
+      }
+    },
+    "silver_geocoding_attempts": {
+      "rows": 1741,
+      "duplicate_keys": 0,
+      "null_fields": {
+        "coordinate_source": 1741,
+        "latitude": 1741,
+        "longitude": 1741,
+        "query": 28,
+        "source_reference": 49
+      },
+      "sources": {
+        "MULTI_SOURCE": 1741
+      },
+      "digest": "sha256:789ef082af0095ad48600baa12d904b08b98359fbcc043c1041b29ee8bb5ff3a",
+      "resolution_status": {
+        "ADMIN_ONLY": 1686,
+        "UNRESOLVED": 55
+      }
+    },
+    "silver_social_intent_evidence": {
+      "rows": 383,
+      "duplicate_keys": 0,
+      "null_fields": {
+        "participant_count_mentioned": 381,
+        "requested_start_time": 383,
+        "requested_time_text": 363,
+        "price_budget_min_vnd": 383,
+        "price_budget_max_vnd": 383,
+        "confidence": 383,
+        "requested_duration_minutes": 379,
+        "intent_location_id": 279
+      },
+      "sources": {
+        "MULTI_SOURCE": 383
+      },
+      "digest": "sha256:4fd858fde71d0b2588eb313cb32e5c1329512abeefd1544c9bc427c4a52ead2a",
+      "unique_content_id": 306
+    },
+    "dim_admin_unit": {
+      "rows": 100,
+      "duplicate_keys": 0,
+      "null_fields": {
+        "admin_code": 100,
+        "parent_admin_unit_id": 97,
+        "geometry": 100,
+        "valid_from": 63,
+        "valid_to": 37
+      },
+      "sources": {
+        "MULTI_SOURCE": 100
+      },
+      "digest": "sha256:0bdb9e05fdcf79b7d1bc4dad50fb683e44dca46fc7eccd74da88b447f5bd6a65"
+    },
+    "bridge_admin_crosswalk": {
+      "rows": 63,
+      "duplicate_keys": 0,
+      "null_fields": {
+        "overlap_area_ratio": 63,
+        "mapping_confidence": 63
+      },
+      "sources": {
+        "MULTI_SOURCE": 63
+      },
+      "digest": "sha256:2e1fa129207937ebe2435d2b8415a1ff2389b384823bb6f049a7ec21b7c0c7ba"
+    },
+    "dim_location_alias": {
+      "rows": 170,
+      "duplicate_keys": 0,
+      "null_fields": {
+        "effective_from": 170,
+        "effective_to": 170
+      },
+      "sources": {
+        "MULTI_SOURCE": 170
+      },
+      "digest": "sha256:7cb8d48f11a45d7961396531d2f8e27480593dfdcff7fef71072eb1c154792ae"
+    },
+    "court_supply_by_admin_version_v2": {
+      "rows": 22,
+      "duplicate_keys": 0,
+      "null_fields": {
+        "price_min_vnd": 22,
+        "price_median_vnd": 22,
+        "price_unit": 22
+      },
+      "sources": {
+        "MULTI_SOURCE": 22
+      },
+      "digest": "sha256:7410191ac74dc8be457856d8a61cb8689c3471a7778b9c058e40b07011c7c033"
+    },
+    "social_engagement_daily_v1": {
+      "rows": 158,
+      "duplicate_keys": 0,
+      "null_fields": {
+        "total_views": 98,
+        "total_comments_reported": 98,
+        "total_shares": 158,
+        "avg_comments_per_post": 98,
+        "median_engagement": 158,
+        "high_engagement_post_count": 158,
+        "high_engagement_threshold": 158,
+        "total_likes": 2,
+        "avg_likes_per_post": 2
+      },
+      "sources": {
+        "threads": 98,
+        "youtube": 60
+      },
+      "digest": "sha256:c997f803b737f063d38bfe092834ef102b42d6d89f9015e9eda9707392c06525",
+      "activity_date_range": {
+        "min": "2024-08-05",
+        "max": "2026-10-11"
+      }
+    },
+    "social_intent_daily_v2": {
+      "rows": 220,
+      "duplicate_keys": 0,
+      "null_fields": {
+        "high_confidence_count": 220
+      },
+      "sources": {
+        "threads": 101,
+        "youtube": 119
+      },
+      "digest": "sha256:fd18551de4638eef9fcfc72d3ae37da895c4dd249c45969abd94cfe1b3b23ce5",
+      "activity_date_range": {
+        "min": "2024-08-05",
+        "max": "2026-10-11"
+      }
+    },
+    "social_comment_analytics_daily_v1": {
+      "rows": 4,
+      "duplicate_keys": 0,
+      "null_fields": {
+        "reported_comment_count": 4,
+        "positive_comment_count": 4,
+        "negative_comment_count": 4,
+        "neutral_comment_count": 4,
+        "court_seeking_comment_share": 4
+      },
+      "sources": {
+        "youtube": 4
+      },
+      "digest": "sha256:148b98eb374b0101c1bbed7c8c24d58119e8d9621214bc673be2ef151d589d99",
+      "activity_date_range": {
+        "min": "2026-10-07",
+        "max": "2026-10-10"
+      }
+    },
+    "social_activity_by_admin_version_daily": {
+      "rows": 153,
+      "duplicate_keys": 0,
+      "null_fields": {},
+      "sources": {
+        "MULTI_SOURCE": 153
+      },
+      "digest": "sha256:d1ec1d529987d83e3401a6cf0723a832fb8757687d6f6e60436b0aade68dfd25",
+      "activity_date_range": {
+        "min": "2024-08-05",
+        "max": "2026-10-11"
+      }
+    },
+    "national_location_coverage_v1": {
+      "rows": 885,
+      "duplicate_keys": 0,
+      "null_fields": {
+        "planned_queries": 885,
+        "query_success_rate": 885,
+        "geo_resolution_rate": 877,
+        "last_success_at": 866,
+        "successful_queries": 760,
+        "failed_queries": 760,
+        "records_returned": 760,
+        "records_accepted": 760,
+        "resolved_records": 876
+      },
+      "sources": {
+        "pbplus": 294,
+        "threads": 297,
+        "youtube": 294
+      },
+      "digest": "sha256:f052df2ac9581c9254bd42dc58dc8d7da7ed95ab9caefcb29f8c4342ae086f67"
+    },
+    "venue_community_feedback_weekly_v1": {
+      "rows": 13,
+      "duplicate_keys": 0,
+      "null_fields": {
+        "positive_feedback_count": 13,
+        "negative_feedback_count": 13,
+        "price_complaint_count": 13,
+        "facility_complaint_count": 13,
+        "service_complaint_count": 13
+      },
+      "sources": {
+        "MULTI_SOURCE": 13
+      },
+      "digest": "sha256:8674827803c6bbc1a48d40e4648bb9ff634d85a12477a22532ed273c72c77bb0",
+      "unique_venue_id": 8
+    },
+    "location_term_usage_monthly_v1": {
+      "rows": 87,
+      "duplicate_keys": 0,
+      "null_fields": {},
+      "sources": {
+        "threads": 42,
+        "youtube": 45
+      },
+      "digest": "sha256:d7fd8213a8b5965561e7119a8831016e4457966b78d2262ebb3956e2966b6306"
+    },
+    "venue_discovery_trends_v1": {
+      "rows": 24,
+      "duplicate_keys": 0,
+      "null_fields": {},
+      "sources": {
+        "MULTI_SOURCE": 24
+      },
+      "digest": "sha256:a30b9e8caa087d60e474b24c3a69ef1eb0fb68bc095a17fdcb2251e5a7f3004d"
+    },
+    "location_market_research_monthly_v1": {
+      "rows": 96,
+      "duplicate_keys": 0,
+      "null_fields": {
+        "venue_count": 74,
+        "known_court_count": 74,
+        "court_count_coverage_rate": 74,
+        "total_views": 73,
+        "total_shares": 96,
+        "newly_discovered_venue_count": 72,
+        "supply_as_of": 74,
+        "total_likes": 15,
+        "classification_coverage_rate": 14
+      },
+      "sources": {
+        "MULTI_SOURCE": 96
+      },
+      "digest": "sha256:0fb6f62485c5d7e767d9fa548d060a31bacb15b7b0772a251f57af54aad998ae"
+    }
+  },
+  "input_versions": {
+    "bronze_court_observations": 5,
+    "bronze_social_posts": 29,
+    "bronze_social_comments": 8,
+    "bronze_engagement_snapshots": 29,
+    "bronze_collection_runs": 113,
+    "bronze_source_changes": 30
+  },
+  "output_versions": {
+    "silver_venue_candidates": 4,
+    "silver_court_venues": 4,
+    "silver_venue_evidence": 4,
+    "silver_venue_source_links": 4,
+    "silver_social_posts": 4,
+    "silver_social_comments": 4,
+    "silver_social_engagement_snapshots": 4,
+    "silver_social_geo_mentions": 4,
+    "silver_geocoding_attempts": 4,
+    "silver_social_intent_evidence": 4,
+    "dim_admin_unit": 4,
+    "bridge_admin_crosswalk": 4,
+    "dim_location_alias": 4,
+    "court_supply_by_admin_version_v2": 4,
+    "social_engagement_daily_v1": 4,
+    "social_intent_daily_v2": 4,
+    "social_comment_analytics_daily_v1": 4,
+    "social_activity_by_admin_version_daily": 4,
+    "national_location_coverage_v1": 4,
+    "venue_community_feedback_weekly_v1": 4,
+    "location_term_usage_monthly_v1": 4,
+    "venue_discovery_trends_v1": 4,
+    "location_market_research_monthly_v1": 4
+  },
+  "quality": {
+    "DQ-01": "PASS",
+    "DQ-02": "PASS",
+    "DQ-03": "PASS",
+    "DQ-04": "PASS",
+    "DQ-05": "PASS",
+    "DQ-06": "PASS",
+    "DQ-07": "PASS",
+    "DQ-08": "PASS",
+    "DQ-09": "PASS",
+    "DQ-10": "PASS_ACTUAL_SAME_INPUT_REPLAY",
+    "DQ-11": "MEASURED_SAMPLE_ONLY",
+    "DQ-12": "ACTIVE_DERIVATIONS_FILTERED_ARCHIVE_ERASURE_EXTERNAL"
+  },
+  "policy_quality": {
+    "excluded_observations": 0,
+    "expired_observations": 0,
+    "deleted_entities": 0,
+    "unreviewed_policy_observations": 6060
+  },
+  "audit": {
+    "unique_posts": 302,
+    "unique_venues": 349,
+    "unique_comments": 4,
+    "top_level_comments": 3,
+    "replies": 1,
+    "posts_resolved": 134,
+    "venue_verification": {
+      "VERIFIED": 0,
+      "PROBABLE": 336,
+      "UNVERIFIED": 13
+    },
+    "court_count_status": {
+      "KNOWN": 317,
+      "UNKNOWN": 32,
+      "CONFLICTING": 0
+    },
+    "venues_geo_resolved": 331,
+    "social_sources": {
+      "youtube": 251,
+      "threads": 51
+    },
+    "lineage_example": {
+      "activity_date": "2024-08-05",
+      "admin_version": "NATIONAL",
+      "admin_unit_id": "NATIONAL",
+      "platform": "threads",
+      "post_count": 1,
+      "total_views": null,
+      "total_likes": 71,
+      "total_comments_reported": null,
+      "total_shares": null,
+      "avg_likes_per_post": 71.0,
+      "avg_comments_per_post": null,
+      "median_engagement": null,
+      "high_engagement_post_count": null,
+      "posts_with_metrics_count": 1,
+      "posts_with_views": 0,
+      "posts_with_likes": 1,
+      "posts_with_comments": 0,
+      "posts_with_shares": 0,
+      "snapshot_as_of": "2026-10-08T08:08:45.567271Z",
+      "metric_window": "LatestValidAtOrBeforeAsOf",
+      "high_engagement_threshold": null,
+      "schema_version": "1",
+      "processing_version": "requirements-v1.0-r5",
+      "lineage_ids": [
+        "sha256:4c1452dc8b4be6ea5347dea727edd14f28045524effb350d4e6fbdaf10a0b492",
+        "sha256:76fa4ad2057c083bb2caf15d7414e85479010426eed6d58ef6c0e36d68779070",
+        "sha256:c69e503f14f8e4e150e0c1ae95ccc3fdf727c1f14838cc02b2858b87b2861bba",
+        "sha256:cb89d9bf845412d92321d6d32ef67f9536c4e5b290c6e8528d6d1c1b692f31c2",
+        "sha256:de97f458a23006ceb74c6fac8b437a601c1f0be9e8a14471052ccf4d1fd316f6",
+        "sha256:ecdb58a6bd2c84647e773e3ccc8ccf509a0a7c828deb169c968f360a9cf66ec8",
+        "sha256:f54016dd7aaed9ce7d4625ca43cbd7b4a54e88240c80be476def12f067b40eff"
+      ],
+      "generated_at": "2026-10-11T04:46:47.075938Z",
+      "metric_definition_id": "requirements-v1.0:social_engagement_daily_v1",
+      "completeness_status": "METRIC_DEFINITION_UNCONFIRMED_PARTIAL",
+      "source_platforms": [
+        "threads"
+      ]
+    },
+    "v1_compatibility": {
+      "court_supply_by_location": {
+        "rows_before": 8,
+        "rows_after": 8
+      },
+      "social_activity_daily": {
+        "rows_before": 47,
+        "rows_after": 47
+      },
+      "location_market_signal_snapshot": {
+        "rows_before": 8,
+        "rows_after": 8
+      }
+    },
+    "bronze_rows_unchanged": {
+      "bronze_court_observations": true,
+      "bronze_social_posts": true,
+      "bronze_social_comments": true,
+      "bronze_engagement_snapshots": true,
+      "bronze_collection_runs": true,
+      "bronze_source_changes": true
+    }
+  },
+  "national_supply": {
+    "snapshot_date": "2026-10-12",
+    "venue_count": 336,
+    "known_court_count": 2617,
+    "known_count_venue_count": 316,
+    "unknown_count_venue_count": 20,
+    "conflicting_count_venue_count": 0,
+    "court_count_coverage_rate": 0.9404761904761905,
+    "verified_venue_count": 0,
+    "probable_venue_count": 336
+  },
+  "serving": [
+    {
+      "table": "court_supply_by_admin_version_v2",
+      "loaded_rows": 22,
+      "status": "VALIDATED"
+    },
+    {
+      "table": "social_engagement_daily_v1",
+      "loaded_rows": 158,
+      "status": "VALIDATED"
+    },
+    {
+      "table": "social_intent_daily_v2",
+      "loaded_rows": 220,
+      "status": "VALIDATED"
+    },
+    {
+      "table": "social_comment_analytics_daily_v1",
+      "loaded_rows": 4,
+      "status": "VALIDATED"
+    },
+    {
+      "table": "social_activity_by_admin_version_daily",
+      "loaded_rows": 153,
+      "status": "VALIDATED"
+    },
+    {
+      "table": "national_location_coverage_v1",
+      "loaded_rows": 885,
+      "status": "VALIDATED"
+    },
+    {
+      "table": "venue_community_feedback_weekly_v1",
+      "loaded_rows": 13,
+      "status": "VALIDATED"
+    },
+    {
+      "table": "location_term_usage_monthly_v1",
+      "loaded_rows": 87,
+      "status": "VALIDATED"
+    },
+    {
+      "table": "venue_discovery_trends_v1",
+      "loaded_rows": 24,
+      "status": "VALIDATED"
+    },
+    {
+      "table": "location_market_research_monthly_v1",
+      "loaded_rows": 96,
+      "status": "VALIDATED"
+    }
+  ],
+  "replay": {
+    "execution": "UNCHANGED_INPUT_NO_WRITES",
+    "same_versions": true,
+    "same_profiles": true
+  },
+  "tests": {
+    "spark_regression": {
+      "run": 159,
+      "passed": 159,
+      "failed": 0,
+      "skipped": 0
+    },
+    "final_acceptance": {
+      "run": 28,
+      "passed": 28,
+      "failed": 0,
+      "skipped": 0
+    },
+    "collector": {
+      "run": 300,
+      "passed": 299,
+      "failed": 0,
+      "skipped": 1
+    },
+    "orchestration": {
+      "run": 27,
+      "passed": 27,
+      "failed": 0,
+      "skipped": 0
+    },
+    "airflow": {
+      "run": 8,
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0
+    },
+    "databricks_offline": {
+      "run": 15,
+      "passed": 15,
+      "failed": 0,
+      "skipped": 0
+    },
+    "backend": {
+      "pass": 68
+    }
+  },
+  "provenance_scan": {
+    "runs": 59,
+    "explicit_fixture_markers": 0,
+    "missing_original_artifacts": 27
+  },
+  "additional_verification": {
+    "metric_only_classifier_not_invoked": "PASS",
+    "interrupted_text_evidence_cache_repaired": "PASS",
+    "make_entrypoint": "UNCHANGED_INPUT_NO_WRITES",
+    "ruff": "PASS",
+    "black": "PASS",
+    "git_diff_check": "PASS"
+  }
+}

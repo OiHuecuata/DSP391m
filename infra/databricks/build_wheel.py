@@ -61,6 +61,10 @@ def build_wheel(output: Path | None = None):
             ROOT / "configs/reference/vietnam_locations.v1.json",
             contracts / "reference/vietnam_locations.v1.json",
         )
+        shutil.copyfile(
+            ROOT / "configs/reference/threads_geography.v1.json",
+            contracts / "reference/threads_geography.v1.json",
+        )
         for package in (
             stage / "dsp_spark",
             platform,
@@ -85,6 +89,7 @@ build-backend = "poetry.core.masonry.api"
 social_activity_daily = "dsp_databricks.run_social_activity_daily:main"
 court_supply_by_location = "dsp_databricks.run_social_activity_daily:court_supply_main"
 location_market_signal_snapshot = "dsp_databricks.run_social_activity_daily:market_signal_main"
+silver_gold_intelligence = "dsp_databricks.run_social_activity_daily:intelligence_main"
 
 [tool.poetry]
 packages = [{include = "dsp_spark"}, {include = "dsp_databricks"}, {include = "dsp_collector"}, {include = "dsp_contracts"}]

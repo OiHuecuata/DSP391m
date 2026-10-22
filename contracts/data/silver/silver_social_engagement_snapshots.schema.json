@@ -1,0 +1,210 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "silver_social_engagement_snapshots",
+  "description": "Grain: content x observed instant (cumulative). See docs/data/silver_gold_metric_definitions.md for lineage, denominators and completeness.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "snapshot_id",
+    "content_id",
+    "content_type",
+    "platform",
+    "observed_at",
+    "observed_date_vn",
+    "metric_scope",
+    "views",
+    "likes",
+    "comments",
+    "shares",
+    "reposts",
+    "quotes",
+    "replies",
+    "content_age_hours",
+    "engagement_total",
+    "engagement_rate",
+    "engagement_rate_basis",
+    "metrics_available",
+    "metric_availability_json",
+    "snapshot_status",
+    "previous_snapshot_id",
+    "elapsed_hours",
+    "delta_views",
+    "delta_likes",
+    "delta_comments",
+    "delta_shares",
+    "views_per_hour",
+    "delta_status",
+    "schema_version",
+    "processing_version",
+    "lineage_ids"
+  ],
+  "properties": {
+    "snapshot_id": {
+      "type": "string"
+    },
+    "content_id": {
+      "type": "string"
+    },
+    "content_type": {
+      "type": "string"
+    },
+    "platform": {
+      "type": "string"
+    },
+    "observed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "observed_date_vn": {
+      "type": "string",
+      "format": "date"
+    },
+    "metric_scope": {
+      "type": "string"
+    },
+    "views": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "likes": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "comments": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "shares": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "reposts": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "quotes": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "replies": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "content_age_hours": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "engagement_total": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "engagement_rate": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "engagement_rate_basis": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "metrics_available": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "metric_availability_json": {
+      "type": "string"
+    },
+    "snapshot_status": {
+      "type": "string"
+    },
+    "previous_snapshot_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "elapsed_hours": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "delta_views": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "delta_likes": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "delta_comments": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "delta_shares": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "views_per_hour": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "delta_status": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "3"
+    },
+    "processing_version": {
+      "type": "string"
+    },
+    "lineage_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

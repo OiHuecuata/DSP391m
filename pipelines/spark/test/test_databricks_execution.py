@@ -33,6 +33,37 @@ CONFIG = {
 
 
 class DatabricksExecutionTests(unittest.TestCase):
+    def test_managed_intelligence_reuses_session_and_versioned_lake_paths(self):
+        spark = Mock(version="4.0.2")
+        session = Mock()
+        session.builder.getOrCreate.return_value = spark
+        with (
+            patch.dict(
+                "os.environ",
+                {"DATABRICKS_RUNTIME_VERSION": "synthetic-managed-test"},
+                clear=True,
+            ),
+            patch.object(runner, "SparkSession", session),
+            patch.object(runner, "intelligence_job_main") as job,
+        ):
+            runner.intelligence_main(
+                ["--lakehouse-base-uri", CONFIG["DSP_LAKEHOUSE_BASE_URI"]]
+            )
+        self.assertIs(job.call_args.kwargs["spark"], spark)
+        self.assertEqual(job.call_args.args, ([],))
+        self.assertTrue(
+            job.call_args.kwargs["settings"].paths.silver_court_venues.startswith(
+                "s3a://"
+            )
+        )
+        self.assertTrue(
+            job.call_args.kwargs["settings"].paths.social_intent_daily_v2.endswith(
+                "gold/social_intent_daily_v2"
+            )
+        )
+        spark.stop.assert_not_called()
+        session.builder.master.assert_not_called()
+
     def test_market_template_paths_window_and_explicit_end(self):
         config = {
             **CONFIG,

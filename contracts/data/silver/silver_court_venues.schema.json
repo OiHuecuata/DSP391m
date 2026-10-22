@@ -1,0 +1,215 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "silver_court_venues",
+  "description": "Grain: physical venue. See docs/data/silver_gold_metric_definitions.md for lineage, denominators and completeness.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "venue_id",
+    "venue_name",
+    "address_normalized",
+    "latitude",
+    "longitude",
+    "coordinate_source",
+    "geocoding_precision",
+    "old_province_id",
+    "old_district_id",
+    "old_ward_id",
+    "new_province_id",
+    "new_ward_id",
+    "court_count",
+    "court_count_status",
+    "price_min_vnd",
+    "price_max_vnd",
+    "price_unit",
+    "is_indoor",
+    "has_lighting",
+    "has_parking",
+    "venue_status",
+    "verification_status",
+    "first_seen_at",
+    "last_seen_at",
+    "source_count",
+    "conflicting_fields",
+    "evidence_ids",
+    "source_platforms",
+    "schema_version",
+    "processing_version",
+    "lineage_ids"
+  ],
+  "properties": {
+    "venue_id": {
+      "type": "string"
+    },
+    "venue_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "address_normalized": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "latitude": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": -90,
+      "maximum": 90
+    },
+    "longitude": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": -180,
+      "maximum": 180
+    },
+    "coordinate_source": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "geocoding_precision": {
+      "type": "string"
+    },
+    "old_province_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "old_district_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "old_ward_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "new_province_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "new_ward_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "court_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "court_count_status": {
+      "type": "string"
+    },
+    "price_min_vnd": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "x-dsp-decimal": [
+        20,
+        2
+      ]
+    },
+    "price_max_vnd": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "x-dsp-decimal": [
+        20,
+        2
+      ]
+    },
+    "price_unit": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "is_indoor": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "has_lighting": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "has_parking": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "venue_status": {
+      "type": "string"
+    },
+    "verification_status": {
+      "type": "string"
+    },
+    "first_seen_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_seen_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "conflicting_fields": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidence_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "source_platforms": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "3"
+    },
+    "processing_version": {
+      "type": "string"
+    },
+    "lineage_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

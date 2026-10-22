@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "silver_venue_evidence",
+  "description": "Grain: venue observation or social extraction. See docs/data/silver_gold_metric_definitions.md for lineage, denominators and completeness.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "evidence_id",
+    "candidate_id",
+    "venue_id",
+    "content_id",
+    "source_platform",
+    "source_record_id",
+    "source_url",
+    "observed_at",
+    "evidence_type",
+    "evidence_span",
+    "extraction_method",
+    "attributes_json",
+    "schema_version",
+    "processing_version",
+    "lineage_ids"
+  ],
+  "properties": {
+    "evidence_id": {
+      "type": "string"
+    },
+    "candidate_id": {
+      "type": "string"
+    },
+    "venue_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "content_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source_platform": {
+      "type": "string"
+    },
+    "source_record_id": {
+      "type": "string"
+    },
+    "source_url": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "observed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "evidence_type": {
+      "type": "string"
+    },
+    "evidence_span": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "extraction_method": {
+      "type": "string"
+    },
+    "attributes_json": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "3"
+    },
+    "processing_version": {
+      "type": "string"
+    },
+    "lineage_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}
