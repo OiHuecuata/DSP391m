@@ -52,10 +52,14 @@ def delta_version(spark, path):
     )
 
 
-def rows_from_delta(spark, path, *, limit=MAX_BATCH_ROWS):
+def rows_from_delta(spark, path, *, limit=MAX_BATCH_ROWS, version=None):
     if not DeltaTable.isDeltaTable(spark, path):
         return []
-    frame = read_delta(spark, path)
+    frame = (
+        spark.read.format("delta").option("versionAsOf", version).load(path)
+        if version is not None
+        else read_delta(spark, path)
+    )
     # Avoid Python host timezone conversion by transferring epoch microseconds.
     timestamps = {
         f.name for f in frame.schema if isinstance(f.dataType, T.TimestampType)
@@ -162,6 +166,9 @@ def build_intelligence(
     excluded_runs=(),
     policies=None,
     force=False,
+    input_versions=None,
+    previous_settings=None,
+    previous_versions=None,
 ):
     as_of = instant(as_of or datetime.now(UTC))
     policies = (
@@ -172,15 +179,31 @@ def build_intelligence(
     geography = Geography(
         reference or load_reference(os.getenv("DSP_ADMIN_REFERENCE_PATH"))
     )
-    before_versions = {
+    current_versions = {
         name: delta_version(spark, getattr(settings.paths, name)) for name in DATASETS
     }
+    if any(current_versions[n] is None for n in DATASETS):
+        raise ValueError(
+            "all six Bronze observation tables must exist; run Bronze ingestion/backfill first"
+        )
+    before_versions = current_versions if input_versions is None else input_versions
+    if set(before_versions) != set(DATASETS) or any(
+        type(v) is not int
+        or v < 0
+        or current_versions[n] is None
+        or v > current_versions[n]
+        for n, v in before_versions.items()
+    ):
+        raise ValueError("invalid pinned Bronze version vector")
     if any(before_versions[n] is None for n in DATASETS):
         raise ValueError(
             "all six Bronze observation tables must exist; run Bronze ingestion/backfill first"
         )
     datasets = {
-        name: rows_from_delta(spark, getattr(settings.paths, name)) for name in DATASETS
+        name: rows_from_delta(
+            spark, getattr(settings.paths, name), version=before_versions[name]
+        )
+        for name in DATASETS
     }
     for name, rows in datasets.items():
         for row in rows:
@@ -245,12 +268,21 @@ def build_intelligence(
                 )
             return {**old_manifest, "execution": "UNCHANGED_INPUT_NO_WRITES"}
     previous = {
-        name: rows_from_delta(spark, getattr(settings.paths, name)) for name in SILVER
+        name: rows_from_delta(
+            spark,
+            getattr((previous_settings or settings).paths, name),
+            version=(previous_versions or {}).get(name),
+        )
+        for name in SILVER
     }
     silver, work = build_silver(permitted, geography, previous=previous)
     bronze_ids = {r["observation_id"] for rows in permitted.values() for r in rows}
     quality = validate_tables(silver, bronze_ids=bronze_ids)
-    old_supply = rows_from_delta(spark, settings.paths.court_supply_by_admin_version_v2)
+    old_supply = rows_from_delta(
+        spark,
+        (previous_settings or settings).paths.court_supply_by_admin_version_v2,
+        version=(previous_versions or {}).get("court_supply_by_admin_version_v2"),
+    )
     generated = max(
         (r["collected_at"] for rows in permitted.values() for r in rows),
         default=timestamp(as_of),
@@ -331,7 +363,7 @@ def build_intelligence(
     after_versions = {
         name: delta_version(spark, getattr(settings.paths, name)) for name in DATASETS
     }
-    if before_versions != after_versions:
+    if input_versions is None and before_versions != after_versions:
         raise RuntimeError(
             "Bronze changed during materialization; retry under the pipeline writer lock"
         )

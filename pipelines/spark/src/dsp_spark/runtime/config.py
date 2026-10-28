@@ -213,6 +213,7 @@ class SparkSettings:
     s3_endpoint: str | None = None
     s3_region: str | None = None
     s3_path_style: bool = False
+    s3_profile: str | None = None
     max_offsets_per_trigger: int = 1000
 
     def __post_init__(self):
@@ -247,6 +248,7 @@ class SparkSettings:
             starting_offsets=os.getenv("DSP_KAFKA_STARTING_OFFSETS", "earliest"),
             trigger_interval=os.getenv("DSP_SPARK_TRIGGER_INTERVAL", "10 seconds"),
             s3_endpoint=os.getenv("DSP_S3_ENDPOINT"),
+            s3_profile=os.getenv("DSP_S3_PROFILE"),
             s3_region=os.getenv("AWS_REGION") or os.getenv("AWS_DEFAULT_REGION"),
             s3_path_style=os.getenv("DSP_S3_PATH_STYLE", "false").lower() == "true",
         )

@@ -16,23 +16,94 @@ from orchestration.local import pipeline
 
 
 class CollectionWorkerTests(unittest.TestCase):
+    def test_s3_outbox_mode_reuses_saved_artifact_and_reports_pending_before_spark(
+        self,
+    ):
+        from dsp_collector.runtime.outbox import jobs
+
+        with tempfile.TemporaryDirectory(prefix="dsp-synthetic-worker-") as directory:
+            root = Path(directory)
+            run_id = "synthetic-worker-outbox"
+            raw = root / "bronze/threads" / (run_id + ".json")
+            raw.parent.mkdir(parents=True)
+            raw.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "1",
+                        "source": "threads",
+                        "run_id": run_id,
+                        "seed_query": "pickleball",
+                        "sort": "recent",
+                        "collected_at": "2026-10-28T00:00:00Z",
+                        "count": 1,
+                        "posts": [{"id": "123", "text": "Synthetic Hà Nội"}],
+                        "query_runs": [],
+                    }
+                )
+            )
+            config = SimpleNamespace(
+                spark=SimpleNamespace(
+                    paths=SimpleNamespace(base=(root / "lake").as_uri())
+                )
+            )
+            queue = root / "outbox"
+            report = {"stages": {}, "metrics": {}}
+            with (
+                patch.object(pipeline, "resolve_config", return_value=config),
+                patch.dict(
+                    os.environ,
+                    {
+                        "DSP_S3_INGESTION_MODE": "outbox",
+                        "DSP_S3_OUTBOX_DIR": str(queue),
+                    },
+                ),
+                patch("dsp_spark.runtime.spark.create_spark") as start_spark,
+                patch(
+                    "dsp_collector.sources.crawler.threads.crawler.crawl_threads_posts"
+                ) as crawl,
+            ):
+                worker._execute_locked(
+                    "threads",
+                    run_id,
+                    root,
+                    {"threads": {"checkpoint_path": str(root / "checkpoint.json")}},
+                    report,
+                    lambda _: None,
+                )
+            crawl.assert_not_called()
+            start_spark.assert_not_called()
+            self.assertEqual(report["status"], "PARTIAL")
+            self.assertEqual(report["metrics"]["bronze_ingestion_status"], "pending")
+            self.assertEqual(next(jobs(queue))[1]["status"], "pending")
+            self.assertTrue(raw.exists())
+
     def test_structured_progress_keeps_checkpoint_and_batch_units_separate(self):
         from dsp_collector.runtime.status import CrawlerStatusTracker
 
         with tempfile.TemporaryDirectory() as directory:
             tracker = CrawlerStatusTracker("threads", Path(directory) / "crawler.json")
-            tracker.start(seed_query="pickleball", sort="recent", target_count=100,
-                          query_plan_count=117528, metadata={"operation": "auto"})
+            tracker.start(
+                seed_query="pickleball",
+                sort="recent",
+                target_count=100,
+                query_plan_count=117528,
+                metadata={"operation": "auto"},
+            )
             tracker.discovery_progress(
                 batch={"requests_used": 0, "max_requests": 32, "queries_executed": 0},
-                survey={"completed_queries": 188, "candidate_queries": 117528,
-                        "survey_id": "stable", "plan_id": "plan"},
+                survey={
+                    "completed_queries": 188,
+                    "candidate_queries": 117528,
+                    "survey_id": "stable",
+                    "plan_id": "plan",
+                },
             )
             start = worker.crawler_progress(tracker.snapshot())
             self.assertEqual(start["batch"]["requests_used"], 0)
             self.assertEqual(start["survey"]["completed_queries"], 188)
-            tracker.discovery_progress(batch={"requests_used": 25,
-                                             "queries_executed": 12, "max_requests": 32})
+            tracker.discovery_progress(
+                batch={"requests_used": 25, "queries_executed": 12, "max_requests": 32}
+            )
             live = worker.crawler_progress(tracker.snapshot())
             self.assertEqual(live["batch"]["queries_executed"], 12)
             self.assertEqual(live["batch"]["requests_used"], 25)
@@ -109,7 +180,9 @@ class CollectionWorkerTests(unittest.TestCase):
                     )
                 self.assertTrue(report["collection"]["reused_collection"])
                 self.assertEqual(report["collection"]["count"], 1)
-                self.assertTrue(json.loads(checkpoint.read_text())["artifact_committed"])
+                self.assertTrue(
+                    json.loads(checkpoint.read_text())["artifact_committed"]
+                )
 
             replay()
             normalized = root / "silver/social_posts" / (run_id + ".json")

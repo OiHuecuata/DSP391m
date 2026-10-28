@@ -1,0 +1,26 @@
+{
+  "youtube": {
+    "retention_policy_id": "SYNTHETIC-TEST-ONLY",
+    "storage_permission": true,
+    "retention_days": null,
+    "policy_reviewed_at": "2026-10-28T00:00:00Z",
+    "derived_processing_permission": true,
+    "synthetic_only": true
+  },
+  "threads": {
+    "retention_policy_id": "SYNTHETIC-TEST-ONLY",
+    "storage_permission": true,
+    "retention_days": null,
+    "policy_reviewed_at": "2026-10-28T00:00:00Z",
+    "derived_processing_permission": true,
+    "synthetic_only": true
+  },
+  "pbplus": {
+    "retention_policy_id": "SYNTHETIC-TEST-ONLY",
+    "storage_permission": true,
+    "retention_days": null,
+    "policy_reviewed_at": "2026-10-28T00:00:00Z",
+    "derived_processing_permission": true,
+    "synthetic_only": true
+  }
+}

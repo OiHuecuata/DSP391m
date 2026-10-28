@@ -198,14 +198,18 @@ def persist_collection_runs(frame, path):
     )
 
 
-def persist_observations(spark, datasets, settings):
+def persist_observations(spark, datasets, settings, *, policies=None):
     """One writer per lake; retry all tables after any cross-table failure.
 
     Write change evidence before observations, so an interrupted batch does not
     lose comparison evidence on retry. Delta commits preserve existing history.
     Schema JSON is authoritative; JSON-valued fields use encoded STRING columns.
     """
-    policies = load_policies(os.getenv("DSP_SOURCE_POLICY_REGISTRY"))
+    policies = (
+        policies
+        if policies is not None
+        else load_policies(os.getenv("DSP_SOURCE_POLICY_REGISTRY"))
+    )
     frames = {}
     prepared = {}
     for dataset in DATASETS:

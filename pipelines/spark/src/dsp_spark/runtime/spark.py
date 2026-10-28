@@ -74,8 +74,13 @@ def create_spark(
             endpoint=settings.s3_endpoint,
             region=settings.s3_region,
             path_style=settings.s3_path_style,
+            profile=settings.s3_profile,
         ).items():
             builder = builder.config(key, value)
     spark = builder.getOrCreate()
+    if settings.s3_profile:
+        # PySpark can reuse its gateway JVM after SparkContext.stop(). Select
+        # the requested profile explicitly before the first S3 filesystem read.
+        spark._jvm.java.lang.System.setProperty("aws.profile", settings.s3_profile)
     spark.sparkContext.setLogLevel("WARN")
     return spark
