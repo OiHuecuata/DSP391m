@@ -24,7 +24,7 @@ function snapshot(status = "success", collected = 10): { components: CrawlerComp
 
 async function showSnapshot(page: Page, data: SystemStatus) {
   await page.route(endpoint, (route) => route.fulfill({ json: data }));
-  await page.goto("/");
+  await page.goto("/collectors");
 }
 
 test("successful early stop is 100% even with unprocessed queries", async ({ page }) => {
@@ -42,7 +42,7 @@ test("running crawler updates through five-second polling", async ({ page }) => 
     requests.push(Date.now());
     return route.fulfill({ json: snapshot("running", requests.length === 1 ? 6 : 8) });
   });
-  await page.goto("/");
+  await page.goto("/collectors");
   await expect(page.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "60");
   await expect(page.getByText("pickleball Hà Nội", { exact: true })).toBeVisible();
   await expect(page.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "80");
@@ -96,7 +96,7 @@ test("backend failure retains navigation and recovers automatically", async ({ p
     return requests === 1 ? route.fulfill({ status: 503, body: "Unavailable" })
       : route.fulfill({ json: snapshot() });
   });
-  await page.goto("/");
+  await page.goto("/collectors");
   await expect(page.getByRole("main").getByRole("alert")).toContainText("Backend unavailable");
   await expect(page.getByRole("tab", { name: "TikTok" })).toBeVisible();
   await expect(page.locator(".status-badge")).toHaveText("Success");
@@ -105,7 +105,7 @@ test("backend failure retains navigation and recovers automatically", async ({ p
 
 test("network errors show backend unavailable", async ({ page }) => {
   await page.route(endpoint, (route) => route.abort("connectionrefused"));
-  await page.goto("/");
+  await page.goto("/collectors");
   await expect(page.getByRole("main").getByRole("alert")).toContainText("Backend unavailable");
   await expect(page.getByRole("heading", { name: "Tracker", exact: true })).toBeVisible();
 });
@@ -114,7 +114,7 @@ test("a failed refresh marks the previous snapshot as stale", async ({ page }) =
   let requests = 0;
   await page.route(endpoint, (route) => ++requests === 1
     ? route.fulfill({ json: snapshot() }) : route.fulfill({ status: 503 }));
-  await page.goto("/");
+  await page.goto("/collectors");
   await expect(page.locator(".status-badge")).toHaveText("Success");
   await expect(page.getByRole("main").getByRole("alert")).toContainText("Showing the last received snapshot; it may be out of date.");
   await expect(page.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "100");
@@ -122,13 +122,13 @@ test("a failed refresh marks the previous snapshot as stale", async ({ page }) =
 
 test("loading is visible while the first request is pending", async ({ page }) => {
   await page.route(endpoint, () => {});
-  await page.goto("/");
+  await page.goto("/collectors");
   await expect(page.getByRole("status")).toContainText("Loading crawler status");
 });
 
 test("invalid response is handled without a page crash", async ({ page }) => {
   await page.route(endpoint, (route) => route.fulfill({ json: { components: [{ id: "threads", type: "crawler", status: "running", details: { current_query: { query: {} } } }] } }));
-  await page.goto("/");
+  await page.goto("/collectors");
   await expect(page.getByRole("main").getByRole("alert")).toContainText("invalid system status response");
 });
 
@@ -143,7 +143,7 @@ test("zero target does not produce an invalid progress value", async ({ page }) 
 test("placeholder tabs stop polling and support keyboard navigation", async ({ page }) => {
   let requests = 0;
   await page.route(endpoint, (route) => { requests++; return route.fulfill({ json: snapshot() }); });
-  await page.goto("/");
+  await page.goto("/collectors");
   await expect(page.locator(".status-badge")).toBeVisible();
   await page.getByRole("tab", { name: "Threads", exact: true }).focus();
   await page.keyboard.press("ArrowRight");
@@ -155,7 +155,7 @@ test("placeholder tabs stop polling and support keyboard navigation", async ({ p
   expect(requests).toBe(previous);
   await page.getByRole("tab", { name: "Analysis", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Analysis", exact: true })).toBeVisible();
-  await expect(page.getByText("Coming soon", { exact: true })).toBeVisible();
+  await expect(page.getByRole("main").getByText("Coming soon", { exact: true })).toBeVisible();
 });
 
 test("a new configuration entry automatically adds a navigation option", () => {
@@ -181,7 +181,7 @@ test("real endpoint matches the crawler snapshot", async ({ page, request }, tes
   const crawler = data.components.find((item): item is CrawlerComponentStatus => item.type === "crawler" && item.id === "threads");
   expect(crawler).toBeDefined();
   const pendingResponse = page.waitForResponse((response) => response.url().endsWith("/api/v1/system/status"));
-  await page.goto("/");
+  await page.goto("/collectors");
   const actualResponse = await pendingResponse;
   expect(actualResponse.ok()).toBeTruthy();
   await expect(page.locator(".status-badge")).toContainText(crawler!.status.replaceAll("_", " "), { ignoreCase: true });

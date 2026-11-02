@@ -1,5 +1,3 @@
-import { SystemTracker } from "@/features/system/components/SystemTracker";
-
-export default function Home() {
-  return <SystemTracker />;
-}
+import { HomePage } from "@/features/home/HomePage";
+import { HomeCover } from "@/features/home/HomeCover";
+export default function Page() { return <><HomeCover /><HomePage /></>; }

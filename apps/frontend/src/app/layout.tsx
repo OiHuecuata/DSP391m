@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { AppShell } from "@/features/home/AppShell";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Tracker · DSP391m",
-  description: "Crawler runtime status for the DSP391m data platform.",
+  title: "Tracker · Data platform",
+  description: "Collection, operations, and insights for the Tracker data platform.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -23,7 +24,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col"><AppShell>{children}</AppShell></body>
     </html>
   );
 }

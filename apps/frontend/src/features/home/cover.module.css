@@ -1,0 +1,17 @@
+.separator{height:12px;background:#fff;width:100%}
+.cover{position:relative;width:100%;height:calc(100svh - 178px);min-height:420px;background:#1b3036;isolation:isolate;overflow:hidden;touch-action:pan-y}
+.slideTrack{display:flex;height:100%;width:100%;transition:transform .65s cubic-bezier(.22,.7,.25,1);will-change:transform}.slide{position:relative;height:100%;flex:0 0 100%;min-width:0}.photo{object-fit:cover;object-position:center}
+.cover:after{content:"";position:absolute;inset:50% 0 0;z-index:1;pointer-events:none;background:linear-gradient(transparent,#101e2b80)}
+.scrollLink{position:absolute;z-index:2;bottom:66px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:22px;border:1px solid #ffffff7a;border-radius:30px;background:#18253780;backdrop-filter:blur(8px);padding:13px 22px;color:#fff;text-decoration:none;font-size:12px;white-space:nowrap}
+.scrollLink span{font-size:19px;line-height:1}.scrollLink:hover{background:#182537c9}
+.arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:2;border:1px solid #ffffff65;border-radius:50%;background:#17263b70;color:white;font-size:32px;line-height:1;width:42px;height:42px;cursor:pointer}.previous{left:24px}.next{right:24px}.arrow:hover{background:#17263bc9}
+.carouselControls{position:absolute;z-index:2;bottom:23px;left:50%;transform:translateX(-50%);display:flex;gap:9px;align-items:center;background:#16273b70;padding:7px 12px;border-radius:30px;color:white}.dot{border:0;background:transparent;position:relative;width:24px;height:24px;cursor:pointer;padding:0}.dot:after{content:"";display:block;width:7px;height:7px;border-radius:100%;background:#ffffff80;margin:auto}.dot[aria-pressed=true]:after{width:19px;border-radius:6px;background:#fff}.playToggle{border:0;border-left:1px solid #ffffff45;background:none;color:white;font-size:13px;width:30px;cursor:pointer;padding-left:10px}.slideCount{font-size:10px;white-space:nowrap;margin-left:3px}.photoCredit{position:absolute;z-index:2;bottom:24px;right:20px;background:#17263b65;border-radius:4px;padding:5px 8px;font-size:9px;color:#fff;text-decoration:none}.photoCredit:hover{text-decoration:underline}
+.cover a:focus-visible,.cover button:focus-visible{outline:3px solid #fff;outline-offset:4px}
+@media(max-width:760px){.separator{height:8px}.cover{height:calc(100svh - 145px);min-height:380px}.photo{object-position:40% center}.scrollLink{bottom:88px;font-size:11px}.carouselControls{bottom:46px}.photoCredit{bottom:10px;right:50%;transform:translateX(50%);white-space:nowrap;font-size:8px}.arrow{width:34px;height:34px;font-size:27px}.previous{left:12px}.next{right:12px}}
+@media(prefers-reduced-motion:reduce){.slideTrack{transition:none}}
+
+/* Quiet controls keep the photographs prominent. */
+.arrow{background:#17263b20;border-color:#ffffff25;color:#ffffff85;opacity:.45;transition:opacity .2s,background .2s}.arrow:hover,.arrow:focus-visible{opacity:1;background:#17263b75;color:#fff}
+.scrollLink{background:#18253725;border-color:#ffffff30;color:#ffffffb0;backdrop-filter:blur(3px);padding:10px 18px;font-size:11px}.scrollLink:hover,.scrollLink:focus-visible{background:#18253785;color:#fff}
+.carouselControls{background:transparent;padding:4px 8px;gap:5px}.dot:after{background:#ffffff65}.dot[aria-pressed=true]:after{background:#ffffffd9}
+@media(prefers-reduced-motion:reduce){.arrow{transition:none}}
