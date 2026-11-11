@@ -1,0 +1,8 @@
+{
+  "path": "s3a://YOUR_BUCKET/YOUR_PINNED_GENERATION/silver/intelligence/social_posts",
+  "version": 0,
+  "provenance": "unknown",
+  "dataset_id": "REPLACE_WITH_VERIFIED_SNAPSHOT_ID",
+  "generation": null,
+  "schema_version": "3"
+}
