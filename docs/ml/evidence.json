@@ -1,0 +1,527 @@
+{
+  "recorded_at": "2026-10-29T14:42:12.786429+07:00",
+  "overall_status": "LOCAL_VALIDATION_COMPLETED_CLOUD_BLOCKED",
+  "branch": "model",
+  "local_audit": {
+    "silver_social_posts": {
+      "path": "file:///home/tuancui/DSP391m/.local/s3-snapshots/20261028T064025Z/lakehouse/silver/intelligence/social_posts",
+      "version": 35,
+      "rows": 649,
+      "partition_columns": [],
+      "duplicate_keys": 0,
+      "keys": [
+        "post_id"
+      ],
+      "provenance": "unknown until verified from lineage/source policy",
+      "schema_versions": [
+        {
+          "schema_version": "3",
+          "count": 649
+        }
+      ],
+      "sources": [
+        {
+          "platform": "youtube",
+          "count": 598
+        },
+        {
+          "platform": "threads",
+          "count": 51
+        }
+      ],
+      "null_lineage": 0,
+      "unique_content_id": 649,
+      "synthetic_lineage_marker_count": 0
+    },
+    "silver_social_intent_evidence": {
+      "path": "file:///home/tuancui/DSP391m/.local/s3-snapshots/20261028T064025Z/lakehouse/silver/intelligence/social_intent_evidence",
+      "version": 35,
+      "rows": 949,
+      "partition_columns": [],
+      "duplicate_keys": 0,
+      "keys": [
+        "evidence_id"
+      ],
+      "provenance": "unknown until verified from lineage/source policy",
+      "schema_versions": [
+        {
+          "schema_version": "3",
+          "count": 949
+        }
+      ]
+    },
+    "silver_social_geo_mentions": {
+      "path": "file:///home/tuancui/DSP391m/.local/s3-snapshots/20261028T064025Z/lakehouse/silver/intelligence/social_geo_mentions",
+      "version": 35,
+      "rows": 450,
+      "partition_columns": [],
+      "duplicate_keys": 0,
+      "keys": [
+        "mention_id"
+      ],
+      "provenance": "unknown until verified from lineage/source policy",
+      "schema_versions": [
+        {
+          "schema_version": "3",
+          "count": 450
+        }
+      ]
+    },
+    "silver_court_venues": {
+      "path": "file:///home/tuancui/DSP391m/.local/s3-snapshots/20261028T064025Z/lakehouse/silver/intelligence/court_venues",
+      "version": 35,
+      "rows": 373,
+      "partition_columns": [],
+      "duplicate_keys": 0,
+      "keys": [
+        "venue_id"
+      ],
+      "provenance": "unknown until verified from lineage/source policy",
+      "schema_versions": [
+        {
+          "schema_version": "3",
+          "count": 373
+        }
+      ],
+      "valid_coordinate_rows": 0
+    }
+  },
+  "s3_recheck": {
+    "status": "BLOCKED",
+    "read_only": true,
+    "reason": "AWS credential_process session expired; fresh verification failed for all four attempted tables",
+    "previous_44_table_report_not_reused_as_current_proof": true
+  },
+  "training": {
+    "run_id": "20261029T072901Z-c247e766e9fb",
+    "status": "candidate",
+    "created_at": "2026-10-29T07:30:32.933066+00:00",
+    "config": {
+      "encoder": {
+        "model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+        "revision": "e8f8c211226b894fcb81acc59f3b34ba3efd5f42",
+        "dimension": 384,
+        "batch_size": 32,
+        "device": "cpu",
+        "normalize": true,
+        "version": "sentence-transformers-v1",
+        "max_seq_length": 128
+      },
+      "reduction": {
+        "n_components": 15,
+        "n_neighbors": 30,
+        "min_dist": 0.0,
+        "metric": "cosine",
+        "random_state": 42,
+        "transform_seed": 42,
+        "fit_max_rows": 10000,
+        "fit_max_bytes": 256000000
+      },
+      "ks": [
+        5,
+        8,
+        10
+      ],
+      "primary_candidate": 8,
+      "seed": 42,
+      "max_iter": 100,
+      "tol": 0.0001,
+      "partitions": 4,
+      "stability_seeds": [
+        17,
+        29,
+        43,
+        71,
+        97
+      ],
+      "stability_fraction": 0.8,
+      "representative_posts": false
+    },
+    "dataset": {
+      "snapshot": {
+        "path": "file:///home/tuancui/DSP391m/.local/s3-snapshots/20261028T064025Z/lakehouse/silver/intelligence/social_posts",
+        "version": 35,
+        "provenance": "unknown",
+        "dataset_id": "immutable-bootstrap-20261028T064025Z-local-reference",
+        "generation": null,
+        "schema_version": "3"
+      },
+      "input_rows": 649,
+      "rows": 649,
+      "empty_text_excluded": 0,
+      "after": null,
+      "flagged_duplicate_posts": 0,
+      "repeated_text_groups": 9,
+      "sources": {
+        "threads": 51,
+        "youtube": 598
+      },
+      "text_version": "nfkc-whitespace-v1",
+      "comparability": "NOT_DIRECTLY_COMPARABLE",
+      "comparability_reasons": [
+        "V3 corpus/encoder/UMAP/protocol equality not verified",
+        "Spark KMeans differs from sklearn"
+      ],
+      "dataset_fingerprint": "c10791777dcf0fe049ed808c5732f7ab34eb6234cd29036f064438052111a79b"
+    },
+    "umap": {
+      "fit_rows": 649,
+      "estimated_array_working_bytes": 16572864,
+      "mode": "bounded_full_corpus",
+      "inference_mode": "reference_lookup_then_per_row_transform"
+    },
+    "runtime": {
+      "pyspark": "4.0.2",
+      "delta-spark": "4.0.1",
+      "numpy": "2.2.6",
+      "scipy": "1.15.3",
+      "scikit-learn": "1.6.1",
+      "umap-learn": "0.5.7",
+      "joblib": "1.4.2",
+      "numba": "0.68.1",
+      "pynndescent": "0.7.0",
+      "sentence-transformers": "3.4.1",
+      "torch": "2.6.0+cpu",
+      "transformers": "4.49.0"
+    },
+    "runtime_seconds": 109.02866219500015,
+    "resources": {
+      "python_driver_peak_rss_kib": 363892,
+      "resource_measurement_scope": "Python driver only; JVM/executor peak RSS requires cluster telemetry",
+      "spark_master": "local[2]",
+      "partitions": 4,
+      "spark": {
+        "spark.driver.memory": "2g",
+        "spark.sql.shuffle.partitions": "2"
+      },
+      "umap_fit_max_bytes": 256000000
+    }
+  },
+  "candidate_metrics": {
+    "5": {
+      "rows": 649,
+      "cosine_silhouette_original_embeddings": 0.11798060108626865,
+      "calinski_harabasz_umap_euclidean": 756.6266703642522,
+      "coverage": 1.0,
+      "noise_ratio": 0.0,
+      "cluster_sizes": {
+        "2": 251,
+        "4": 13,
+        "0": 194,
+        "1": 183,
+        "3": 8
+      },
+      "max_min_cluster_ratio": 31.375,
+      "cluster_size_entropy": 1.217853347627384,
+      "stability": {
+        "protocol": "refit KMeans on hash-selected subsets; fixed encoder and fitted UMAP; compare on subset to full fit",
+        "fraction": 0.8,
+        "runs": [
+          {
+            "seed": 17,
+            "rows": 526,
+            "status": "TESTED",
+            "ari": 0.7212258422062313
+          },
+          {
+            "seed": 29,
+            "rows": 498,
+            "status": "TESTED",
+            "ari": 0.7329561334504631
+          },
+          {
+            "seed": 43,
+            "rows": 502,
+            "status": "TESTED",
+            "ari": 0.7423584336228821
+          },
+          {
+            "seed": 71,
+            "rows": 491,
+            "status": "TESTED",
+            "ari": 0.7700801764189241
+          },
+          {
+            "seed": 97,
+            "rows": 513,
+            "status": "TESTED",
+            "ari": 0.7330155590067255
+          }
+        ],
+        "mean_ari": 0.7399272289410452
+      },
+      "baseline_similarity": {
+        "status": "NOT_RUN",
+        "reason": "no versioned Colab content_id assignments supplied"
+      }
+    },
+    "8": {
+      "rows": 649,
+      "cosine_silhouette_original_embeddings": 0.13930672925304965,
+      "calinski_harabasz_umap_euclidean": 1206.0474598027297,
+      "coverage": 1.0,
+      "noise_ratio": 0.0,
+      "cluster_sizes": {
+        "6": 182,
+        "2": 13,
+        "5": 110,
+        "4": 15,
+        "7": 123,
+        "3": 113,
+        "0": 85,
+        "1": 8
+      },
+      "max_min_cluster_ratio": 22.75,
+      "cluster_size_entropy": 1.7627955205421593,
+      "stability": {
+        "protocol": "refit KMeans on hash-selected subsets; fixed encoder and fitted UMAP; compare on subset to full fit",
+        "fraction": 0.8,
+        "runs": [
+          {
+            "seed": 17,
+            "rows": 526,
+            "status": "TESTED",
+            "ari": 0.9901100464123707
+          },
+          {
+            "seed": 29,
+            "rows": 498,
+            "status": "TESTED",
+            "ari": 0.9356607438620665
+          },
+          {
+            "seed": 43,
+            "rows": 502,
+            "status": "TESTED",
+            "ari": 0.8878538968094546
+          },
+          {
+            "seed": 71,
+            "rows": 491,
+            "status": "TESTED",
+            "ari": 0.6452512293299661
+          },
+          {
+            "seed": 97,
+            "rows": 513,
+            "status": "TESTED",
+            "ari": 0.566645016622765
+          }
+        ],
+        "mean_ari": 0.8051041866073246
+      },
+      "baseline_similarity": {
+        "status": "NOT_RUN",
+        "reason": "no versioned Colab content_id assignments supplied"
+      }
+    },
+    "10": {
+      "rows": 649,
+      "cosine_silhouette_original_embeddings": 0.1560875539916119,
+      "calinski_harabasz_umap_euclidean": 859.6933206199863,
+      "coverage": 1.0,
+      "noise_ratio": 0.0,
+      "cluster_sizes": {
+        "9": 82,
+        "6": 60,
+        "5": 73,
+        "4": 15,
+        "2": 8,
+        "3": 192,
+        "0": 43,
+        "7": 41,
+        "1": 107,
+        "8": 28
+      },
+      "max_min_cluster_ratio": 24.0,
+      "cluster_size_entropy": 2.0159672940936697,
+      "stability": {
+        "protocol": "refit KMeans on hash-selected subsets; fixed encoder and fitted UMAP; compare on subset to full fit",
+        "fraction": 0.8,
+        "runs": [
+          {
+            "seed": 17,
+            "rows": 526,
+            "status": "TESTED",
+            "ari": 0.6461123551879872
+          },
+          {
+            "seed": 29,
+            "rows": 498,
+            "status": "TESTED",
+            "ari": 0.7972070305133292
+          },
+          {
+            "seed": 43,
+            "rows": 502,
+            "status": "TESTED",
+            "ari": 0.6915385805802038
+          },
+          {
+            "seed": 71,
+            "rows": 491,
+            "status": "TESTED",
+            "ari": 0.8462465540391991
+          },
+          {
+            "seed": 97,
+            "rows": 513,
+            "status": "TESTED",
+            "ari": 0.779055866023484
+          }
+        ],
+        "mean_ari": 0.7520320772688407
+      },
+      "baseline_similarity": {
+        "status": "NOT_RUN",
+        "reason": "no versioned Colab content_id assignments supplied"
+      }
+    }
+  },
+  "inference": {
+    "snapshot": {
+      "path": "file:///home/tuancui/DSP391m/.local/s3-snapshots/20261028T064025Z/lakehouse/silver/intelligence/social_posts",
+      "version": 35,
+      "provenance": "unknown",
+      "dataset_id": "immutable-bootstrap-20261028T064025Z-local-reference",
+      "generation": null,
+      "schema_version": "3"
+    },
+    "input_rows": 649,
+    "rows": 649,
+    "empty_text_excluded": 0,
+    "after": null,
+    "flagged_duplicate_posts": 0,
+    "repeated_text_groups": 9,
+    "sources": {
+      "youtube": 598,
+      "threads": 51
+    },
+    "text_version": "nfkc-whitespace-v1",
+    "comparability": "NOT_DIRECTLY_COMPARABLE",
+    "comparability_reasons": [
+      "V3 corpus/encoder/UMAP/protocol equality not verified",
+      "Spark KMeans differs from sklearn"
+    ],
+    "dataset_fingerprint": "c10791777dcf0fe049ed808c5732f7ab34eb6234cd29036f064438052111a79b",
+    "assignment_rows": 649,
+    "status": "TESTED",
+    "gold": {
+      "path": "file:///home/tuancui/DSP391m/.local/ml/staging/inference/gold/demand_cluster_assignments_v1",
+      "before_version": null,
+      "after_version": 0,
+      "rollback": "restore this dedicated table to before_version; first-write rollback uses reader version selection"
+    }
+  },
+  "replay_readback": {
+    "status": "TESTED",
+    "rows_before": 649,
+    "rows_after": 649,
+    "duplicate_keys": 0,
+    "gold": {
+      "path": "file:///home/tuancui/DSP391m/.local/ml/staging/inference/gold/demand_cluster_assignments_v1",
+      "before_version": 0,
+      "after_version": 0,
+      "rollback": "restore this dedicated table to before_version; first-write rollback uses reader version selection"
+    },
+    "future_watermark_rows": 0,
+    "embedding_cache_rows": 649,
+    "source_latest_delta_version_after_validation": 35,
+    "source_snapshot_version": 35,
+    "run_id": "20261029T072901Z-c247e766e9fb"
+  },
+  "spatial": {
+    "status": "TESTED",
+    "inputs": {
+      "post_snapshot": {
+        "path": "file:///home/tuancui/DSP391m/.local/s3-snapshots/20261028T064025Z/lakehouse/silver/intelligence/social_posts",
+        "version": 35,
+        "provenance": "unknown",
+        "dataset_id": "immutable-bootstrap-20261028T064025Z-local-reference",
+        "generation": null,
+        "schema_version": "3"
+      },
+      "venues": {
+        "path": "file:///home/tuancui/DSP391m/.local/s3-snapshots/20261028T064025Z/lakehouse/silver/intelligence/court_venues",
+        "version": 35
+      },
+      "mentions": {
+        "path": "file:///home/tuancui/DSP391m/.local/s3-snapshots/20261028T064025Z/lakehouse/silver/intelligence/social_geo_mentions",
+        "version": 35
+      }
+    },
+    "posts": {
+      "snapshot": {
+        "path": "file:///home/tuancui/DSP391m/.local/s3-snapshots/20261028T064025Z/lakehouse/silver/intelligence/social_posts",
+        "version": 35,
+        "provenance": "unknown",
+        "dataset_id": "immutable-bootstrap-20261028T064025Z-local-reference",
+        "generation": null,
+        "schema_version": "3"
+      },
+      "input_rows": 649,
+      "rows": 649,
+      "empty_text_excluded": 0,
+      "after": null,
+      "flagged_duplicate_posts": 0,
+      "repeated_text_groups": 9,
+      "sources": {
+        "youtube": 598,
+        "threads": 51
+      },
+      "text_version": "nfkc-whitespace-v1",
+      "comparability": "NOT_DIRECTLY_COMPARABLE",
+      "comparability_reasons": [
+        "V3 corpus/encoder/UMAP/protocol equality not verified",
+        "Spark KMeans differs from sklearn"
+      ],
+      "dataset_fingerprint": "c10791777dcf0fe049ed808c5732f7ab34eb6234cd29036f064438052111a79b"
+    },
+    "admin_column": "old_province_id",
+    "geographies": 13,
+    "venues_without_admin": 355,
+    "mentions_without_admin": 433,
+    "statistics": "NOT_RUN: KDE/Moran/LISA/Gi*/Spearman require a separately reviewed spatial protocol",
+    "output_path": "file:///home/tuancui/DSP391m/.local/ml/staging/spatial-final/gold/spatial_supply_demand_counts_v1"
+  },
+  "tests": {
+    "new_unit_and_spark_integration": {
+      "status": "TESTED",
+      "passed": 11,
+      "failed": 0,
+      "seconds": 125.766,
+      "log": "/tmp/dsp-ml-final-tests.log"
+    },
+    "existing_contract_regression": {
+      "status": "TESTED",
+      "passed": 14,
+      "failed": 0,
+      "log": "/tmp/dsp-ml-contract-regression.log"
+    },
+    "lint_compile_json": {
+      "status": "TESTED",
+      "result": "PASS"
+    }
+  },
+  "not_run": [
+    "S3 training/inference/staging write/rollback",
+    "Colab assignment ARI comparison",
+    "lexical ablation CLI flag",
+    "multi-host Spark execution",
+    "KDE/Moran/LISA/Gi*/Spearman",
+    "trend forecasting",
+    "production promotion/deployment"
+  ],
+  "notes": [
+    "No raw posts, representative text, cluster keywords, model weights or centroids are included in this tracked evidence.",
+    "Metrics are NOT_DIRECTLY_COMPARABLE with V3; provenance remains unknown.",
+    "The startup SparkContext config records shuffle.partitions=2; training CLI sets the effective SQL setting to config.partitions=4.",
+    "Python peak RSS excludes JVM and executor processes."
+  ],
+  "dry_run": {
+    "status": "TESTED",
+    "eligible_rows": 649,
+    "staging_file_set_unchanged": true,
+    "log": "/tmp/dsp-ml-dryrun.log"
+  }
+}

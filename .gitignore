@@ -327,3 +327,7 @@ apps/frontend/.local-auth-test-next/
 
 # Browser verification artifacts
 .playwright-cli/
+# Distributed ML runbook and aggregate-only validation evidence.
+!/docs/ml/
+!/docs/ml/**
+/docs/ml/**/__pycache__/

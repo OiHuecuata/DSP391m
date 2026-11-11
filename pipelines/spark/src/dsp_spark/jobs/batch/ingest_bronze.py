@@ -34,10 +34,17 @@ BRONZE_SCHEMA = T.StructType(
 )
 
 
-def ingest_bronze(spark, artifact: str | Path, settings: SparkSettings, *, source: str):
+def ingest_bronze(
+    spark, artifact: str | Path, settings: SparkSettings, *, source: str, policies=None
+):
     if source not in ("threads", "pbplus", "youtube"):
         raise ValueError("Bronze source must be threads, pbplus or youtube")
     path = Path(artifact).resolve()
+    policies = (
+        policies
+        if policies is not None
+        else load_policies(os.getenv("DSP_SOURCE_POLICY_REGISTRY"))
+    )
     # Decode bytes directly so even CRLF, whitespace and JSON property order
     # survive; do not reserialize or flatten raw source fields.
     envelope = {}
@@ -52,7 +59,7 @@ def ingest_bronze(spark, artifact: str | Path, settings: SparkSettings, *, sourc
         datasets, errors = extract_observations(
             envelope,
             artifact_uri=path.as_uri(),
-            policies=load_policies(os.getenv("DSP_SOURCE_POLICY_REGISTRY")),
+            policies=policies,
         )
     except Exception as exc:
         reject_bronze(
@@ -92,7 +99,7 @@ def ingest_bronze(spark, artifact: str | Path, settings: SparkSettings, *, sourc
                 [{"error": error}],
             )
             raise ValueError(error)
-    counts = persist_observations(spark, datasets, settings)
+    counts = persist_observations(spark, datasets, settings, policies=policies)
     reject_bronze(spark, settings, source, envelope["run_id"], path.as_uri(), errors)
     merge_delta(frame, target, keys=("source", "run_id"))
     return {

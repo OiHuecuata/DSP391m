@@ -22,7 +22,11 @@ def storage_uri(value: str) -> str:
 
 
 def s3a_options(
-    *, endpoint: str | None = None, region: str | None = None, path_style: bool = False
+    *,
+    endpoint: str | None = None,
+    region: str | None = None,
+    path_style: bool = False,
+    profile: str | None = None,
 ) -> dict[str, str]:
     options = {
         "spark.hadoop.fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem",
@@ -43,6 +47,19 @@ def s3a_options(
         ).lower()
     if region:
         options["spark.hadoop.fs.s3a.endpoint.region"] = region
+    if profile:
+        import re
+
+        if not re.fullmatch(r"[A-Za-z0-9_.-]+", profile):
+            raise ValueError("invalid AWS profile name")
+        # SDK v2 reads credential_process and refreshes expiring session tokens.
+        # Profile files and the process executable must exist on every node.
+        options["spark.hadoop.fs.s3a.aws.credentials.provider"] = (
+            "software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider"
+        )
+        options["spark.executorEnv.AWS_PROFILE"] = profile
+        options["spark.executor.extraJavaOptions"] = f"-Daws.profile={profile}"
+        options["spark.driver.extraJavaOptions"] = f"-Daws.profile={profile}"
     if path_style:
         options["spark.hadoop.fs.s3a.path.style.access"] = "true"
     return options

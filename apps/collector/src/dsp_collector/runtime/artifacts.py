@@ -45,5 +45,9 @@ def write_json_atomic(path: Path, payload: Mapping[str, Any]) -> None:
             file.flush()
             os.fsync(file.fileno())
         os.replace(temporary, path)
+        if "bronze" in path.parts and os.getenv("DSP_S3_OUTBOX_DIR"):
+            from .outbox import enqueue
+
+            enqueue(path, os.environ["DSP_S3_OUTBOX_DIR"])
     finally:
         temporary.unlink(missing_ok=True)

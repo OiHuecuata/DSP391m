@@ -310,6 +310,24 @@ def _execute_locked(source, run_id, directory, policy, report, update):
     ):
         report["metrics"]["discovery"]["updated_at"] = bronze["collected_at"]
     update({"stage": "collected", "metrics": report["metrics"]})
+    if os.getenv("DSP_S3_INGESTION_MODE") == "outbox":
+        from dsp_collector.runtime.outbox import enqueue
+
+        outbox = os.getenv("DSP_S3_OUTBOX_DIR")
+        if not outbox:
+            raise ValueError("S3 outbox mode requires DSP_S3_OUTBOX_DIR")
+        pending = enqueue(result["bronze_path"], outbox)
+        report["stages"]["s3_outbox"] = {
+            "result": {"id": pending["id"], "status": pending["status"]}
+        }
+        report["metrics"].update(
+            bronze_ingestion_status=pending["status"], processing_status="pending"
+        )
+        # Collection is durable, but ingestion/processing has not completed.
+        report["status"] = "PARTIAL"
+        report["stage"] = "pending_s3"
+        update({"stage": "pending_s3", "metrics": report["metrics"]})
+        return
     spark = stage("spark_start", lambda: create_spark(config.spark, kafka=True))
     # SparkSession is not a wire result.
     report["stages"]["spark_start"]["result"] = None

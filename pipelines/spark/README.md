@@ -352,3 +352,10 @@ The current market-signal Delta Gold can be published to typed ClickHouse and
 read through the Go analytics API. Delta remains the analytical source of truth;
 ClickHouse is the serving/query layer. See [local commands and reload semantics](../../infra/clickhouse/README.md)
 and [the executed Delta → ClickHouse → API smoke](../../infra/clickhouse/local-smoke.md).
+
+## Demand clustering from pinned Silver snapshots
+
+The candidate training/inference CLI, separate spatial aggregation job, artifact
+contract, resource plan and measured validation results are documented in
+[the ML runbook](../../docs/ml/README.md). Execution defaults to a read-only dry-run;
+all implemented ML writes require dedicated staging paths.

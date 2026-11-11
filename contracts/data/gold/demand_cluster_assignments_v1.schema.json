@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "demand_cluster_assignments_v1",
+  "description": "Immutable per content_id x model_version x source_snapshot_id. Delta timestamp serializes as ISO-8601 in JSON exports. Diagnostic distance is Euclidean distance in fitted UMAP space, not probability or confidence.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["content_id", "model_version", "cluster_id", "inference_timestamp", "source_snapshot_id", "source_silver_path", "source_silver_version", "source_generation", "data_provenance", "distance_to_centroid"],
+  "properties": {
+    "content_id": {"type": "string", "minLength": 1},
+    "model_version": {"type": "string", "minLength": 1},
+    "cluster_id": {"type": "integer", "minimum": 0},
+    "inference_timestamp": {"type": "string", "format": "date-time"},
+    "source_snapshot_id": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "source_silver_path": {"type": "string"},
+    "source_silver_version": {"type": "integer", "minimum": 0},
+    "source_generation": {"type": ["string", "null"]},
+    "data_provenance": {"enum": ["real", "synthetic", "mixed", "unknown"]},
+    "distance_to_centroid": {"type": "number", "minimum": 0}
+  }
+}

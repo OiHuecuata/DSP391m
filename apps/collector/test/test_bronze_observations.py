@@ -4,8 +4,9 @@ import copy
 import json
 import tempfile
 import unittest
+from datetime import UTC, datetime
 from pathlib import Path
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 from dsp_collector.publishers.kafka import (
     DeliveryReceipt,
@@ -231,15 +232,24 @@ class BronzeObservationTests(unittest.TestCase):
             extract_observations(
                 envelope(), policies={"threads": {"storage_permission": False}}
             )
-        rows, _ = extract_observations(
-            envelope(),
-            policies={
-                "threads": {
-                    "retention_policy_id": "reviewed-policy",
-                    "retention_days": 7,
-                }
-            },
-        )
+
+        # This fixture tests the computed deadline while it is still eligible.
+        # Freeze its clock so the assertion remains valid after 17 October.
+        class FixtureClock(datetime):
+            @classmethod
+            def now(cls, tz=None):
+                return cls(2026, 10, 11, tzinfo=UTC).astimezone(tz)
+
+        with patch("dsp_collector.runtime.bronze.datetime", FixtureClock):
+            rows, _ = extract_observations(
+                envelope(),
+                policies={
+                    "threads": {
+                        "retention_policy_id": "reviewed-policy",
+                        "retention_days": 7,
+                    }
+                },
+            )
         self.assertEqual(
             rows["bronze_social_posts"][0]["retention_expires_at"],
             "2026-10-17T00:00:00.000000Z",

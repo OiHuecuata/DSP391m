@@ -461,3 +461,20 @@ spark-bronze-status:
 dev:
 	$(MAKE) kafka-up clickhouse-up
 	JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 $(MAKE) -j2 backend-run frontend-run
+
+# S3 write commands stay explicit in the runbook; these targets do not enable them.
+S3_SNAPSHOT_LOCAL ?= .local/s3-snapshots/20261028T064025Z/lakehouse
+S3_SNAPSHOT_REMOTE ?= s3a://dsp391m-data-lake/bootstrap/20261028T064025Z/lakehouse
+S3_VERIFY_REPORT ?= .local/s3-lakehouse/snapshot-verification.json
+S3_SMOKE_WORKDIR ?= .local/s3-lakehouse/local-smoke
+.PHONY: s3-snapshot-verify s3-lakehouse-test s3-lakehouse-smoke
+s3-snapshot-verify:
+	$(SPARK_PYTHON) -m dsp_spark.jobs.batch.verify_s3_snapshot \
+		--local-root "$(S3_SNAPSHOT_LOCAL)" --remote-root "$(S3_SNAPSHOT_REMOTE)" --report "$(S3_VERIFY_REPORT)"
+
+s3-lakehouse-test:
+	$(SPARK_PYTHON) -m unittest discover -v -s apps/collector/test -p 'test_s3_outbox.py'
+	$(SPARK_PYTHON) -m unittest discover -v -s pipelines/spark/test -p 'test_s3_lakehouse*.py'
+
+s3-lakehouse-smoke:
+	$(SPARK_PYTHON) scripts/smoke_s3_lakehouse.py --workdir "$(S3_SMOKE_WORKDIR)"

@@ -1,0 +1,18 @@
+# Optional ML runtime, installed on both driver and executors.
+# Install CPU-only torch==2.6.0 from https://download.pytorch.org/whl/cpu first.
+numpy==2.2.6
+scipy==1.15.3
+scikit-learn==1.6.1
+umap-learn==0.5.7
+joblib==1.4.2
+numba==0.68.1
+llvmlite==0.50.0
+pynndescent==0.7.0
+threadpoolctl==3.7.0
+sentence-transformers==3.4.1
+transformers==4.49.0
+torch==2.6.0
+tokenizers==0.21.4
+huggingface-hub==0.36.2
+hf-xet==1.7.1
+safetensors==0.8.0
