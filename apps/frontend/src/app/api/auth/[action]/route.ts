@@ -1,0 +1,13 @@
+import {NextResponse} from "next/server";
+import {AuthError,authAttempt,createSession,currentAccount,hashPassword,logout,normalizeEmail,protectMutation,requireAccount,safeAccount,validatePassword,verifyPassword} from "@/features/auth/server";
+import {readAccounts,writeAccounts} from "@/features/auth/storage";
+export const runtime='nodejs';
+export const dynamic='force-dynamic';
+const response=(value:unknown,status=200)=>NextResponse.json(value,{status,headers:{'Cache-Control':'no-store'}});
+function fail(error:unknown){return response({error:error instanceof AuthError?error.message:'Authentication is temporarily unavailable.'},error instanceof AuthError?error.status:503);}
+export async function GET(_request:Request,{params}:{params:Promise<{action:string}>}){try{const {action}=await params;if(action!=='me')return response({error:'Not found'},404);const user=await currentAccount();return response({user:user?safeAccount(user):null},user?200:401);}catch(e){return fail(e);}}
+export async function POST(request:Request,{params}:{params:Promise<{action:string}>}){try{protectMutation(request);const {action}=await params;if(action==='logout'){await logout();return response({ok:true});}const body=await request.json();
+ if(action==='login')return await authAttempt('login',async()=>{const email=normalizeEmail(body.email),password=typeof body.password==='string'&&body.password.length<=128?body.password:'';const {db}=await readAccounts();const user=db.users.find(u=>u.email===email);const valid=await verifyPassword(password,user?.passwordHash??'scrypt$32768$8$3$00000000000000000000000000000000$'+'0'.repeat(128));if(!user||!valid||!user.active)throw new AuthError('Email or password is incorrect.',401);await createSession(user);return response({user:safeAccount(user)});});
+ if(action==='password'){const user=await requireAccount(undefined,true);return await authAttempt('password:'+user.id,async()=>{const password=validatePassword(body.newPassword);if(!await verifyPassword(String(body.currentPassword??'').slice(0,128),user.passwordHash))throw new AuthError('Current password is incorrect.',400);if(await verifyPassword(password,user.passwordHash))throw new AuthError('Choose a different password.',400);const {db,etag}=await readAccounts();const stored=db.users.find(u=>u.id===user.id);if(!stored||!stored.active||stored.passwordVersion!==user.passwordVersion)throw new AuthError('Please sign in again.',401);stored.passwordHash=await hashPassword(password);stored.passwordVersion++;stored.mustChangePassword=false;await writeAccounts(db,etag);await createSession(stored);return response({user:safeAccount(stored)});});}
+ return response({error:'Not found'},404);
+}catch(e){return fail(e);}}

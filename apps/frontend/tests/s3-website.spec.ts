@@ -1,0 +1,77 @@
+import { test, expect } from '@playwright/test';
+
+test('S3 APIs serve deduplicated records and validate pagination',async({request})=>{
+ test.skip(process.env.RUN_S3_WEBSITE !== '1','Requires the configured S3 snapshot cache');
+ const courts=await request.get('/api/pbplus/venues');expect(courts.ok()).toBeTruthy();
+ const c=await courts.json();expect(c).toMatchObject({mode:'s3_snapshot',total:337});expect(c.s3.versions.courts).toBe(5);
+ expect(c.mapped).toBe(c.s3.localCoordinateMatches);expect(c.venues.filter((v:{coordinateSource?:string})=>v.coordinateSource === "local_geocoding")).toHaveLength(c.mapped);expect(c.unmapped+c.mapped).toBe(c.total);
+ const one=await (await request.get('/api/collected/threads')).json();
+ const two=await (await request.get('/api/collected/threads?page=2')).json();
+ expect(one.total).toBe(52);expect(one.records).toHaveLength(10);
+ expect(new Set([...one.records,...two.records].map(r=>r.id)).size).toBe(20);
+ expect(one.records[0]).not.toHaveProperty('author_id');expect(one.records[0]).not.toHaveProperty('source_artifact_uri');
+ const yt=await (await request.get('/api/collected/youtube')).json();expect(yt.total).toBe(575);
+ const comments=await (await request.get('/api/collected/youtube?kind=comments')).json();expect(comments.total).toBe(75);
+ expect((await request.get('/api/collected/threads?page=-1')).status()).toBe(400);
+ expect((await request.get('/api/collected/threads?kind=comments')).status()).toBe(400);
+ expect((await request.get('/api/collected/tiktok')).status()).toBe(404);
+});
+test('Threads and YouTube show aggregate overviews instead of raw records',async({page,request})=>{
+ test.skip(process.env.RUN_S3_WEBSITE !== '1','Requires S3 snapshot');
+ const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+ const response=await request.get('/api/collected/youtube/overview');expect(response.ok()).toBeTruthy();
+ const summary=await response.json();expect(summary).toMatchObject({posts:575,comments:75});
+ expect(summary).not.toHaveProperty('records');expect(summary.views.reported).toBeLessThanOrEqual(575);
+ await page.goto('/collectors/threads');
+ const threads=page.getByRole('region',{name:'Threads overview',exact:true});
+ await expect(threads).toContainText('Saved posts');await expect(threads).toContainText('52');
+ await expect(threads.getByRole('heading',{name:'Collection volume'})).toBeVisible();
+ await expect(threads.getByRole('link',{name:'View original'})).toHaveCount(0);
+ await expect(threads.getByRole('button',{name:'Next',exact:true})).toHaveCount(0);
+ await page.screenshot({path:'/home/coara/Documents/Codex/2026-10-26/i-j/outputs/threads-overview.png',fullPage:true});
+ await page.goto('/collectors/youtube');
+ const youtube=page.getByRole('region',{name:'YouTube overview',exact:true});
+ await expect(youtube).toContainText('575');await expect(youtube).toContainText('75');
+ await expect(youtube).toContainText('Reported video views');
+ await expect(youtube.getByRole('heading',{name:'Collection volume'})).toBeVisible();
+ await page.setViewportSize({width:390,height:844});
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ expect(errors).toEqual([]);
+});
+test('content loading failures remain visible with a retry',async({page})=>{
+ await page.route('**/api/collected/threads/overview',r=>r.fulfill({status:503,json:{error:'Snapshot unavailable'}}));
+ await page.goto('/collectors/threads');
+ const content=page.getByRole('region',{name:'Threads overview',exact:true});
+ await expect(content.getByRole('alert')).toHaveText('Snapshot unavailable');
+ await expect(content.getByRole('button',{name:'Refresh overview'})).toBeEnabled();
+});
+
+test('homepage and operations use S3 totals without local runtime failures', async ({page, request}) => {
+ test.skip(process.env.RUN_S3_WEBSITE !== '1', 'Requires S3 snapshot');
+ const status = await request.get('/api/s3/status'); expect(status.ok()).toBeTruthy();
+ const summary = await status.json();
+ expect(summary.history.days.length).toBeGreaterThan(1);
+ expect(summary.history.days.reduce((n:number,d:{counts:{threads:number;youtube:number;pbplus:number}})=>n+d.counts.threads+d.counts.youtube+d.counts.pbplus,0)).toBe(3324);
+ expect(summary.counts).toMatchObject({courts:337,mapped:204,threads:52,youtube:575,comments:75});
+ const localRequests:string[]=[];
+ page.on('request', r=>{if (/data-ops|system\/status/.test(r.url())) localRequests.push(r.url());});
+ await page.goto('/');
+ await expect(page.getByRole('heading',{name:'Collection volume'})).toBeVisible();
+ await expect(page.locator('#system-status')).toContainText('1,039');
+ await expect(page.getByRole('region',{name:'Collection volume'})).toContainText('3,324');
+ await page.getByRole('button',{name:'Latest 7 days',exact:true}).click();
+ await expect(page.getByRole('button',{name:'Latest 7 days',exact:true})).toHaveAttribute('aria-pressed','true');
+ await page.getByRole('button',{name:'All dates',exact:true}).click();
+ await page.locator('#system-status').screenshot({path:'/home/coara/Documents/Codex/2026-10-26/i-j/outputs/s3-history.png'});
+ await page.getByText('View daily counts',{exact:true}).click();
+ await expect(page.getByRole('table').first()).toContainText('2026-10-28');
+ await expect(page.locator('header').first()).toContainText('Snapshot ready');
+ await expect(page.locator('#system-status')).not.toContainText('Failed');
+ await page.goto('/data-operations');
+ await expect(page.getByRole('heading',{name:'Available datasets'})).toBeVisible();
+ await expect(page.locator('main')).toContainText('dsp391m-data-lake');
+ await expect(page.getByRole('button',{name:'Run all now'})).toBeVisible();
+ await page.setViewportSize({width:390,height:844});
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+ expect(localRequests.length).toBeGreaterThan(0);
+});

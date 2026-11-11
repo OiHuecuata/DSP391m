@@ -1,0 +1,3 @@
+export type SearchSource="threads"|"youtube"|"courts"|"comments";
+export type SearchRecord={id:string;source:SearchSource;text:string;url:string|null;collectedAt:string|null;publishedAt:string|null;likes:number|null;views:number|null;replies:number|null;reposts?:number|null;quotes?:number|null;videoDuration?:string|null;parentRecordId?:string|null;videoId?:string|null;locations:{id:string;name:string}[];courts?:number|null;services?:string[];openingHours?:string[]};
+export type SearchResult={records:SearchRecord[];total:number;page:number;pageSize:number;locations:{id:string;name:string}[];newest:SearchRecord[];syncedAt:string};

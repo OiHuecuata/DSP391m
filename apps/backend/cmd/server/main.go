@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	api "github.com/username/DSP391m/apps/backend/internal/api"
+	"github.com/username/DSP391m/apps/backend/internal/auth"
 	"github.com/username/DSP391m/apps/backend/internal/config"
 	clickhouserepo "github.com/username/DSP391m/apps/backend/internal/repository/clickhouse"
 	collectorrepo "github.com/username/DSP391m/apps/backend/internal/repository/collector"
@@ -52,18 +53,19 @@ func main() {
 
 	router.GET(
 		"/api/v1/system/status",
+		auth.Require(false),
 		gin.WrapH(systemStatusHandler),
 	)
-	router.GET("/api/v1/analytics/location-market-signals", gin.WrapH(marketSignalHandler))
+	router.GET("/api/v1/analytics/location-market-signals", auth.Require(false), gin.WrapH(marketSignalHandler))
 	for _, path := range []string{"data-ops/status", "data-ops/lakehouse", "data-ops/warehouse", "data-ops/runs", "collection/status"} {
-		router.GET("/api/v1/"+path, gin.WrapH(operations))
+		router.GET("/api/v1/"+path, auth.Require(true), gin.WrapH(operations))
 	}
 	for _, path := range []string{"collection/start", "collection/stop", "collection/run", "collection/retry"} {
-		router.POST("/api/v1/"+path, gin.WrapH(operations))
+		router.POST("/api/v1/"+path, auth.Require(true), gin.WrapH(operations))
 	}
-	router.PATCH("/api/v1/collection/config", gin.WrapH(operations))
+	router.PATCH("/api/v1/collection/config", auth.Require(true), gin.WrapH(operations))
 
-	addr := fmt.Sprintf(":%d", settings.ServerPort)
+	addr := fmt.Sprintf("127.0.0.1:%d", settings.ServerPort)
 	server := &http.Server{Addr: addr, Handler: router}
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, syscall.SIGINT, syscall.SIGTERM)

@@ -321,3 +321,9 @@ docs/data
 !/docs/eda/**
 /docs/eda/**/__pycache__/
 /docs/eda/**/*.py[codz]
+
+# Isolated authentication smoke build
+apps/frontend/.local-auth-test-next/
+
+# Browser verification artifacts
+.playwright-cli/

@@ -1,0 +1,30 @@
+"use client";
+import Link from "next/link";
+import {useState} from "react";
+import type {Counts,MapData,Source} from "./types";
+import {DashboardCharts} from "./DashboardCharts";
+import styles from "./dashboard-details.module.css";
+const sourcesList:Source[]=["threads","youtube","pickleballplus"];
+const labels={threads:"Threads posts",youtube:"YouTube videos",pickleballplus:"Court listings"};
+const colors={threads:"#d87409",youtube:"#2876d0",pickleballplus:"#238b6c"};
+const searchLink=(id:string,source?:Source)=>`/search?location=${encodeURIComponent(id)}${source?`&source=${source==="pickleballplus"?"courts":source}`:""}`;
+export function DashboardDetails({data,sources,selected,onSelect}:{data:MapData;sources:Source[];selected:string|null;onSelect:(id:string|null)=>void}){
+ const [query,setQuery]=useState(""),[sort,setSort]=useState<Source|"total">("total"),[limit,setLimit]=useState("10");
+ const order=sort==="total"||sources.includes(sort)?sort:"total";
+ const total=(r:Counts)=>sources.reduce((n,s)=>n+r[s],0);
+ const provinces=[...data.provinces].sort((a,b)=>(order==="total"?total(b)-total(a):b[order]-a[order])||a.name.localeCompare(b.name,"vi"));
+ const ranked=provinces.filter(r=>total(r)>0).slice(0,Number(limit));
+ const max=Math.max(1,...ranked.flatMap(r=>sources.map(s=>r[s])));
+ const normalize=(s:string)=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/đ/g,"d").toLowerCase();
+ const rows=provinces.filter(r=>normalize(r.name).includes(normalize(query)));
+ const active=data.provinces.find(r=>r.id===selected);
+ function download(){const csv='\uFEFF'+[['Province',...sources.map(s=>labels[s]),'Selected total'],...rows.map(r=>[r.name,...sources.map(s=>r[s]),total(r)])].map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='province-counts.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+ return <div className={styles.details}>
+ <section className={styles.summary} aria-label="Selected source totals">{sourcesList.filter(s=>sources.includes(s)).map(s=><article key={s}><span><i style={{background:colors[s]}}/>{labels[s]}</span><strong>{data.totals[s].toLocaleString()}</strong><small>{data.matched[s].toLocaleString()} located · {(data.totals[s]-data.matched[s]).toLocaleString()} without a match</small></article>)}<article><span>Provinces represented</span><strong>{data.provinces.filter(r=>total(r)>0).length}<small> / 34</small></strong></article></section>
+ {active&&<section className={styles.card} aria-label="Selected province"><div className={styles.heading}><h2>{active.name}</h2><button onClick={()=>onSelect(null)}>Clear selection</button></div><div className={styles.provinceCounts}>{sources.map(s=><Link key={s} href={searchLink(active.id,s)}><span>{labels[s]}</span><strong style={{color:colors[s]}}>{active[s].toLocaleString()}</strong><small>Browse records ↗</small></Link>)}</div></section>}
+ <DashboardCharts data={data} sources={sources}/>
+ <div className={styles.chartGrid}><section className={styles.card} aria-labelledby="province-comparison"><div className={styles.heading}><h2 id="province-comparison">Province comparison</h2><label>Show<select value={limit} onChange={e=>setLimit(e.target.value)}><option value="10">Top 10</option><option value="34">All provinces with records</option></select></label></div><div className={styles.legend}>{sources.map(s=><span key={s}><i style={{background:colors[s]}}/>{labels[s]}</span>)}</div><div className={styles.bars}>{ranked.map(row=><div key={row.id} className={styles.barRow}><button onClick={()=>onSelect(row.id)}>{row.name}</button><div>{sources.map(s=><div key={s} title={`${labels[s]}: ${row[s]}`}><i style={{width:`${row[s]/max*100}%`,background:colors[s]}}/><span>{row[s]}</span></div>)}</div></div>)}</div>{!ranked.length&&<p>Choose chart sources in Settings.</p>}</section>
+ <section className={styles.card} aria-labelledby="court-size"><h2 id="court-size" title="Venues grouped by reported playing-court count">Venue size</h2><div className={styles.sizeBars}>{data.courtSizes?.map(bin=><div key={bin.label}><div><span>{bin.label}</span><strong>{bin.count.toLocaleString()}</strong></div><div className={styles.track}><i style={{width:`${bin.count/Math.max(1,...data.courtSizes!.map(b=>b.count))*100}%`,background:bin.label==="Not reported"?"#a4ad99":"#238b6c"}}/></div></div>)}</div><Link href="/collectors/pickleballplus">Explore venue listings ↗</Link></section></div>
+ <section className={styles.card} aria-labelledby="province-table"><div className={styles.heading}><h2 id="province-table">Province details</h2><button onClick={download}>Download CSV ↓</button></div><div className={styles.filters}><label>Find a province<input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Province name…"/></label><label>Sort by<select value={order} onChange={e=>setSort(e.target.value as typeof sort)}><option value="total">Selected sources total</option>{sources.map(s=><option key={s} value={s}>{labels[s]}</option>)}</select></label></div><div className={styles.table}><table><thead><tr><th>Province</th>{sources.map(s=><th key={s}>{labels[s]}</th>)}<th>Selected total</th><th>Records</th></tr></thead><tbody>{rows.map(row=><tr key={row.id} data-selected={selected===row.id}><th scope="row"><button onClick={()=>onSelect(row.id)}>{row.name}</button></th>{sources.map(s=><td key={s}>{row[s].toLocaleString()}</td>)}<td>{total(row).toLocaleString()}</td><td><Link href={searchLink(row.id)}>Browse ↗</Link></td></tr>)}</tbody></table>{!rows.length&&<p>No provinces match your search.</p>}</div><details className={styles.notes}><summary>About these counts</summary><p>Social items may mention several provinces and count once in each. Court listings use address matches. Province totals are recorded mentions and listings, not population demand. Chart sources in Settings control these totals, charts and table. The heatmap selector changes the map only; venue size shows the full court dataset.</p></details></section>
+ </div>;
+}

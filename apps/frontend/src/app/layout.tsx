@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Tracker · Data platform",
-  description: "Collection, operations, and insights for the Tracker data platform.",
+  title: "PickleballDB · Vietnam court supply & demand",
+  description: "Explore Vietnamese pickleball court supply, geographic social activity and demand signals.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

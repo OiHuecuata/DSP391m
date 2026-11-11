@@ -1,1 +1,21 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" fill="none"><rect width="36" height="36" rx="10" fill="#CB5937"/><path d="M10 12h16M18 12v14" stroke="#FFFEFA" stroke-width="3" stroke-linecap="round"/><circle cx="26" cy="25" r="2" fill="#F3C18F"/><path d="M8 25v-5" stroke="#F3C18F" stroke-width="2" stroke-linecap="round"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+  <defs>
+    <mask id="ball-holes">
+      <circle cx="24" cy="13" r="11" fill="white"/>
+      <g fill="black">
+        <ellipse cx="24" cy="6" rx="2.2" ry="1.6"/>
+        <ellipse cx="17.7" cy="10" rx="1.7" ry="2.2" transform="rotate(30 17.7 10)"/>
+        <ellipse cx="30.3" cy="10" rx="1.7" ry="2.2" transform="rotate(-30 30.3 10)"/>
+        <circle cx="24" cy="14" r="2.3"/>
+        <ellipse cx="18.7" cy="18" rx="1.7" ry="2" transform="rotate(-30 18.7 18)"/>
+        <ellipse cx="29.3" cy="18" rx="1.7" ry="2" transform="rotate(30 29.3 18)"/>
+      </g>
+    </mask>
+  </defs>
+  <g stroke="#FFFEFA" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+    <ellipse cx="24" cy="27" rx="15" ry="5"/>
+    <path d="M9 27v12c0 2.8 6.7 5 15 5s15-2.2 15-5V27"/>
+    <path d="M9 33c0 2.8 6.7 5 15 5s15-2.2 15-5"/>
+  </g>
+  <circle cx="24" cy="13" r="11" fill="#DDEB62" mask="url(#ball-holes)"/>
+</svg>

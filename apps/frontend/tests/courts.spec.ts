@@ -18,18 +18,19 @@ test('normalization counts usable coordinates and rejects unsafe links', () => {
   expect(result.venues[0].name).toBe('<script>test</script>');
 });
 
-test('real snapshot endpoint reports the supplied local file', async ({ request }) => {
+test('configured court snapshot endpoint reports consistent totals', async ({ request }) => {
   const response = await request.get('/api/pbplus/venues');
   expect(response.ok()).toBeTruthy();
   const data = await response.json();
-  expect(data).toMatchObject({ mode: 'local_snapshot', total: 337, mapped: 303, unmapped: 34 });
+  expect(['local_snapshot','s3_snapshot']).toContain(data.mode);
+  expect(data.total).toBe(337); expect(data.mapped+data.unmapped).toBe(data.total);
   expect(data.venues).toHaveLength(337);
   expect(response.headers()['cache-control']).toBe('no-store');
 });
 
 test('court page shows map, CSV preview and downloads in order without filters', async ({ page }) => {
   await page.goto('/collectors/pickleballplus');
-  await expect(page.getByText('303 mapped / 337 total listings', { exact: false })).toBeVisible();
+  await expect(page.getByText(/\d+ mapped \/ 337 total listings/)).toBeVisible();
   const map = page.getByRole('region', {name:'Map of geocoded PickleballPlus venue listings'});
   const table = page.getByRole('table');
   const download = page.getByRole('button', {name:'Download file'});

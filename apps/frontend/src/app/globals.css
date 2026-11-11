@@ -133,3 +133,28 @@ dt { font-size: 12px; color: var(--muted); margin-bottom: 7px; }
   .query-grid, .run-details dl { grid-template-columns: 1fr; }
   .brand { gap: 8px; }
 }
+
+/* Theme preferences apply to the data interface; photos and brand artwork retain their colors. */
+html[data-theme="dark"]{color-scheme:dark;--background:#171e20;--foreground:#e1e8df;--surface:#222c2b;--muted:#aab8aa;--border:#425047}
+html[data-theme="dark"] body,html[data-theme="dark"] main,html[data-theme="dark"] [class*="workspaceBody"],html[data-theme="dark"] [class*="dashboard_"],html[data-theme="dark"] [class*="topbar"]{background:#171e20;color:#e1e8df}
+html[data-theme="dark"] :is([class*="card" i],[class*="panel" i],[class*="browser"],[class*="selected"],[class*="setup"],[class*="query-card"],[class*="totals"] article,[class*="summary"] article){background:#222c2b;border-color:#425047;color:#e1e8df}
+html[data-theme="dark"] :is([class*="mapArea"],[class*="track" i],[class*="sync_"],[class*="provinceTotal"],[class*="sourceSummary"]>div,[class*="sources"]){background:#1d2727;border-color:#425047}
+html[data-theme="dark"] :is(h1,h2,h3,strong,dt,dd,label,summary,[class*="text_"],[class*="sourceInfo"]){color:#e1e8df}
+html[data-theme="dark"] :is(p,small,time,legend,[class*="caption"],[class*="count_"],[class*="eyebrow"],[class*="muted"]){color:#acb9a9}
+html[data-theme="dark"] :is(input,select,button,code,pre){background-color:#293632;border-color:#53614f;color:#e1e8df}
+html[data-theme="dark"] :is(th,td){border-color:#425047;color:#d4dfd0}html[data-theme="dark"] thead th{background:#293632}
+html[data-theme="dark"] a{color:#e2ae70}html[data-theme="dark"] header a{color:inherit}
+html[data-theme="dark"] svg text{fill:#c0ceba}
+html[data-theme="dark"] [class*="searchPreview"] button,html[data-theme="dark"] [type="submit"]{background:#e8790c;color:#191f3b}
+html[data-theme="dark"] [class*="notice"]{background:#273e2b;border-color:#4c7051;color:#d4e9cc}
+html[data-theme="dark"] [class*="error"]{background:#462c2c;border-color:#815050;color:#f0c8c1}
+html[data-theme="dark"] [aria-current="page"]{color:#e1e8df}
+html[data-theme="dark"] [class*="searchPreview"] input{background:transparent}
+html[data-theme="dark"] [class*="mapArea"] [class*="sources"] label{background:transparent}
+
+/* Shared reading contrast for secondary labels. */
+:root{--reader-muted:#596653}
+html[data-theme="dark"]{--reader-muted:#bac6b5}
+body{font-size:16px;line-height:1.55}
+
+html[data-theme="dark"] :is([class*="tagSummary"] span,[class*="tag_"],[class*="role_"]){background:#293632;color:#d4dfd0}

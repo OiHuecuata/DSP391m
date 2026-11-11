@@ -1,2 +1,2 @@
-import { SystemTracker } from "@/features/system/components/SystemTracker";
-export default function Page() { return <SystemTracker />; }
+import {UserExplorePage} from "@/features/user/UserHomePage";
+export default function Page(){return <UserExplorePage/>;}

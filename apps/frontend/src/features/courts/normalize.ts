@@ -33,11 +33,12 @@ export function normalizeSnapshot(raw: unknown, references: LocationReference[],
     const valid = typeof value.latitude === "number" && Number.isFinite(value.latitude) && Math.abs(value.latitude) <= 90 &&
       typeof value.longitude === "number" && Number.isFinite(value.longitude) && Math.abs(value.longitude) <= 180;
     unique.set(id, {
-      id, name: clean(value.court_name, 250) || "Unnamed venue", address,
+      collectedAt: clean(value.collectedAt,100) || null, id, name: clean(value.court_name, 250) || "Unnamed venue", address,
       area: addressArea(address, references), url: sourceUrl(value.url),
       courts: typeof value.number_of_courts === "number" && Number.isFinite(value.number_of_courts) && value.number_of_courts >= 0 ? value.number_of_courts : null,
       services: Array.isArray(value.services) ? value.services.filter((v): v is string => typeof v === "string").slice(0, 20).map(v => v.slice(0, 150)) : [],
       openingHours: Array.isArray(value.opening_hours) ? value.opening_hours.filter((v): v is string => typeof v === "string").slice(0, 30).map(v => v.trim().slice(0, 250)) : [],
+      coordinateSource: valid ? value.coordinate_source === "local_geocoding" ? "local_geocoding" : "source_snapshot" : null,
       latitude: valid ? value.latitude as number : null, longitude: valid ? value.longitude as number : null,
     });
   }

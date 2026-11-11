@@ -32,7 +32,7 @@ test('carousel advances continuously, has dot controls and a white separator',as
  const cover=page.getByRole('region',{name:'Pickleball homepage cover'});
  await expect(cover.getByRole('button',{name:'Show photo 1',exact:true})).toHaveAttribute('aria-pressed','true');
  const gap=await cover.evaluate(el=>el.getBoundingClientRect().top-document.querySelector('header')!.getBoundingClientRect().bottom);
- expect(gap).toBe(12);
+ expect(gap).toBe(6);
  await page.clock.fastForward(6100);
  await expect(cover.getByRole('button',{name:'Show photo 2',exact:true})).toHaveAttribute('aria-pressed','true');
  await expect(cover.getByRole('button',{name:'Pause slideshow'})).toHaveCount(0);

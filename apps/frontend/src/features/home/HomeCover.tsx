@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import styles from "./cover.module.css";
 
@@ -40,9 +41,10 @@ export function HomeCover() {
           <Image src={slide.src} alt={slide.alt} unoptimized fill sizes="100vw" loading="eager" fetchPriority={i===0?"high":"low"} className={styles.photo} style={{objectPosition:slide.position}} />
         </div>)}
       </div>
+      <div className={styles.intro}><h2>Vietnam’s pickleball<br/>at a glance.</h2><Link href="/dashboard">Open dashboard <span aria-hidden="true">↗</span></Link></div>
       <button className={`${styles.arrow} ${styles.previous}`} aria-label="Previous photo" onClick={() => show(index-1)}>‹</button>
       <button className={`${styles.arrow} ${styles.next}`} aria-label="Next photo" onClick={() => show(index+1)}>›</button>
-      <a className={styles.scrollLink} href="#system-status">Explore system status <span aria-hidden="true">↓</span></a>
+      <a className={styles.scrollLink} href="#system-status">View data overview <span aria-hidden="true">↓</span></a>
       <div className={styles.carouselControls}>
         {slides.map((slide,i) => <button key={slide.src} aria-label={`Show photo ${i+1}`} aria-pressed={index===i} className={styles.dot} onClick={() => show(i)} />)}
       </div>

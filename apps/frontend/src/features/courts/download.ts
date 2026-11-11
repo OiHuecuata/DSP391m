@@ -11,11 +11,11 @@ export function courtDownload(snapshot: CourtSnapshot, venues: CourtVenue[], for
   const name = `pickleball-courts-${scope === "all" ? "all" : "filtered"}-${collected}`;
   if (format === "json") return {
     filename: name + ".json", mime: "application/json;charset=utf-8",
-    content: JSON.stringify({ source: snapshot.source, source_file: snapshot.filename, collected_at: snapshot.collectedAt,
+    content: JSON.stringify({ source: snapshot.source, source_file: snapshot.filename, s3: snapshot.s3 ?? null, collected_at: snapshot.collectedAt,
       file_updated_at: snapshot.fileUpdatedAt, exported_at: new Date().toISOString(), count: venues.length,
       note: "Source-reported venue listings; coordinates are geocoded estimates. Hours and facilities are not live availability.", venues }, null, 2),
   };
-  const header = ["Venue", "Address", "Address area", "Courts (reported)", "Services (reported)", "Opening hours (ICT, reported)", "Latitude (estimated)", "Longitude (estimated)", "Source URL", "Collected at"];
-  const rows = venues.map(v => [v.name, v.address, v.area, v.courts, v.services.join("; "), (v.openingHours ?? []).join("; "), v.latitude, v.longitude, v.url, snapshot.collectedAt].map(csvCell).join(","));
+  const header = ["Venue", "Address", "Address area", "Courts (reported)", "Services (reported)", "Opening hours (ICT, reported)", "Latitude (estimated)", "Longitude (estimated)", "Coordinate source", "Source URL", "Collected at"];
+  const rows = venues.map(v => [v.name, v.address, v.area, v.courts, v.services.join("; "), (v.openingHours ?? []).join("; "), v.latitude, v.longitude, v.coordinateSource ?? null, v.url, snapshot.collectedAt].map(csvCell).join(","));
   return { filename: name + ".csv", mime: "text/csv;charset=utf-8", content: "\uFEFF" + header.map(csvCell).join(",") + "\r\n" + rows.join("\r\n") };
 }

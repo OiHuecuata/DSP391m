@@ -1,0 +1,3 @@
+import { RecordBrowser } from "@/features/search/RecordBrowser";
+import styles from "@/features/home/home.module.css";
+export default async function SearchPage({searchParams}:{searchParams:Promise<{q?:string;location?:string;source?:string}>}){const params=await searchParams;const source=["threads","youtube","courts","comments"].includes(params.source??"")?params.source as "threads"|"youtube"|"courts"|"comments":"all";return <main className={styles.main}><h1>Search</h1><RecordBrowser key={JSON.stringify(params)} initialSource={source} initialLocation={params.location??""} initialQuery={typeof params.q==="string"?params.q:""}/></main>;}
