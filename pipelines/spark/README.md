@@ -355,6 +355,11 @@ and [the executed Delta → ClickHouse → API smoke](../../infra/clickhouse/loc
 
 ## Demand clustering from pinned Silver snapshots
 
+Provincial one-week forecasting now has a separate pooled Spark Ridge job:
+[`provincial_demand` train/evaluate/predict](../../docs/ml/PROVINCIAL_RIDGE.md).
+It reuses the runtime, Delta contracts and artifact storage, with history-only
+eligibility, train-only pooled scaling and walk-forward validation.
+
 The candidate training/inference CLI, separate spatial aggregation job, artifact
 contract, resource plan and measured validation results are documented in
 [the ML runbook](../../docs/ml/README.md). Execution defaults to a read-only dry-run;

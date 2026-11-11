@@ -1,0 +1,3 @@
+# Spark/Delta versions are supplied by the repository's core environment.
+# Production Ridge uses Spark ML and NumPy, with no pandas/sklearn/Torch training.
+numpy==2.2.6

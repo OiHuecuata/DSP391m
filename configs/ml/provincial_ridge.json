@@ -1,0 +1,20 @@
+{
+  "as_of_date": "2026-11-11",
+  "observed_through": "2026-10-28",
+  "panel_start": null,
+  "admin_version": "VN_ADMIN_POST_2025",
+  "min_panel_weeks": 48,
+  "min_geo_posts_history": 5,
+  "min_direct_posts_history": 2,
+  "min_provinces": 3,
+  "lookback": 8,
+  "horizon": 1,
+  "n_folds": 3,
+  "val_weeks": 12,
+  "alpha": 10.0,
+  "seed": 42,
+  "max_iter": 1000,
+  "tol": 0.000001,
+  "max_provinces": 256,
+  "max_panel_weeks": 10400
+}
