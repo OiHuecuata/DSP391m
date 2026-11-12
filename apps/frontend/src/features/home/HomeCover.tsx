@@ -44,7 +44,7 @@ export function HomeCover() {
       <div className={styles.intro}><h2>Vietnam’s pickleball<br/>at a glance.</h2><Link href="/dashboard">Open dashboard <span aria-hidden="true">↗</span></Link></div>
       <button className={`${styles.arrow} ${styles.previous}`} aria-label="Previous photo" onClick={() => show(index-1)}>‹</button>
       <button className={`${styles.arrow} ${styles.next}`} aria-label="Next photo" onClick={() => show(index+1)}>›</button>
-      <a className={styles.scrollLink} href="#system-status">View data overview <span aria-hidden="true">↓</span></a>
+      <a className={styles.scrollLink} href="#system-status">View results <span aria-hidden="true">↓</span></a>
       <div className={styles.carouselControls}>
         {slides.map((slide,i) => <button key={slide.src} aria-label={`Show photo ${i+1}`} aria-pressed={index===i} className={styles.dot} onClick={() => show(i)} />)}
       </div>

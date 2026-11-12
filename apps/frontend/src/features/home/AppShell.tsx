@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { createContext, useContext, useEffect, useRef, useState, type Dispatch, type SetStateAction, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, type Dispatch, type SetStateAction, type ReactNode } from "react";
 import {AuthProvider,useAuth} from "@/features/auth/AuthProvider";
 import {SiteFooter} from "./SiteFooter";
 import {UserMenu} from "@/features/auth/UserMenu";
@@ -57,16 +57,6 @@ function WorkspaceShell({ children }: { children: ReactNode }) {
   const [error, setError] = useState("");
   const [updated, setUpdated] = useState<string>();
   const [menu, setMenu] = useState(false);
-  const [collectorsOpen, setCollectorsOpen] = useState(false);
-  const collectorsButton = useRef<HTMLButtonElement>(null);
-  const collectorNav = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    function dismiss(event: MouseEvent) {
-      if (collectorNav.current && !collectorNav.current.contains(event.target as Node)) setCollectorsOpen(false);
-    }
-    document.addEventListener("click", dismiss);
-    return () => document.removeEventListener("click", dismiss);
-  }, []);
   const isLogin=pathname==="/login", userId=user?.id??"", canBrowse=!!user&&!user.mustChangePassword;
   const pollInterval = pathname === "/data-operations" ? 5000 : 30000;
   useEffect(() => {
@@ -91,7 +81,7 @@ function WorkspaceShell({ children }: { children: ReactNode }) {
   function nav(label: string, icon: string, href?: string, active = href === pathname) {
     const platformLogos: Record<string, string> = { Threads: "threads.svg", YouTube: "youtube.png", TikTok: "tiktok.png", PickleballPlus: "pickleballplus.png" };
     const content = <>{platformLogos[label] ? <Image className={styles.platformLogo} src={`/brands/${platformLogos[label]}`} alt="" width={18} height={18} unoptimized /> : <Icon name={icon} />}<span>{t(label)}</span></>;
-    return href ? <Link className={`${styles.navItem} ${active ? styles.active : ""}`} href={href} aria-current={active ? "page" : undefined} onClick={() => { setMenu(false); setCollectorsOpen(false); }}>{content}</Link> : <div className={styles.navItem} aria-disabled="true">{content}</div>;
+    return href ? <Link className={`${styles.navItem} ${active ? styles.active : ""}`} href={href} aria-current={active ? "page" : undefined} onClick={() => { setMenu(false); }}>{content}</Link> : <div className={styles.navItem} aria-disabled="true">{content}</div>;
   }
   if(pathname === "/login")return <div className={styles.shell}>{children}</div>;
   return <div className={styles.shell}>
@@ -101,26 +91,6 @@ function WorkspaceShell({ children }: { children: ReactNode }) {
       <div className={styles.accountSlot}><UserMenu/></div>
       <button className={styles.menuToggle} aria-expanded={menu} aria-controls="home-navigation" onClick={() => setMenu(!menu)}>{menu ? "Close menu" : "Menu"}</button>
       </div><nav id="home-navigation" className={`${styles.navigation} ${menu ? styles.open : ""}`} aria-label="Main navigation">
-        {user?.role==="user"&&<div ref={collectorNav} className={styles.collectorNav}
-          onPointerEnter={event => { if (event.pointerType === "mouse") setCollectorsOpen(true); }}
-          onPointerLeave={event => { if (event.pointerType === "mouse") setCollectorsOpen(false); }}
-          onFocus={event => { if (event.target.matches(":focus-visible")) setCollectorsOpen(true); }}
-          onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setCollectorsOpen(false); }}
-          onKeyDown={event => {
-            if (event.key === "Escape") { collectorsButton.current?.focus(); setCollectorsOpen(false); }
-          }}>
-          <button ref={collectorsButton} className={`${styles.navItem} ${styles.collectorsToggle}`}
-            aria-expanded={collectorsOpen} aria-controls="collector-options"
-            onClick={event => { if (event.detail===0 || window.matchMedia("(hover: none)").matches) setCollectorsOpen(open => !open); }}>
-            <Icon name="imgLayers2" /><span>{t("Explore data")}</span><span className={`${styles.chevron} ${collectorsOpen ? styles.chevronOpen : ""}`} aria-hidden="true">⌄</span>
-          </button>
-          <div id="collector-options" className={styles.collectorOptions} data-open={collectorsOpen} aria-hidden={!collectorsOpen} inert={!collectorsOpen}>
-            {nav("PickleballPlus", "imgIcon2", "/collectors/pickleballplus")}
-            {nav("Threads", "imgIcon", "/collectors/threads")}
-            {nav("YouTube", "imgIcon1", "/collectors/youtube")}
-            {nav("All records", "imgSearch", "/search")}
-          </div>
-        </div>}
         {user?.role === "admin" && nav("Data Operations", "imgIcon4", "/data-operations")}
         {nav("Dashboard", "dashboard", "/dashboard")}
         {nav("Analytics", "imgIcon5", "/analytics")}
@@ -135,6 +105,6 @@ function WorkspaceShell({ children }: { children: ReactNode }) {
         <S3Context.Provider value={{ data: snapshot, error }}>{children}</S3Context.Provider>
       </WorkspaceContext.Provider>
     </div>
-    <SiteFooter exploreHref={user?.role==="admin"?"/search":"/collectors"}/>
+    <SiteFooter admin={user?.role==="admin"} exploreHref={user?.role==="admin"?"/search":"/collectors"}/>
   </div>;
 }

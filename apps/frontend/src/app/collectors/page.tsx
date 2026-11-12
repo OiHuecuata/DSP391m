@@ -1,2 +1,2 @@
-import {UserExplorePage} from "@/features/user/UserHomePage";
-export default function Page(){return <UserExplorePage/>;}
+import {redirect} from 'next/navigation';
+export default function Page(){redirect('/dashboard');}

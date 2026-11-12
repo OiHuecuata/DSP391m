@@ -2,3 +2,7 @@
 :global(html[data-theme="dark"]) .card,:global(html[data-theme="dark"]) .footer,:global(html[data-theme="dark"]) .page :is(select,button){background:#222c2b;border-color:#425047;color:#e1e8df}:global(html[data-theme="dark"]) .page,:global(html[data-theme="dark"]) .card h2{color:#e1e8df}:global(html[data-theme="dark"]) .row,:global(html[data-theme="dark"]) .card h2,:global(html[data-theme="dark"]) .aboutList>div,:global(html[data-theme="dark"]) .resetRow{border-color:#425047}:global(html[data-theme="dark"]) .saveActions .save{background:#ddeb62;color:#222c2b}
 
 .rowTitle{font-size:18px}.card h2{font-size:28px}.page select,.page button{font-size:16px}
+
+.conflict{padding:16px 20px;margin:0 0 24px;background:#fff0d7;border:1px solid #e6c78a;border-radius:8px;color:#785215;font-size:17px;line-height:1.6}.sourceOptions input:disabled{cursor:not-allowed}.row small{font-size:15px;line-height:1.6}:global(html[data-theme='dark']) .conflict{background:#3d3523;border-color:#73613c;color:#f5d697}
+/* Keep actions in the form flow so they never cover a setting. */
+.footer{position:static;bottom:auto;box-shadow:none}
