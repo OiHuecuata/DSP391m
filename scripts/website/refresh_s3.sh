@@ -14,8 +14,17 @@ if [[ ! -x "$tracker_python" ]]; then
   echo '.local/website-s3-venv/bin/pip install -r scripts/website/requirements.txt'
   exit 1
 fi
-if ! "$tracker_aws_cli" sts get-caller-identity --profile "${TRACKER_AWS_PROFILE:-tracker}" --region "${AWS_REGION:-ap-southeast-2}" --output json >/dev/null 2>&1; then
-  printf 'AWS sign-in is required. Run: %q login --profile %q --region %q\n' "$tracker_aws_cli" "${TRACKER_AWS_PROFILE:-tracker}" "${AWS_REGION:-ap-southeast-2}"
+tracker_profile="${TRACKER_AWS_PROFILE:-}"
+if [[ -z "$tracker_profile" ]]; then
+  tracker_identity="$tracker_repo_root/.local/website-data/aws-identity.json"
+  if [[ -f "$tracker_identity" ]]; then
+    tracker_profile="$("$tracker_python" -c 'import json,re,sys; v=json.load(open(sys.argv[1]))["profile"]; assert isinstance(v,str) and re.fullmatch(r"[-A-Za-z0-9_.@]{1,128}",v), "Invalid website AWS profile"; print(v)' "$tracker_identity")"
+  else
+    tracker_profile=tracker
+  fi
+fi
+if ! "$tracker_aws_cli" sts get-caller-identity --profile "${tracker_profile}" --region "${AWS_REGION:-ap-southeast-2}" --output json >/dev/null 2>&1; then
+  printf 'AWS profile %q is unavailable. Check the website credential setup. CLI: %q; region: %q\n' "${tracker_profile}" "$tracker_aws_cli" "${AWS_REGION:-ap-southeast-2}"
   exit 1
 fi
-exec "$tracker_python" "$tracker_repo_root/scripts/website/sync_s3.py" --aws "$tracker_aws_cli" --profile "${TRACKER_AWS_PROFILE:-tracker}" --region "${AWS_REGION:-ap-southeast-2}" --base "${TRACKER_S3_BASE:-auto}"
+exec "$tracker_python" "$tracker_repo_root/scripts/website/sync_s3.py" --aws "$tracker_aws_cli" --profile "${tracker_profile}" --region "${AWS_REGION:-ap-southeast-2}" --base "${TRACKER_S3_BASE:-auto}"

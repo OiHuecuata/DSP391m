@@ -1,0 +1,37 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "DiscoverWebsiteSnapshots",
+      "Effect": "Allow",
+      "Action": "s3:ListBucket",
+      "Resource": "arn:aws:s3:::dsp391m-data-lake",
+      "Condition": {"StringLike": {"s3:prefix": ["bootstrap/", "bootstrap/*/lakehouse/silver/courts/*", "bootstrap/*/lakehouse/silver/social_posts/*", "bootstrap/*/lakehouse/silver/social_comments/*"]}}
+    },
+    {
+      "Sid": "ReadWebsiteSnapshotTables",
+      "Effect": "Allow",
+      "Action": "s3:GetObject",
+      "Resource": ["arn:aws:s3:::dsp391m-data-lake/bootstrap/*/lakehouse/silver/courts/*", "arn:aws:s3:::dsp391m-data-lake/bootstrap/*/lakehouse/silver/social_posts/*", "arn:aws:s3:::dsp391m-data-lake/bootstrap/*/lakehouse/silver/social_comments/*"]
+    },
+    {
+      "Sid": "ReadAccountDatabase",
+      "Effect": "Allow",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::dsp391m-data-lake/website-auth/v1/accounts.json"
+    },
+    {
+      "Sid": "UpdateEncryptedAccountDatabase",
+      "Effect": "Allow",
+      "Action": "s3:PutObject",
+      "Resource": "arn:aws:s3:::dsp391m-data-lake/website-auth/v1/accounts.json",
+      "Condition": {"StringEquals": {"s3:x-amz-server-side-encryption": "AES256"}}
+    },
+    {
+      "Sid": "LocateWebsiteBucket",
+      "Effect": "Allow",
+      "Action": "s3:GetBucketLocation",
+      "Resource": "arn:aws:s3:::dsp391m-data-lake"
+    }
+  ]
+}

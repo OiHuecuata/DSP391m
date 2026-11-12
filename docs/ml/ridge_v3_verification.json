@@ -1,0 +1,7 @@
+{
+  "fold_prediction_max_abs_difference": 0.47120471515094287,
+  "final_prediction_max_abs_difference": 8.947864671426942e-11,
+  "checked_test_rows": 464,
+  "method": "Independent NumPy solution of centered SSE + alpha*L2, alpha=10; train-only saved scalers; original Silver counts reconstructed",
+  "passed": false
+}

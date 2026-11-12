@@ -190,3 +190,44 @@ the frontend. Go stays bound to loopback and validates sessions with the fronten
 S3 credentials remain in your local AWS profile and accounts stay in private S3.
 Renew `aws login --profile tracker --region ap-southeast-2` when that AWS session
 expires. Local sessions and the saved data cache remain on the laptop.
+
+## Dedicated unattended identity on this laptop
+
+The website now uses the local `tracker-website` AWS profile when configured.
+It belongs to IAM user `pickleballdb-website-laptop`, separate from the personal
+`tracker` browser-login profile. This profile uses a dedicated access key, so the
+website does not depend on renewing the personal AWS browser session.
+
+- Secret material exists only in `~/.aws/credentials` with mode `0600`; the
+  `~/.aws` directory is `0700`. Never copy these files into Git or the frontend.
+- The ignored `.local/website-data/aws-identity.json` contains only identity/profile
+  metadata. The launcher and S3 refresh script read it automatically. The frontend
+  also has `TRACKER_AWS_PROFILE=tracker-website` in its ignored `.env.local`.
+- Access is limited to discovering bootstrap snapshots, reading the three website
+  Silver tables, and reading/updating the AES256-encrypted account object at
+  `website-auth/v1/accounts.json`. The identity cannot delete objects, write
+  lakehouse data, manage IAM, or read unrelated bucket objects.
+- The checked-in `iam/website-laptop-policy.json` is the exact scoped policy.
+  `configure_laptop_identity.py` creates the identity only with `--execute` and
+  refuses to overwrite existing users or profiles. It never prints secret keys.
+- The personal `tracker` profile is still used for administrative AWS work;
+  expiration of that profile no longer prevents normal website S3 access.
+- Access keys remain valid until disabled/deleted or permissions change. Rotate
+  the dedicated key periodically, and revoke it if this laptop is lost. This is
+  not a root key and does not make the S3 bucket public.
+
+Start the existing public launcher as before:
+
+```bash
+node scripts/website/share_demo.mjs --reuse-build
+```
+
+To refresh just the website's data, no browser sign-in is needed:
+
+```bash
+./scripts/website/refresh_s3.sh
+```
+
+The optional `TRACKER_AWS_PROFILE` environment variable overrides the saved
+website profile. Future cloud hosting should use a workload IAM role where
+available, rather than copying this laptop's key.

@@ -18,7 +18,7 @@ export function UserHomePage(){
   </section>
   <div className={styles.results}>
    <Link href='/analytics#comparison-title' className={styles.result}><span className={styles.resultIcon} aria-hidden='true'><svg viewBox='0 0 40 40' fill='none' stroke='currentColor' strokeWidth='2'><path d='M7 32V10M7 32h28M12 27l8-9 6 4 8-13'/><circle cx='20' cy='18' r='3' fill='currentColor'/><circle cx='26' cy='22' r='3' fill='currentColor'/></svg></span><h2>Supply & interest</h2><p>See how court supply compares with social interest across provinces.</p><strong>Compare provinces <span aria-hidden='true'>↗</span></strong></Link>
-   <Link href='/analytics#model-title' className={styles.result}><span className={styles.resultIcon} aria-hidden='true'><svg viewBox='0 0 40 40' fill='none' stroke='currentColor' strokeWidth='2'><circle cx='14' cy='14' r='7'/><circle cx='28' cy='14' r='4'/><circle cx='23' cy='28' r='8'/><circle cx='9' cy='29' r='3'/></svg></span><h2>Conversation clusters</h2><p>Discover how the model groups similar pickleball conversations.</p><strong>View cluster results <span aria-hidden='true'>↗</span></strong></Link>
+   <Link href='/analytics#model-title' className={styles.result}><span className={styles.resultIcon} aria-hidden='true'><svg viewBox='0 0 40 40' fill='none' stroke='currentColor' strokeWidth='2'><circle cx='14' cy='14' r='7'/><circle cx='28' cy='14' r='4'/><circle cx='23' cy='28' r='8'/><circle cx='9' cy='29' r='3'/></svg></span><h2>Topic cluster</h2><p>Discover how the model groups similar pickleball conversations.</p><strong>View cluster results <span aria-hidden='true'>↗</span></strong></Link>
   </div>
  </main>;
 }
