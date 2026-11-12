@@ -1,5 +1,10 @@
 # Spark ML từ Silver — runbook và bàn giao
 
+Provincial Ridge forecasting được bổ sung ngày 11-11-2026 với yêu cầu benchmark
+riêng: xem [Ridge runbook](PROVINCIAL_RIDGE.md) và
+[kết quả triển khai](PROVINCIAL_RIDGE_REPORT.md). Báo cáo clustering bên dưới giữ
+nguyên phạm vi lần chạy 29-10-2026.
+
 Cập nhật 29-10-2026, branch `model`. Pipeline tạo **candidate**, chưa chốt K=8,
 chưa promote production. Không sửa crawler, Bronze hay Silver.
 

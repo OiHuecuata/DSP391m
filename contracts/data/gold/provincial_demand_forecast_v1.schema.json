@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "provincial_demand_forecast_v1",
+  "description": "Continuous one-step forecast of geo-linked social intent posts, not bookings or verified market demand. Key: province_id x forecast_week x model_version x data_version. Dates are VN calendar dates; generated_at is a UTC timestamp.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["province_id", "province_name", "forecast_week", "predicted_geo_linked_intent_posts", "raw_prediction", "model_name", "model_version", "training_cutoff", "data_version", "generated_at"],
+  "properties": {
+    "province_id": {"type": "string", "minLength": 1},
+    "province_name": {"type": "string", "minLength": 1},
+    "forecast_week": {"type": "string", "format": "date"},
+    "predicted_geo_linked_intent_posts": {"type": "number", "minimum": 0},
+    "raw_prediction": {"type": "number"},
+    "model_name": {"const": "pooled_provincial_ridge"},
+    "model_version": {"type": "string", "minLength": 1},
+    "training_cutoff": {"type": "string", "format": "date"},
+    "data_version": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "generated_at": {"type": "string", "format": "date-time"}
+  }
+}

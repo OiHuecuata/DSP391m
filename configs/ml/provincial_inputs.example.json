@@ -1,0 +1,11 @@
+{
+  "dataset_id": "REPLACE_WITH_VERIFIED_SILVER_GENERATION",
+  "provenance": "unknown",
+  "generation": null,
+  "tables": {
+    "silver_social_posts": {"path": "s3a://YOUR_BUCKET/VERIFIED_POSTS_DELTA_PATH", "version": 0},
+    "silver_social_geo_mentions": {"path": "s3a://YOUR_BUCKET/VERIFIED_GEO_DELTA_PATH", "version": 0},
+    "silver_social_intent_evidence": {"path": "s3a://YOUR_BUCKET/VERIFIED_INTENT_DELTA_PATH", "version": 0},
+    "dim_admin_unit": {"path": "s3a://YOUR_BUCKET/VERIFIED_ADMIN_DELTA_PATH", "version": 0}
+  }
+}

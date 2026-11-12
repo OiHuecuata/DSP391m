@@ -1,0 +1,16 @@
+pipeline,stage,grain,retained_rows,previous_rows,excluded_rows,exclusion_ratio
+geo_rows,raw,mention,450,,,
+geo_rows,valid_resolution_status,mention,379,450,71,0.15777777777777777
+geo_rows,nonnull_new_province_id,mention,379,379,0,0.0
+geo_pairs,distinct_pairs_before_admin,content_id x province_id,283,,,
+geo_pairs,valid_new_admin_province,content_id x province_id,283,283,0,0.0
+geo_pairs,belongs_to_social_post,content_id x province_id,283,283,0,0.0
+geo_pairs,completed_publication_range,content_id x province_id,240,283,43,0.1519434628975265
+geo_pairs,before_first_validation,content_id x province_id,18,240,222,0.925
+geo_pairs,direct_demand_history,content_id x province_id,5,18,13,0.7222222222222222
+posts,raw_posts,content_id,649,,,
+posts,nonnull_publication_date,content_id,649,649,0,0.0
+posts,completed_publication_range,content_id,552,649,97,0.14946070878274267
+posts,before_first_validation,content_id,24,552,528,0.9565217391304348
+posts,direct_demand_history,content_id,5,24,19,0.7916666666666666
+posts,direct_history_with_valid_geo,content_id,5,5,0,0.0

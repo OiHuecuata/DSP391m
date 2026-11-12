@@ -1,5 +1,20 @@
 .DEFAULT_GOAL := help
 
+# Opt-in downstream Silver ML job; never triggered by collection automatically.
+RIDGE_ARGS ?=
+.PHONY: ridge-train ridge-evaluate ridge-predict ridge-test
+ridge-train:
+	$(SPARK_PYTHON) -m dsp_spark.jobs.batch.provincial_demand train $(RIDGE_ARGS)
+
+ridge-evaluate:
+	$(SPARK_PYTHON) -m dsp_spark.jobs.batch.provincial_demand evaluate $(RIDGE_ARGS)
+
+ridge-predict:
+	$(SPARK_PYTHON) -m dsp_spark.jobs.batch.provincial_demand predict $(RIDGE_ARGS)
+
+ridge-test:
+	$(SPARK_PYTHON) -m unittest discover -v -s pipelines/spark/test -p 'test_provincial_ridge*.py'
+
 # Dedicated EDA deployment; overlay preserves the existing project and volumes.
 SUPERSET_PYTHON ?= .venv/bin/python
 SUPERSET_COMPOSE = docker compose --env-file .local/superset/.env -f docker-compose.yaml -f infra/superset/compose.yaml --profile superset
